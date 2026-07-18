@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/cardDay"
+    android:layout_width="56dp"
+    android:layout_height="56dp"
+    android:layout_margin="6dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="2dp"
+    app:strokeColor="#007F8B"
+    app:strokeWidth="1dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:padding="4dp">
+
+        <TextView
+            android:id="@+id/tvDayNum"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="01"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="#007F8B"/>
+
+        <TextView
+            android:id="@+id/tvDayLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Ngày"
+            android:textSize="10sp"
+            android:textColor="#757575"/>
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

@@ -18,6 +18,7 @@ package com.google.mediapipe.examples.poselandmarker
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.View
 import androidx.activity.viewModels
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
@@ -39,9 +40,33 @@ class MainActivity : AppCompatActivity() {
         activityMainBinding.navigation.setOnNavigationItemReselectedListener {
             // ignore the reselection
         }
+
+        // Manage visibility of ToolBar and BottomNavigationView dynamically
+        navController.addOnDestinationChangedListener { _, destination, _ ->
+            when (destination.id) {
+                R.id.login_fragment,
+                R.id.register_fragment,
+                R.id.user_info_fragment,
+                R.id.camera_fragment -> {
+                    activityMainBinding.toolbar.visibility = View.GONE
+                    activityMainBinding.navigation.visibility = View.GONE
+                    activityMainBinding.view.visibility = View.GONE
+                }
+                else -> {
+                    activityMainBinding.toolbar.visibility = View.VISIBLE
+                    activityMainBinding.navigation.visibility = View.VISIBLE
+                    activityMainBinding.view.visibility = View.VISIBLE
+                }
+            }
+        }
     }
 
     override fun onBackPressed() {
-        finish()
+        val navHostFragment =
+            supportFragmentManager.findFragmentById(R.id.fragment_container) as NavHostFragment
+        val navController = navHostFragment.navController
+        if (!navController.navigateUp()) {
+            super.onBackPressed()
+        }
     }
 }

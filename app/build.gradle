@@ -18,6 +18,7 @@ plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
     id 'de.undercouch.download'
+    id 'com.google.gms.google-services'
 }
 
 android {
@@ -88,6 +89,11 @@ dependencies {
 
     // WindowManager
     implementation 'androidx.window:window:1.1.0-alpha03'
+
+    // Firebase (Dynamic config will be initialized manually in code)
+    implementation platform('com.google.firebase:firebase-bom:32.8.0')
+    implementation 'com.google.firebase:firebase-auth-ktx'
+    implementation 'com.google.firebase:firebase-firestore-ktx'
 
     // Unit testing
     testImplementation 'junit:junit:4.13.2'
