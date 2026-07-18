@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "628615666069",
+    "project_id": "aifitness1",
+    "storage_bucket": "aifitness1.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:628615666069:android:c12f842a7ae97e03497e9c",
+        "android_client_info": {
+          "package_name": "com.google.mediapipe.examples.poselandmarker"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBUXiA3tRIhq0IEbz6JjECXbc5iDMWVZew"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
