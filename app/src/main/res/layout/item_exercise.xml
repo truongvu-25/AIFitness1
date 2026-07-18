@@ -71,15 +71,29 @@
                 android:visibility="gone"/>
 
             <Button
+                android:id="@+id/btnWatchVideo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="XEM VIDEO"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:textColor="#007F8B"
+                android:backgroundTint="#E0F2F1"
+                app:cornerRadius="6dp"
+                android:paddingHorizontal="12dp"
+                android:layout_marginBottom="8dp"
+                style="@style/Widget.MaterialComponents.Button"/>
+
+            <Button
                 android:id="@+id/btnStartExercise"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="BẮT ĐẦU"
-                android:textSize="12sp"
+                android:textSize="11sp"
                 android:textStyle="bold"
                 android:backgroundTint="#007F8B"
                 app:cornerRadius="6dp"
-                android:paddingHorizontal="16dp"
+                android:paddingHorizontal="12dp"
                 style="@style/Widget.MaterialComponents.Button"/>
         </LinearLayout>
     </LinearLayout>

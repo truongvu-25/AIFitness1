@@ -96,8 +96,15 @@ class LoginFragment : Fragment() {
                 if (document.exists()) {
                     val profile = document.toObject(UserProfile::class.java)
                     if (profile != null && profile.fullName.isNotEmpty() && profile.height > 0) {
-                        // User already completed profile, navigate to calendar schedule
-                        findNavController().navigate(R.id.action_login_to_workout_calendar)
+                        // Check if weekly update is needed (7 days)
+                        val lastBmiUpdated = profile.lastBmiUpdatedTime
+                        val diffMs = System.currentTimeMillis() - lastBmiUpdated
+                        val sevenDaysMs = 7L * 24 * 60 * 60 * 1000
+                        if (lastBmiUpdated > 0 && diffMs >= sevenDaysMs) {
+                            findNavController().navigate(R.id.action_login_to_update_bmi)
+                        } else {
+                            findNavController().navigate(R.id.action_login_to_workout_calendar)
+                        }
                     } else {
                         // Profile exists but is incomplete, collect user stats
                         findNavController().navigate(R.id.action_login_to_user_info)

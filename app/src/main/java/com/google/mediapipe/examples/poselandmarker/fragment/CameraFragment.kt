@@ -192,7 +192,7 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
                 val workoutDay = document.toObject(WorkoutDay::class.java)
                 if (workoutDay != null) {
                     val updatedExercises = workoutDay.exercises.map {
-                        if (it.id == exerciseId) {
+                        if (it.exerciseId == exerciseId) {
                             it.copy(status = 1) // Mark as completed
                         } else {
                             it

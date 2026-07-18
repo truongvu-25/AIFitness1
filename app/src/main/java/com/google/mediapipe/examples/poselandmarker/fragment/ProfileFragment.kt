@@ -42,6 +42,13 @@ class ProfileFragment : Fragment() {
 
         loadUserProfile()
 
+        binding.btnEditProfile.setOnClickListener {
+            val bundle = Bundle().apply {
+                putBoolean("isEditMode", true)
+            }
+            findNavController().navigate(R.id.action_profile_to_user_info, bundle)
+        }
+
         binding.btnLogout.setOnClickListener {
             performLogout()
         }

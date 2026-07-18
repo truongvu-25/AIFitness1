@@ -232,6 +232,18 @@
             </com.google.android.material.card.MaterialCardView>
 
             <Button
+                android:id="@+id/btnEditProfile"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:text="CHỈNH SỬA HỒ SƠ"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="#FFFFFF"
+                android:backgroundTint="#007F8B"
+                app:cornerRadius="8dp"
+                android:layout_marginTop="16dp"/>
+
+            <Button
                 android:id="@+id/btnLogout"
                 android:layout_width="match_parent"
                 android:layout_height="52dp"
@@ -241,7 +253,7 @@
                 android:textColor="#FFFFFF"
                 android:backgroundTint="#B00020"
                 app:cornerRadius="8dp"
-                android:layout_marginTop="32dp"
+                android:layout_marginTop="16dp"
                 android:layout_marginBottom="40dp"/>
 
         </LinearLayout>

@@ -21,6 +21,11 @@
             app:destination="@id/workout_calendar_fragment"
             app:popUpTo="@id/login_fragment"
             app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_login_to_update_bmi"
+            app:destination="@id/update_bmi_fragment"
+            app:popUpTo="@id/login_fragment"
+            app:popUpToInclusive="true" />
     </fragment>
 
     <fragment
@@ -43,6 +48,10 @@
         android:id="@+id/user_info_fragment"
         android:name="com.google.mediapipe.examples.poselandmarker.fragment.UserInfoFragment"
         android:label="UserInfoFragment">
+        <argument
+            android:name="isEditMode"
+            app:argType="boolean"
+            android:defaultValue="false" />
         <action
             android:id="@+id/action_user_info_to_workout_calendar"
             app:destination="@id/workout_calendar_fragment"
@@ -60,6 +69,11 @@
         <action
             android:id="@+id/action_workout_calendar_to_profile"
             app:destination="@id/profile_fragment" />
+        <action
+            android:id="@+id/action_workout_calendar_to_update_bmi"
+            app:destination="@id/update_bmi_fragment"
+            app:popUpTo="@id/workout_calendar_fragment"
+            app:popUpToInclusive="true" />
     </fragment>
 
     <fragment
@@ -71,6 +85,9 @@
             app:destination="@id/login_fragment"
             app:popUpTo="@id/workout_calendar_fragment"
             app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_profile_to_user_info"
+            app:destination="@id/user_info_fragment" />
     </fragment>
 
     <fragment
@@ -111,5 +128,10 @@
         android:id="@+id/gallery_fragment"
         android:name="com.google.mediapipe.examples.poselandmarker.fragment.GalleryFragment"
         android:label="GalleryFragment" />
+
+    <fragment
+        android:id="@+id/update_bmi_fragment"
+        android:name="com.google.mediapipe.examples.poselandmarker.fragment.UpdateBmiFragment"
+        android:label="UpdateBmiFragment" />
 
 </navigation>

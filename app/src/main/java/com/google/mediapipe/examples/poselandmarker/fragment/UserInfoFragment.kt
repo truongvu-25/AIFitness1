@@ -9,11 +9,10 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.WriteBatch
-import com.google.mediapipe.examples.poselandmarker.Exercise
 import com.google.mediapipe.examples.poselandmarker.NotificationHelper
 import com.google.mediapipe.examples.poselandmarker.R
 import com.google.mediapipe.examples.poselandmarker.UserProfile
+import com.google.mediapipe.examples.poselandmarker.UserExercise
 import com.google.mediapipe.examples.poselandmarker.WorkoutDay
 import com.google.mediapipe.examples.poselandmarker.databinding.FragmentUserInfoBinding
 
@@ -24,11 +23,15 @@ class UserInfoFragment : Fragment() {
 
     private lateinit var auth: FirebaseAuth
     private lateinit var db: FirebaseFirestore
+    
+    private var isEditMode = false
+    private var originalCreatedTime = 0L
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         auth = FirebaseAuth.getInstance()
         db = FirebaseFirestore.getInstance()
+        isEditMode = arguments?.getBoolean("isEditMode", false) ?: false
     }
 
     override fun onCreateView(
@@ -42,12 +45,43 @@ class UserInfoFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        if (isEditMode) {
+            setupEditMode()
+        }
+
         binding.btnSaveInfo.setOnClickListener {
-            saveUserInfoAndGeneratePlan()
+            saveUserInfo()
         }
     }
 
-    private fun saveUserInfoAndGeneratePlan() {
+    private fun setupEditMode() {
+        binding.tvUserInfoTitle.text = "Chỉnh Sửa Hồ Sơ"
+        binding.btnSaveInfo.text = "LƯU THAY ĐỔI"
+        
+        val uid = auth.currentUser?.uid ?: return
+        setLoading(true)
+        
+        db.collection("users").document(uid).get()
+            .addOnSuccessListener { document ->
+                setLoading(false)
+                if (document.exists()) {
+                    val profile = document.toObject(UserProfile::class.java)
+                    if (profile != null) {
+                        binding.etFullName.setText(profile.fullName)
+                        binding.etAge.setText(profile.age.toString())
+                        binding.etHeight.setText(profile.height.toString())
+                        binding.etWeight.setText(profile.weight.toString())
+                        originalCreatedTime = profile.createdTime
+                    }
+                }
+            }
+            .addOnFailureListener { e ->
+                setLoading(false)
+                Toast.makeText(context, "Lỗi tải thông tin: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+    }
+
+    private fun saveUserInfo() {
         val uid = auth.currentUser?.uid ?: return
         val fullName = binding.etFullName.text.toString().trim()
         val ageStr = binding.etAge.text.toString().trim()
@@ -88,6 +122,8 @@ class UserInfoFragment : Fragment() {
             else -> "THUA CAN"
         }
 
+        val createdTime = if (isEditMode) originalCreatedTime else System.currentTimeMillis()
+
         val profile = UserProfile(
             uid = uid,
             fullName = fullName,
@@ -96,13 +132,19 @@ class UserInfoFragment : Fragment() {
             weight = weight,
             bmi = formattedBmi,
             bmiType = bmiType,
-            createdTime = System.currentTimeMillis()
+            createdTime = createdTime,
+            lastBmiUpdatedTime = System.currentTimeMillis()
         )
 
-        // Write profile document
         db.collection("users").document(uid).set(profile)
             .addOnSuccessListener {
-                generateWorkoutPlan(uid, bmiType)
+                if (isEditMode) {
+                    setLoading(false)
+                    Toast.makeText(context, "Cập nhật hồ sơ thành công!", Toast.LENGTH_SHORT).show()
+                    findNavController().popBackStack()
+                } else {
+                    generateWorkoutPlan(uid, bmiType)
+                }
             }
             .addOnFailureListener { e ->
                 setLoading(false)
@@ -122,16 +164,11 @@ class UserInfoFragment : Fragment() {
             batch.set(dayDocRef, workoutDay)
         }
 
-        // Commit batch writes
         batch.commit()
             .addOnSuccessListener {
                 setLoading(false)
-                Toast.makeText(context, "Đã khởi tạo lộ trình tập luyện 30 ngày!", Toast.LENGTH_SHORT).show()
-                
-                // Enable 8:00 AM notification reminder
+                Toast.makeText(context, "Đã tạo lộ trình tập luyện 30 ngày!", Toast.LENGTH_SHORT).show()
                 NotificationHelper.scheduleDailyReminder(requireContext())
-                
-                // Navigate to workout calendar
                 findNavController().navigate(R.id.action_user_info_to_workout_calendar)
             }
             .addOnFailureListener { e ->
@@ -140,99 +177,64 @@ class UserInfoFragment : Fragment() {
             }
     }
 
-    private fun getExercisesForBmiAndDay(bmiType: String, dayIndex: Int): List<Exercise> {
-        // Scaling factor for targets based on the week index to simulate progressive overload
+    private fun getExercisesForBmiAndDay(bmiType: String, dayIndex: Int): List<UserExercise> {
         val weekMultiplier = when {
-            dayIndex <= 7 -> 1.0     // Week 1: Base targets
-            dayIndex <= 14 -> 1.2    // Week 2: +20% targets
-            dayIndex <= 21 -> 1.4    // Week 3: +40% targets
-            else -> 1.6              // Week 4: +60% targets
+            dayIndex <= 7 -> 1.0     // Week 1
+            dayIndex <= 14 -> 1.2    // Week 2
+            dayIndex <= 21 -> 1.4    // Week 3
+            else -> 1.6              // Week 4
         }
 
         return when (bmiType) {
-            "GAY" -> listOf(
-                Exercise(
-                    id = "pushup",
-                    name = "Hít Đất Cơ Bản (Push Up)",
-                    targetCount = (10 * weekMultiplier).toInt(),
-                    description = "Giữ thẳng người, hạ thấp ngực xuống sát đất rồi đẩy người lên.",
-                    videoUrl = "https://example.com/videos/pushup.mp4"
-                ),
-                Exercise(
-                    id = "squat",
-                    name = "Ngồi Xổm (Squat)",
-                    targetCount = (12 * weekMultiplier).toInt(),
-                    description = "Đứng thẳng chân rộng bằng vai, hạ thấp hông xuống sâu như ngồi ghế rồi đứng lên.",
-                    videoUrl = "https://example.com/videos/squat.mp4"
-                ),
-                Exercise(
-                    id = "lunge",
-                    name = "Chùng Chân (Lunge)",
-                    targetCount = (10 * weekMultiplier).toInt(),
-                    description = "Bước một chân lên phía trước, hạ thấp gối cho cả hai chân tạo góc vuông rồi rút chân về.",
-                    videoUrl = "https://example.com/videos/lunge.mp4"
-                )
-            )
-            "CAN DOI" -> listOf(
-                Exercise(
-                    id = "pushup",
-                    name = "Hít Đất Cơ Bản (Push Up)",
-                    targetCount = (15 * weekMultiplier).toInt(),
-                    description = "Giữ thẳng lưng, ngực hạ thấp gần chạm sàn, khuỷu tay mở góc 45 độ rồi đẩy lên.",
-                    videoUrl = "https://example.com/videos/pushup.mp4"
-                ),
-                Exercise(
-                    id = "squat",
-                    name = "Ngồi Xổm (Squat)",
-                    targetCount = (15 * weekMultiplier).toInt(),
-                    description = "Hạ thấp hông sao cho đùi song song với sàn, giữ thẳng lưng và đầu gối không vượt mũi chân.",
-                    videoUrl = "https://example.com/videos/squat.mp4"
-                ),
-                Exercise(
-                    id = "jumpingjacks",
-                    name = "Nhảy Dang Tay Chân (Jumping Jacks)",
-                    targetCount = (20 * weekMultiplier).toInt(),
-                    description = "Nhảy bật rộng chân ra đồng thời vung tay chạm trên đầu, sau đó nhảy thu chân khép tay.",
-                    videoUrl = "https://example.com/videos/jumpingjacks.mp4"
-                ),
-                Exercise(
-                    id = "crunch",
-                    name = "Gập Bụng (Crunch)",
-                    targetCount = (15 * weekMultiplier).toInt(),
-                    description = "Nằm ngửa gối co, dùng cơ bụng nâng vai lên khỏi thảm rồi hạ xuống chậm rãi.",
-                    videoUrl = "https://example.com/videos/crunch.mp4"
-                )
-            )
-            else -> listOf( // THUA CAN (Focus cardio / Fat burning)
-                Exercise(
-                    id = "jumpingjacks",
-                    name = "Nhảy Dang Tay Chân (Jumping Jacks)",
-                    targetCount = (25 * weekMultiplier).toInt(),
-                    description = "Nhảy liên tục dang tay chân để làm nóng toàn thân và kích thích tim mạch.",
-                    videoUrl = "https://example.com/videos/jumpingjacks.mp4"
-                ),
-                Exercise(
-                    id = "squat",
-                    name = "Ngồi Xổm (Squat)",
-                    targetCount = (15 * weekMultiplier).toInt(),
-                    description = "Kích hoạt các bó cơ đùi trước, đùi sau và cơ mông để đốt cháy tối đa calo.",
-                    videoUrl = "https://example.com/videos/squat.mp4"
-                ),
-                Exercise(
-                    id = "highknees",
-                    name = "Nâng Cao Đùi (High Knees)",
-                    targetCount = (30 * weekMultiplier).toInt(),
-                    description = "Chạy tại chỗ nâng cao đùi sao cho đùi vuông góc với thân người.",
-                    videoUrl = "https://example.com/videos/highknees.mp4"
-                ),
-                Exercise(
-                    id = "burpee",
-                    name = "Bật Nhảy Hít Đất (Burpee)",
-                    targetCount = (8 * weekMultiplier).toInt(),
-                    description = "Từ đứng thẳng, squat xuống, bật chân ra hít đất, thu chân bật nhảy cao vỗ tay.",
-                    videoUrl = "https://example.com/videos/burpee.mp4"
-                )
-            )
+            "GAY" -> { // Focus on muscle building & strength
+                if (dayIndex % 2 != 0) { // Odd Days
+                    listOf(
+                        UserExercise("pushup", (10 * weekMultiplier).toInt()),
+                        UserExercise("squat", (12 * weekMultiplier).toInt()),
+                        UserExercise("plank", (2 * weekMultiplier).toInt())
+                    )
+                } else { // Even Days
+                    listOf(
+                        UserExercise("splitsquat", (10 * weekMultiplier).toInt()),
+                        UserExercise("situp", (12 * weekMultiplier).toInt()),
+                        UserExercise("sideplank", (2 * weekMultiplier).toInt())
+                    )
+                }
+            }
+            "CAN DOI" -> { // Balanced general fitness
+                if (dayIndex % 2 != 0) { // Odd Days
+                    listOf(
+                        UserExercise("pushup", (15 * weekMultiplier).toInt()),
+                        UserExercise("squat", (15 * weekMultiplier).toInt()),
+                        UserExercise("jumpingjack", (25 * weekMultiplier).toInt()),
+                        UserExercise("plank", (3 * weekMultiplier).toInt())
+                    )
+                } else { // Even Days
+                    listOf(
+                        UserExercise("splitsquat", (12 * weekMultiplier).toInt()),
+                        UserExercise("situp", (15 * weekMultiplier).toInt()),
+                        UserExercise("sideplank", (3 * weekMultiplier).toInt()),
+                        UserExercise("jumpingjack", (25 * weekMultiplier).toInt())
+                    )
+                }
+            }
+            else -> { // THUA CAN - High-intensity fat burning
+                if (dayIndex % 2 != 0) { // Odd Days
+                    listOf(
+                        UserExercise("jumpingjack", (30 * weekMultiplier).toInt()),
+                        UserExercise("squat", (20 * weekMultiplier).toInt()),
+                        UserExercise("situp", (20 * weekMultiplier).toInt()),
+                        UserExercise("plank", (3 * weekMultiplier).toInt())
+                    )
+                } else { // Even Days
+                    listOf(
+                        UserExercise("jumpingjack", (30 * weekMultiplier).toInt()),
+                        UserExercise("splitsquat", (15 * weekMultiplier).toInt()),
+                        UserExercise("sideplank", (3 * weekMultiplier).toInt()),
+                        UserExercise("pushup", (12 * weekMultiplier).toInt())
+                    )
+                }
+            }
         }
     }
 

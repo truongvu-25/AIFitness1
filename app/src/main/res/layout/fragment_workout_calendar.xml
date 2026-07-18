@@ -6,34 +6,56 @@
     android:layout_height="match_parent"
     android:background="#F8F9FA">
 
-    <LinearLayout
+    <RelativeLayout
         android:id="@+id/headerPlan"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
         android:padding="20dp"
         android:background="#007F8B"
         app:layout_constraintTop_toTopOf="parent">
 
-        <TextView
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="LỘ TRÌNH 30 NGÀY"
-            android:textSize="12sp"
-            android:textStyle="bold"
-            android:textColor="#B2DFDB"
-            android:letterSpacing="0.1"/>
+            android:orientation="vertical"
+            android:layout_alignParentStart="true"
+            android:layout_toStartOf="@id/btnResetPlan"
+            android:layout_marginEnd="16dp">
 
-        <TextView
-            android:id="@+id/tvPlanType"
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="LỘ TRÌNH 30 NGÀY"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:textColor="#B2DFDB"
+                android:letterSpacing="0.1"/>
+
+            <TextView
+                android:id="@+id/tvPlanType"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Đang tải lộ trình..."
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="#FFFFFF"
+                android:layout_marginTop="4dp"/>
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/btnResetPlan"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Đang tải lộ trình..."
-            android:textSize="22sp"
+            android:text="TẠO MỚI"
+            android:textSize="11sp"
             android:textStyle="bold"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:backgroundTint="#00676D"
             android:textColor="#FFFFFF"
-            android:layout_marginTop="4dp"/>
-    </LinearLayout>
+            app:cornerRadius="6dp"
+            android:paddingHorizontal="12dp"/>
+    </RelativeLayout>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvDays"
