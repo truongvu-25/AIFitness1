@@ -180,7 +180,12 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
         initBottomSheetControls()
     }
 
+    private var isCompletingWorkout = false
+
     private fun completeWorkout() {
+        if (isCompletingWorkout) return
+        isCompletingWorkout = true
+
         val uid = auth.currentUser?.uid ?: return
         fragmentCameraBinding.btnFinishWorkout.isEnabled = false
         
@@ -200,20 +205,26 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
                     }
                     docRef.update("exercises", updatedExercises)
                         .addOnSuccessListener {
-                            Toast.makeText(context, "Chúc mừng! Bạn đã hoàn thành bài tập!", Toast.LENGTH_SHORT).show()
-                            findNavController().popBackStack()
+                            if (isAdded && !isStateSaved) {
+                                Toast.makeText(context, "Chúc mừng! Bạn đã hoàn thành bài tập!", Toast.LENGTH_SHORT).show()
+                                findNavController().popBackStack()
+                            }
                         }
                         .addOnFailureListener { e ->
+                            isCompletingWorkout = false
                             fragmentCameraBinding.btnFinishWorkout.isEnabled = true
                             Toast.makeText(context, "Lỗi cập nhật: ${e.message}", Toast.LENGTH_SHORT).show()
                         }
                 } else {
+                    isCompletingWorkout = false
                     fragmentCameraBinding.btnFinishWorkout.isEnabled = true
                 }
             } else {
+                isCompletingWorkout = false
                 fragmentCameraBinding.btnFinishWorkout.isEnabled = true
             }
         }.addOnFailureListener { e ->
+            isCompletingWorkout = false
             fragmentCameraBinding.btnFinishWorkout.isEnabled = true
             Toast.makeText(context, "Lỗi kết nối database: ${e.message}", Toast.LENGTH_SHORT).show()
         }
