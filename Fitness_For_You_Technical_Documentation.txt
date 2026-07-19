@@ -1,0 +1,315 @@
+================================================================================
+  TÀI LIỆU CHUYÊN SÂU: KIẾN TRÚC HỆ THỐNG VÀ LUỒNG CHẠY HÀM THEO TƯƠNG TÁC NGƯỜI DÙNG
+                       ỨNG DỤNG ANDROID "FITNESS FOR YOU"
+================================================================================
+Ngôn ngữ mã nguồn : Kotlin (Android Native), XML Layouts
+Công nghệ cốt lõi  : Google MediaPipe Tasks Vision (Pose Landmarker), CameraX, 
+                     Firebase Auth, Cloud Firestore, Navigation Component
+Phiên bản tài liệu : 2.0 (Cập nhật đầy đủ file code, dòng code & file giao diện)
+================================================================================
+
+
+================================================================================
+PHẦN 1: BẢNG TRUY VẾT CHUYÊN SÂU LUỒNG CHẠY HÀM THEO TƯƠNG TÁC GIAO DIỆN (UI FLOWS)
+================================================================================
+
+--------------------------------------------------------------------------------
+1. QUÁ TRÌNH KHỞI ĐỘNG ỨNG DỤNG (APPLICATION STARTUP)
+--------------------------------------------------------------------------------
+- Giao diện hiển thị: `activity_main.xml` (Toàn bộ khung màn hình chính)
+- Hành động: Người dùng chạm vào biểu tượng App "Fitness For You" trên điện thoại.
+- Luồng chạy hàm theo thứ tự dòng code:
+
+  [Bước 1] File code: `FitnessApplication.kt` (Định nghĩa lớp Application toàn cục)
+    -> Hàm: `onCreate()` [Dòng 16 - 21]
+    -> Thực thi:
+       1. `FirebaseConfig.initialize(this)` [Dòng 18] -> Khởi tạo FirebaseApp.
+       2. `initializeExerciseDatabase()` [Dòng 19 & Dòng 37 - 110] -> Kết nối Cloud Firestore, kiểm tra và batch-write 7 bài tập master vào collection "exercises" (Push-up, Squat, Jumping Jack, Sit-up, Plank, Side Plank, Split Squat).
+       3. `createNotificationChannel()` [Dòng 20 & Dòng 23 - 35] -> Tạo kênh thông báo `NotificationChannel(CHANNEL_ID = "workout_reminder_channel")` trên Android O (8.0+).
+
+  [Bước 2] File code: `MainActivity.kt` (Activity điều khiển duy nhất)
+    -> Layout XML tương ứng: `activity_main.xml`
+    -> Hàm: `onCreate(savedInstanceState)` [Dòng 31 - 62]
+    -> Thực thi:
+       1. `ActivityMainBinding.inflate(layoutInflater)` [Dòng 33] -> Nạp layout `activity_main.xml`.
+       2. `setContentView(activityMainBinding.root)` [Dòng 34]. -> gắn layout
+       3. `supportFragmentManager.findFragmentById(R.id.fragment_container)` [Dòng 36 - 38] -> Khởi tạo `NavHostFragment` và liên kết `BottomNavigationView` (`activity_main.xml:L63-71`) với `NavController`.
+       4. `navController.addOnDestinationChangedListener(...)` [Dòng 45 - 61] -> Lắng nghe sự kiện chuyển màn hình. Nếu vào `login_fragment`, `register_fragment`, `user_info_fragment`, hoặc `camera_fragment` thì ẩn Toolbar và BottomNavigationView (`View.GONE`), các màn hình khác thì hiển thị (`View.VISIBLE`).
+
+  [Bước 3] Điều hướng NavGraph (`nav_graph.xml`):
+    -> Màn hình mặc định `startDestination` được nạp là `login_fragment` (`LoginFragment.kt`).
+
+--------------------------------------------------------------------------------
+2. MÀN HÌNH ĐĂNG NHẬP (LOGIN FRAGMENT)
+--------------------------------------------------------------------------------
+- Giao diện XML: `fragment_login.xml`
+- File code xử lý: `LoginFragment.kt`
+
+  [Trường hợp A] Đã đăng nhập trước đó (Auto Login / Persistence Session Check)
+    - Hàm: `LoginFragment.onViewCreated(...)` [Dòng 36 - 52]
+    - Thực thi:
+      1. `val currentUser = auth.currentUser` [Dòng 40].
+      2. Nếu `currentUser != null` -> Gọi `checkUserProfileAndNavigate(currentUser.uid)` [Dòng 42 & Dòng 90 - 123].
+      3. Hàm `checkUserProfileAndNavigate()` gửi truy vấn Firestore `db.collection("users").document(uid).get()` [Dòng 93].
+      4. Kiểm tra chỉ số BMI 7 ngày: `System.currentTimeMillis() - profile.lastBmiUpdatedTime >= 7 ngày` [Dòng 100 - 107].
+         + Nếu quá 7 ngày -> Gọi `findNavController().navigate(R.id.action_login_to_update_bmi)` [Dòng 104] (Mở `UpdateBmiFragment.kt` / `fragment_update_bmi.xml`).
+         + Nếu dưới 7 ngày -> Gọi `findNavController().navigate(R.id.action_login_to_workout_calendar)` [Dòng 106] (Mở `WorkoutCalendarFragment.kt` / `fragment_workout_calendar.xml`).
+         + Nếu chưa có hồ sơ -> Gọi `findNavController().navigate(R.id.action_login_to_user_info)` [Dòng 110].
+
+  [Trường hợp B] Người dùng bấm nút "ĐĂNG NHẬP" (`btnLogin`)
+    - Tương tác: Nhập Email (`etEmail`), Mật khẩu (`etPassword`), bấm "ĐĂNG NHẬP".
+    - Sự kiện: `binding.btnLogin.setOnClickListener` [Dòng 45 - 47]
+    - Hàm chạy theo thứ tự:
+      1. `performLogin()` [Dòng 54 - 88].
+      2. Validation kiểm tra trống: `email.isEmpty()`, `password.isEmpty()` [Dòng 58 - 65].
+      3. `setLoading(true)` [Dòng 67 & Dòng 125 - 133] -> Ẩn nút đăng nhập, hiện ProgressBar.
+      4. Gọi Firebase Auth: `auth.signInWithEmailAndPassword(email, password)` [Dòng 69].
+      5. Khi đăng nhập Firebase thành công (`task.isSuccessful`) -> Gọi `checkUserProfileAndNavigate(user.uid)` [Dòng 74].
+
+  [Trường hợp C] Người dùng bấm nút "Đăng ký ngay" (`tvGoToRegister`)
+    - Tương tác: Chạm vào chữ "Chưa có tài khoản? Đăng ký ngay".
+    - Sự kiện: `binding.tvGoToRegister.setOnClickListener` [Dòng 49 - 51]
+    - Hàm chạy: `findNavController().navigate(R.id.action_login_to_register)` [Dòng 50] -> Mở `RegisterFragment.kt` (`fragment_register.xml`).
+
+--------------------------------------------------------------------------------
+3. MÀN HÌNH ĐĂNG KÝ TÀI KHOẢN (REGISTER FRAGMENT)
+--------------------------------------------------------------------------------
+- Giao diện XML: `fragment_register.xml`
+- File code xử lý: `RegisterFragment.kt`
+
+  [Hành động] Người dùng nhập Email, Mật khẩu, Nhập lại mật khẩu và bấm "ĐĂNG KÝ" (`btnRegister`).
+    - Sự kiện: `binding.btnRegister.setOnClickListener` [Dòng 34 - 36]
+    - Hàm chạy theo thứ tự:
+      1. `performRegister()` [Dòng 43 - 85].
+      2. Kiểm tra tính hợp lệ: `email.isEmpty()`, `password.length < 6`, `confirmPassword != password` [Dòng 48 - 65].
+      3. `setLoading(true)` [Dòng 67].
+      4. Gọi Firebase Auth: `auth.createUserWithEmailAndPassword(email, password)` [Dòng 69].
+      5. Khi đăng ký thành công -> Gọi `findNavController().navigate(R.id.action_register_to_user_info)` [Dòng 73] -> Chuyển sang màn hình nhập chỉ số BMI (`UserInfoFragment.kt`).
+
+--------------------------------------------------------------------------------
+4. MÀN HÌNH KHẢO SÁT CHỈ SỐ BMI & LẬP KHỦNG LỘ TRÌNH 30 NGÀY (USER INFO FRAGMENT)
+--------------------------------------------------------------------------------
+- Giao diện XML: `fragment_user_info.xml`
+- File code xử lý: `UserInfoFragment.kt`
+
+  [Hành động 1] Mở màn hình (ViewCreated):
+    - Hàm chạy: `UserInfoFragment.onViewCreated(...)` [Dòng 45 - 55]
+    - Kiểm tra thuộc tính `isEditMode` (nếu mở từ tab Profile):
+      + Nếu `isEditMode == true` -> Gọi `setupEditMode()` [Dòng 57 - 82] -> Đổi tiêu đề thành "Chỉnh Sửa Hồ Sơ", nạp dữ liệu cũ vào các ô EditText.
+
+  [Hành động 2] Bấm nút "BẮT ĐẦU TẬP LUYỆN" / "LƯU THAY ĐỔI" (`btnSaveInfo`):
+    - Sự kiện: `binding.btnSaveInfo.setOnClickListener` [Dòng 52 - 54]
+    - Hàm chạy theo thứ tự:
+      1. `saveUserInfo()` [Dòng 84 - 153].
+      2. Kiểm tra hợp lệ dữ liệu nhập (Họ tên, Tuổi, Chiều cao cm, Cân nặng kg) [Dòng 91 - 109].
+      3. Tính chỉ số BMI: `bmi = weight / ((height / 100) * (height / 100))` [Dòng 114 - 116].
+      4. Phân loại chỉ số BMI (`bmiType`):
+         - `bmi < 18.5` -> `"GAY"`
+         - `18.5 <= bmi < 25.0` -> `"CAN DOI"`
+         - `else` -> `"THUA CAN"`
+      5. Tạo đối tượng `UserProfile` [Dòng 127 - 137].
+      6. Lưu hồ sơ vào Firestore: `db.collection("users").document(uid).set(profile)` [Dòng 139].
+      7. Nếu không phải Edit Mode -> Gọi `generateWorkoutPlan(uid, bmiType)` [Dòng 146].
+      8. Hàm `generateWorkoutPlan()` [Dòng 161 - 188]:
+         - Khởi tạo Firestore Write Batch: `val batch = db.batch()` [Dòng 162].
+         - Vòng lặp `for (day in 1..30)` [Dòng 165 - 172]:
+           * Gọi `isRestDayForBmi(bmiType, day)` [Dòng 155 - 160] -> Xác định Ngày Nghỉ (Rest Day) cho từng mức BMI.
+           * Gọi `getExercisesForBmiAndDay(bmiType, day)` [Dòng 189 - 248] -> Sinh danh sách bài tập kèm mục tiêu tăng dần theo tuần `weekMultiplier`. Đặt số giây cho Plank & Side Plank (30s - 60s).
+           * Tạo đối tượng `WorkoutDay(dayIndex = day, exercises = exercises, isRestDay = isRestDay)`.
+           * Đưa vào Batch Write: `batch.set(dayDocRef, workoutDay)`.
+         - Gọi `batch.commit()` [Dòng 174].
+      9. Khi lưu batch thành công -> Gọi `NotificationHelper.scheduleDailyReminder(requireContext())` [Dòng 178] -> Thiết lập báo thức nhắc tập lúc 8:00 AM.
+      10. Điều hướng: `findNavController().navigate(R.id.action_user_info_to_workout_calendar)` [Dòng 179] -> Mở màn hình Lịch tập.
+
+--------------------------------------------------------------------------------
+5. MÀN HÌNH LỊCH TẬP 30 NGÀY (WORKOUT CALENDAR FRAGMENT)
+--------------------------------------------------------------------------------
+- Giao diện XML: `fragment_workout_calendar.xml`, `item_workout_day.xml` (Thẻ ngày), `item_exercise.xml` (Thẻ bài tập), `dialog_video_player.xml` (Pop-up video)
+- File code xử lý: `WorkoutCalendarFragment.kt`
+
+  [Hành động 1] Màn hình được nạp (ViewCreated):
+    - Hàm chạy: `WorkoutCalendarFragment.onViewCreated(...)` [Dòng 79 - 88]
+    - Thứ tự gọi các hàm:
+      1. `setupRecyclerViews()` [Dòng 90 - 110] -> Khởi tạo Adapter danh sách ngày nằm ngang (`WorkoutDaysAdapter`) và Adapter bài tập dọc (`ExercisesAdapter`).
+      2. `loadMasterExercisesAndInit()` [Dòng 112 - 128] -> Tải collection "exercises" từ Firestore nạp vào cache bộ nhớ `exercisesCache`.
+      3. `loadUserProfileAndPlan()` [Dòng 130 - 173] -> Tải `UserProfile`. Kiểm tra thời gian ép buộc cập nhật BMI 7 ngày. Tính chỉ số ngày hiện tại `currentDayIndex`.
+      4. `loadAll30DaysWorkoutData()` [Dòng 175 - 219] -> Tải toàn bộ 30 ngày tập từ sub-collection "workouts".
+         - Tính ngày tháng thực tế (DD/MM) cho từng ngày: `dateFormat.format(Date(createdTime + (dayNum - 1) * 24h))`.
+         - Xây dựng danh sách `DayItemUI` chứa thông tin hoàn thành bài tập.
+         - Nạp dữ liệu vào `daysAdapter.updateData(dayUiList, defaultSelectedIdx)` [Dòng 209].
+         - Tự động cuộn danh sách ngày đến ngày hiện tại: `rvDays.scrollToPosition(...)` [Dòng 212].
+         - Gọi `onDaySelected(selectedDayIndex)` [Dòng 214].
+
+  [Hành động 2] Quy tắc phối 6 màu sắc thẻ ngày (`WorkoutDaysAdapter`):
+    - File code: `WorkoutDaysAdapter.DayViewHolder.bind(...)` [Dòng 509 - 576]
+    - Logic phối màu theo điều kiện:
+      1. Ngày HIỆN TẠI (`item.isCurrentDay`) -> Nền màu Xanh Dương (`#007F8B`), Chữ Trắng.
+      2. Ngày NGHỈ (`item.isRestDay`) -> Nền màu Xám (`#F5F5F5`), Chữ Xám, Nhãn "NGHỈ".
+      3. Ngày đã qua & Hoàn thành TẤT CẢ -> Nền màu Xanh Lá Nhạt (`#E8F5E9`), Chữ Xanh Lá.
+      4. Ngày đã qua & Hoàn thành ÍT NHẤT 1 bài -> Nền màu Vàng Nhạt (`#FFF9C4`), Chữ Vàng.
+      5. Ngày đã qua & BỎ QUA HOÀN TOÀN -> Nền màu Đỏ Nhạt (`#FFEBEE`), Chữ Đỏ, Nhãn "Bỏ qua".
+      6. Ngày tập SẮP TỚI -> Nền màu Trắng (`#FFFFFF`), Chữ Đen.
+
+  [Hành động 3] Chọn vào một Ngày tập bất kỳ trên thanh cuộn ngang:
+    - Sự kiện: `holder.itemView.setOnClickListener` [Dòng 494 - 502]
+    - Hàm chạy: `onDaySelected(dayNum)` [Dòng 221 - 267].
+    - Logic xử lý:
+      + Nếu là Ngày Nghỉ (`isRestDay == true`) -> Hiển thị thẻ thông báo màu vàng kem `cardStatusNotice` ("Hôm nay là Ngày Nghỉ Ngơi (DD/MM)..."), ẩn danh sách bài tập (`exercisesAdapter.updateData(emptyList())`).
+      + Nếu là Ngày bỏ qua (`dayNum < currentDayIndex` & `completedCount == 0`) -> Hiển thị thẻ cảnh báo màu đỏ `cardStatusNotice` ("Bạn đã bỏ qua lịch tập Ngày X (DD/MM)...").
+      + Nạp dữ liệu bài tập tương ứng vào `exercisesAdapter.updateData(displayExercises)`.
+
+  [Hành động 4] Nhấn nút "XEM VIDEO" trên thẻ bài tập (`btnWatchVideo`):
+    - Layout: `item_exercise.xml:L53-62`
+    - Sự kiện: `btnWatchVideo.setOnClickListener` [Dòng 613 - 615]
+    - Hàm chạy: `showVideoTutorialDialog(exercise)` [Dòng 342 - 389].
+    - Logic:
+      + Nếu `videoUrl` chứa "youtube.com" hoặc "youtu.be" -> Mở Intent xem ngoài: `startActivity(Intent(ACTION_VIEW, Uri.parse(url)))` [Dòng 345 - 351].
+      + Nếu là Video Asset ("asset:///videos/..."):
+        * Gọi helper `getMediaUri(requireContext(), url)` [Dòng 322 - 340] -> Tự động giải nén đệm file mp4 từ `assets` ra `cacheDir` của thiết bị.
+        * Nạp Uri vào `VideoView` trong Dialog đứng (`dialog_video_player.xml`) [Dòng 364].
+        * Đợi sẵn sàng và tự động phát lặp lại: `videoView.start()`, `mp.isLooping = true` [Dòng 367].
+
+  [Hành động 5] Nhấn nút "TẠO MỚI" lộ trình 30 ngày (`btnResetPlan`):
+    - Layout: `fragment_workout_calendar.xml:L38-49`
+    - Sự kiện: `binding.btnResetPlan.setOnClickListener` [Dòng 85 - 87]
+    - Hàm chạy theo thứ tự:
+      1. `showResetPlanDialog()` [Dòng 269 - 281] -> Hiển thị Hộp thoại AlertDialog xác nhận.
+      2. Khi bấm "Đồng ý" -> Gọi `resetWorkoutPlan()` [Dòng 283 - 320].
+      3. Hàm `resetWorkoutPlan()` tính lại lộ trình 30 ngày mới, xóa bỏ lịch tập cũ, cập nhật `createdTime = System.currentTimeMillis()` và ghi đè Firestore.
+
+--------------------------------------------------------------------------------
+6. MÀN HÌNH CAMERA AI QUÉT KHUNG XƯƠNG & BỘ ĐẾM ĐỘNG TÁC (CAMERA FRAGMENT)
+--------------------------------------------------------------------------------
+- Giao diện XML: `fragment_camera.xml`, `info_bottom_sheet.xml`
+- File code xử lý: `CameraFragment.kt`, `OverlayView.kt`, `ExerciseAnalyzer.kt`, `PoseLandmarkerHelper.kt`
+
+  [Hành động 1] Bấm nút "BẮT ĐẦU" hoặc "TẬP LẠI" ở bài tập trong Lịch tập (`btnStartExercise`):
+    - Layout: `item_exercise.xml:L64-73`
+    - Sự kiện: `btnStart.setOnClickListener` [Dòng 617 - 619]
+    - Hàm chạy:
+      1. `checkCameraPermissionAndStart(exercise)` [Dòng 391 - 401].
+      2. Kiểm tra quyền Camera `Manifest.permission.CAMERA`. Nếu chưa cấp -> Mở Popup xin quyền `requestPermissionLauncher.launch(...)`.
+      3. Nếu đã cấp quyền -> Gọi `openWorkoutCamera(exercise)` [Dòng 403 - 412].
+      4. Đóng gói tham số: `exerciseId`, `exerciseName`, `targetCount`, `dayIndex` -> Gọi `findNavController().navigate(R.id.action_workout_calendar_to_camera, bundle)`.
+
+  [Hành động 2] Khởi tạo Màn hình Camera AI (`CameraFragment.onViewCreated`):
+    - File code: `CameraFragment.kt` [Dòng 127 - 181]
+    - Thứ tự chạy hàm:
+      1. Khởi tạo Thread nền: `backgroundExecutor = Executors.newSingleThreadExecutor()` [Dòng 131].
+      2. Nạp tên bài tập, mục tiêu: `fragmentCameraBinding.tvWorkoutTitle.text = exerciseName` [Dòng 133].
+      3. Khởi tạo Trình phân tích AI chuyên biệt: `exerciseAnalyzer = BaseExerciseAnalyzer.create(...)` [Dòng 143].
+      4. Bấm nút đổi Camera (`btnSwitchCamera`) -> Gọi `setUpCamera()` [Dòng 151 - 158].
+      5. Post ViewFinder -> Gọi `setUpCamera()` [Dòng 164 - 166].
+      6. Khởi tạo AI Engine trên Thread nền: `poseLandmarkerHelper = PoseLandmarkerHelper(...)` với `RunningMode.LIVE_STREAM` [Dòng 168 - 178].
+      7. `setUpCamera()` [Dòng 310 - 321] -> Gọi `bindCameraUseCases()` [Dòng 324 - 358].
+      8. `bindCameraUseCases()` dùng CameraX `ProcessCameraProvider` liên kết `Preview` với `viewFinder` và `ImageAnalysis` với `detectPose(imageProxy)`.
+
+  [Hành động 3] Luồng nhận diện Pose AI từng khung hình (Real-time Stream Pipeline):
+    - Tần suất: ~30 khung hình / giây.
+    - Chuỗi chạy hàm liên tục:
+      1. `ImageAnalysis.setAnalyzer` -> Gọi `detectPose(imageProxy)` [Dòng 348 & Dòng 360 - 367].
+      2. `detectPose()` gọi `poseLandmarkerHelper.detectLiveStream(imageProxy, isFrontCamera)` [Dòng 362].
+      3. `PoseLandmarkerHelper` tính toán 33 điểm khớp xương và phát Callback `onResults(resultBundle)` [Dòng 368 - 404].
+      4. `onResults()` nhận kết quả và đẩy lên UI Thread (`activity?.runOnUiThread`):
+         a. Vẽ bộ khung xương: `fragmentCameraBinding.overlay.setResults(...)` [Dòng 374 - 380] -> Gọi `OverlayView.draw(canvas)` [Dòng 65 - 87 trong OverlayView.kt] để vẽ 33 điểm màu vàng và các đường nối màu xanh ngọc.
+         b. Trích xuất tọa độ 33 khớp xương: `val landmarks = resultBundle.results.first().landmarks().first()`.
+         c. Truyền vào Trình phân tích bài tập: `val result = exerciseAnalyzer?.analyze(landmarks)` [Dòng 387].
+         d. `BaseExerciseAnalyzer.analyze()` (trong `ExerciseAnalyzer.kt`):
+            * Tính góc hình học giữa các khớp xương (Vai - Khuỷu - Cổ tay, Hông - Đầu gối - Cổ chân,...) qua công thức lượng giác `calculateAngle()`.
+            * Chuyển đổi trạng thái State Machine (UP / DOWN / HOLDING).
+            * **Đối với bài tập đếm lần (Pushup, Squat, Situp, Jumping Jack, Split Squat):** Khi hoàn thành 1 chu kỳ hạ/đẩy chuẩn -> Tăng `currentProgress++`.
+            * **Đối với bài tập tính thời gian (Plank, Side Plank):** Nếu giữ đúng góc thẳng lưng và hông -> Trả về `isGoodForm = true`. Trong `CameraFragment`, khi giữ chuẩn form đủ 1000ms -> Tự động tăng `currentProgressCount++` (đếm nhảy từng giây) [Dòng 389 - 392].
+         e. Cập nhật giao diện đếm real-time:
+            * `tvCounterValue.text = "$currentProgressCount / $targetCount $unitStr"` [Dòng 390].
+            * `tvFormFeedback.text = result.feedback` [Dòng 391].
+         f. Khi `result.isComplete == true` (hoặc đạt đủ số lần / số giây mục tiêu):
+            * Gọi `completeWorkout()` [Dòng 395].
+
+  [Hành động 4] Hoàn thành bài tập (Tự động hoặc Bấm nút "HOÀN THÀNH BÀI TẬP"):
+    - Layout: `fragment_camera.xml:L91-100` (`btnFinishWorkout`)
+    - Sự kiện: `btnFinishWorkout.setOnClickListener` [Dòng 160 - 162] hoặc gọi từ AI `onResults()`.
+    - Hàm chạy theo thứ tự:
+      1. `completeWorkout()` [Dòng 183 - 221].
+      2. Kiểm tra cờ bảo vệ chống đệm duplicate callback: `if (isCompletingWorkout) return; isCompletingWorkout = true` [Dòng 184 - 185].
+      3. Vô hiệu hóa nút bấm: `fragmentCameraBinding.btnFinishWorkout.isEnabled = false` [Dòng 188].
+      4. Đọc Firestore `users/{uid}/workouts/day_{dayIndex}` [Dòng 193].
+      5. Sửa trạng thái bài tập: Tìm `exerciseId`, gán `status = 1` (Hoàn thành) [Dòng 198].
+      6. Cập nhật Firestore: `docRef.update("exercises", updatedExercises)` [Dòng 204].
+      7. Khi Firestore báo thành công: Kiểm tra an toàn `if (isAdded && !isStateSaved)` [Dòng 205] -> Hiển thị Toast chúc mừng và gọi `findNavController().popBackStack()` [Dòng 207] để trở về màn hình Lịch tập an toàn, không làm văng app.
+
+--------------------------------------------------------------------------------
+7. MÀN HÌNH HỒ SƠ CÁ NHÂN (PROFILE FRAGMENT)
+--------------------------------------------------------------------------------
+- Giao diện XML: `fragment_profile.xml`
+- File code xử lý: `ProfileFragment.kt`
+
+  [Hành động 1] Mở tab Hồ sơ:
+    - Hàm chạy: `ProfileFragment.onViewCreated(...)` [Dòng 37 - 49]
+    - Gọi `loadUserProfile()` [Dòng 51 - 85] -> Tải `UserProfile` từ Firestore hiển thị Họ tên, Tuổi, Chiều cao, Cân nặng, chỉ số BMI và phân loại thể trạng.
+
+  [Hành động 2] Bấm nút "CHỈNH SỬA HỒ SƠ" (`btnEditProfile`):
+    - Layout: `fragment_profile.xml:L84-93`
+    - Sự kiện: `binding.btnEditProfile.setOnClickListener` [Dòng 44 - 46]
+    - Hàm chạy: `findNavController().navigate(R.id.action_profile_to_user_info, bundleOf("isEditMode" to true))` [Dòng 45] -> Mở màn hình `UserInfoFragment.kt` ở chế độ chỉnh sửa.
+
+  [Hành động 3] Bấm nút "ĐẮNG XUẤT" (`btnLogout`):
+    - Layout: `fragment_profile.xml:L95-104`
+    - Sự kiện: `binding.btnLogout.setOnClickListener` [Dòng 47 - 49]
+    - Hàm chạy:
+      1. `NotificationHelper.cancelReminder(requireContext())` [Dòng 48] -> Hủy lịch báo thức nhắc tập.
+      2. `auth.signOut()` [Dòng 49] -> Đăng xuất khỏi Firebase Auth.
+      3. `findNavController().navigate(R.id.action_profile_to_login)` -> Quay về màn hình Đăng nhập.
+
+--------------------------------------------------------------------------------
+8. MÀN HÌNH ÉP BUỘC CẬP NHẬT BMI 7 NGÀY (UPDATE BMI FRAGMENT)
+--------------------------------------------------------------------------------
+- Giao diện XML: `fragment_update_bmi.xml`
+- File code xử lý: `UpdateBmiFragment.kt`
+
+  [Hành động] Người dùng bị khóa ứng dụng sau 7 ngày, nhập Chiều cao, Cân nặng mới và bấm "CẬP NHẬT CHỈ SỐ" (`btnUpdateBmi`).
+    - Sự kiện: `binding.btnUpdateBmi.setOnClickListener` [Dòng 42 - 44]
+    - Hàm chạy theo thứ tự:
+      1. `performBmiUpdate()` [Dòng 46 - 110].
+      2. Kiểm tra dữ liệu nhập `heightStr`, `weightStr` [Dòng 50 - 64].
+      3. Tính chỉ số BMI mới: `bmi = weight / ((height / 100) ^ 2)` [Dòng 68 - 70].
+      4. Cập nhật thông số vào Firestore: `db.collection("users").document(uid).update(...)` [Dòng 82 - 89], đổi `lastBmiUpdatedTime = System.currentTimeMillis()`.
+      5. Khi thành công -> Mở khóa và quay lại màn hình Lịch tập: `findNavController().popBackStack()` [Dòng 92].
+
+
+================================================================================
+PHẦN 2: BẢNG TỔNG HỢP KIẾN TRÚC & CÁC THÀNH PHẦN ANDROID CỐT LÕI
+================================================================================
+
+1. BẢNG THÀNH PHẦN ANDROID (COMPONENTS MATRIX)
+
++----------------------------+-----------------------------------+-----------------------------------+---------------------------------------------------+
+| Thành phần Android         | File Code (.kt)                   | File Giao diện XML (.xml)         | Vai trò & Nhiệm vụ trong Hệ thống                 |
++----------------------------+-----------------------------------+-----------------------------------+---------------------------------------------------+
+| Application Class          | FitnessApplication.kt             | AndroidManifest.xml:L30           | Khởi tạo Firebase, nạp DB master & Notification   |
+| Activity (Single)          | MainActivity.kt                   | activity_main.xml                 | Activity duy nhất chứa NavHostView & BottomNav    |
+| Navigation Graph           | nav_graph.xml                     | -                                 | Định nghĩa sơ đồ điều hướng giữa 9 màn hình       |
+| Fragment 1: Đăng nhập      | LoginFragment.kt                  | fragment_login.xml                | Xử lý đăng nhập Firebase Auth & kiểm tra hạn BMI  |
+| Fragment 2: Đăng ký        | RegisterFragment.kt               | fragment_register.xml             | Xử lý tạo tài khoản mới Firebase Auth             |
+| Fragment 3: Nhập Hồ sơ     | UserInfoFragment.kt               | fragment_user_info.xml            | Tính BMI ban đầu & Batch-write 30 ngày tập        |
+| Fragment 4: Lịch tập       | WorkoutCalendarFragment.kt        | fragment_workout_calendar.xml     | Quản lý lịch 30 ngày, 6 màu thẻ & Pop-up Video    |
+| Fragment 5: Hồ sơ          | ProfileFragment.kt                | fragment_profile.xml              | Hiển thị chỉ số cá nhân, Chỉnh sửa hồ sơ & Logout |
+| Fragment 6: Cập nhật BMI   | UpdateBmiFragment.kt              | fragment_update_bmi.xml           | Khóa ứng dụng ép cập nhật chỉ số mỗi 7 ngày       |
+| Fragment 7: Camera AI      | CameraFragment.kt                 | fragment_camera.xml               | Quản lý CameraX & Bộ đếm AI đếm lần / tính giây   |
+| Fragment 8: Quyền Camera   | PermissionsFragment.kt            | fragment_permissions.xml          | Kiểm tra và xin quyền CAMERA hệ thống             |
+| BroadcastReceiver 1        | WorkoutReminderReceiver.kt        | AndroidManifest.xml:L56-59        | Nhận tín hiệu AlarmManager & phát thông báo       |
+| BroadcastReceiver 2        | BootReceiver.kt                   | AndroidManifest.xml:L61-68        | Tự đăng ký lại lịch báo thức khi máy khởi động    |
+| Helper 1: Báo thức         | NotificationHelper.kt             | -                                 | Đặt lịch AlarmManager setAndAllowWhileIdle        |
+| Helper 2: AI Vision Engine | PoseLandmarkerHelper.kt           | -                                 | Chạy MediaPipe PoseLandmarker 33 khớp 3D          |
+| Custom View: Khung xương   | OverlayView.kt                    | -                                 | Vẽ 33 điểm vàng & đường nối xanh ngọc real-time   |
+| Engine: Phân tích Động tác | ExerciseAnalyzer.kt               | -                                 | Lượng giác góc khớp & State Machine đếm bài tập   |
++----------------------------+-----------------------------------+-----------------------------------+---------------------------------------------------+
+
+2. KIẾN TRÚC DỮ LIỆU & STORAGE (FIRESTORE & LOCAL ASSETS)
+   - Firestore Collection "exercises": Chứa thông tin cố định của 7 bài tập.
+   - Firestore Collection "users/{uid}": Chứa hồ sơ `UserProfile`.
+   - Firestore Sub-collection "users/{uid}/workouts/day_{1..30}": Chứa lộ trình 30 ngày `WorkoutDay`.
+   - Local Assets `app/src/main/assets/videos/`: Chứa 7 file mp4 video hướng dẫn phát offline tốc độ 0.0s qua bộ đệm `cacheDir`.
+
+================================================================================
+                               HẾT TÀI LIỆU
+================================================================================

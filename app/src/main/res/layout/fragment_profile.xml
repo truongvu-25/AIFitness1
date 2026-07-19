@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#F8F9FA"
-    android:padding="24dp">
+    android:padding="20dp">
 
     <ScrollView
         android:layout_width="match_parent"
@@ -18,13 +18,13 @@
             android:orientation="vertical"
             android:gravity="center_horizontal">
 
-            <!-- Profile Avatar Placeholder -->
+            <!-- Profile Avatar -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardAvatar"
-                android:layout_width="96dp"
-                android:layout_height="96dp"
-                android:layout_marginTop="32dp"
-                app:cardCornerRadius="48dp"
+                android:layout_width="88dp"
+                android:layout_height="88dp"
+                android:layout_marginTop="16dp"
+                app:cardCornerRadius="44dp"
                 app:cardBackgroundColor="#E0F2F1"
                 app:cardElevation="0dp">
 
@@ -43,10 +43,10 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Họ và Tên"
-                android:textSize="22sp"
+                android:textSize="20sp"
                 android:textStyle="bold"
                 android:textColor="#212529"
-                android:layout_marginTop="16dp"/>
+                android:layout_marginTop="12dp"/>
 
             <TextView
                 android:id="@+id/tvProfileEmail"
@@ -55,37 +55,38 @@
                 android:text="email@example.com"
                 android:textSize="14sp"
                 android:textColor="#6C757D"
-                android:layout_marginTop="4dp"/>
+                android:layout_marginTop="2dp"/>
 
+            <!-- BMI Info Card -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
+                android:layout_marginTop="16dp"
                 app:cardCornerRadius="16dp"
-                app:cardElevation="3dp"
+                app:cardElevation="2dp"
                 app:cardUseCompatPadding="true">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="20dp">
+                    android:padding="16dp">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Chỉ số cơ thể (BMI)"
-                        android:textSize="16sp"
+                        android:textSize="15sp"
                         android:textStyle="bold"
                         android:textColor="#212529"
-                        android:layout_marginBottom="16dp"/>
+                        android:layout_marginBottom="12dp"/>
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
                         android:weightSum="3"
-                        android:layout_marginBottom="16dp">
+                        android:layout_marginBottom="12dp">
 
                         <LinearLayout
                             android:layout_width="0dp"
@@ -106,10 +107,10 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="--"
-                                android:textSize="18sp"
+                                android:textSize="16sp"
                                 android:textStyle="bold"
                                 android:textColor="#007F8B"
-                                android:layout_marginTop="4dp"/>
+                                android:layout_marginTop="2dp"/>
                         </LinearLayout>
 
                         <LinearLayout
@@ -131,10 +132,10 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="-- cm"
-                                android:textSize="18sp"
+                                android:textSize="16sp"
                                 android:textStyle="bold"
                                 android:textColor="#007F8B"
-                                android:layout_marginTop="4dp"/>
+                                android:layout_marginTop="2dp"/>
                         </LinearLayout>
 
                         <LinearLayout
@@ -156,10 +157,10 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="-- kg"
-                                android:textSize="18sp"
+                                android:textSize="16sp"
                                 android:textStyle="bold"
                                 android:textColor="#007F8B"
-                                android:layout_marginTop="4dp"/>
+                                android:layout_marginTop="2dp"/>
                         </LinearLayout>
                     </LinearLayout>
 
@@ -167,7 +168,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="1dp"
                         android:background="#E0E0E0"
-                        android:layout_marginVertical="12dp"/>
+                        android:layout_marginVertical="8dp"/>
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -194,10 +195,10 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="--"
-                                android:textSize="24sp"
+                                android:textSize="22sp"
                                 android:textStyle="bold"
                                 android:textColor="#007F8B"
-                                android:layout_marginTop="4dp"/>
+                                android:layout_marginTop="2dp"/>
                         </LinearLayout>
 
                         <LinearLayout
@@ -219,41 +220,205 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="--"
-                                android:textSize="16sp"
+                                android:textSize="14sp"
                                 android:textStyle="bold"
                                 android:textColor="#FFFFFF"
                                 android:background="#007F8B"
-                                android:paddingHorizontal="12dp"
-                                android:paddingVertical="6dp"
-                                android:layout_marginTop="4dp"/>
+                                android:paddingHorizontal="10dp"
+                                android:paddingVertical="4dp"
+                                android:layout_marginTop="2dp"/>
                         </LinearLayout>
                     </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Foreground Service Step Counter & Calorie Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardStepCounter"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="3dp"
+                app:strokeColor="#007F8B"
+                app:strokeWidth="1dp"
+                app:cardUseCompatPadding="true">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="12dp">
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@android:drawable/ic_menu_directions"
+                            android:tint="#007F8B"
+                            android:layout_marginEnd="8dp"/>
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Đếm Bước Chân &amp; Calo (Foreground Service)"
+                            android:textSize="14sp"
+                            android:textStyle="bold"
+                            android:textColor="#007F8B"/>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:weightSum="2"
+                        android:layout_marginBottom="12dp">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:gravity="center"
+                            android:background="#E8F5E9"
+                            android:padding="10dp">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Số bước đi hôm nay"
+                                android:textSize="11sp"
+                                android:textColor="#2E7D32"
+                                android:textStyle="bold"/>
+
+                            <TextView
+                                android:id="@+id/tvProfileSteps"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="0 bước"
+                                android:textSize="18sp"
+                                android:textStyle="bold"
+                                android:textColor="#1B5E20"
+                                android:layout_marginTop="2dp"/>
+                        </LinearLayout>
+
+                        <Space
+                            android:layout_width="8dp"
+                            android:layout_height="wrap_content"/>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:gravity="center"
+                            android:background="#FFF3E0"
+                            android:padding="10dp">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Calo tiêu thụ"
+                                android:textSize="11sp"
+                                android:textColor="#E65100"
+                                android:textStyle="bold"/>
+
+                            <TextView
+                                android:id="@+id/tvProfileCalories"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="0.0 kcal"
+                                android:textSize="18sp"
+                                android:textStyle="bold"
+                                android:textColor="#BF360C"
+                                android:layout_marginTop="2dp"/>
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <Button
+                        android:id="@+id/btnSimulateSteps"
+                        android:layout_width="match_parent"
+                        android:layout_height="44dp"
+                        android:text="KÍCH HOẠT / ĐẾM THỬ BƯỚC CHÂN (+50)"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:textColor="#FFFFFF"
+                        android:backgroundTint="#007F8B"
+                        app:cornerRadius="8dp"
+                        android:layout_marginBottom="8dp"/>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Personalized Health Advice Card Based on BMI & Calorie Burn -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardBmiAdvice"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp"
+                app:cardBackgroundColor="#FFF3E0"
+                app:strokeColor="#FF9800"
+                app:strokeWidth="1.5dp"
+                app:cardUseCompatPadding="true">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:id="@+id/tvBmiAdviceTitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="💡 ĐÁNH GIÁ &amp; LỜI KHUYÊN VẬN ĐỘNG AI"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:textColor="#E65100"
+                        android:layout_marginBottom="6dp"/>
+
+                    <TextView
+                        android:id="@+id/tvBmiAdviceMessage"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Đang phân tích dữ liệu vận động hôm nay..."
+                        android:textSize="13sp"
+                        android:lineSpacingExtra="3dp"
+                        android:textColor="#424242"/>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
             <Button
                 android:id="@+id/btnEditProfile"
                 android:layout_width="match_parent"
-                android:layout_height="52dp"
+                android:layout_height="48dp"
                 android:text="CHỈNH SỬA HỒ SƠ"
-                android:textSize="16sp"
+                android:textSize="15sp"
                 android:textStyle="bold"
                 android:textColor="#FFFFFF"
                 android:backgroundTint="#007F8B"
                 app:cornerRadius="8dp"
-                android:layout_marginTop="16dp"/>
+                android:layout_marginTop="12dp"/>
 
             <Button
                 android:id="@+id/btnLogout"
                 android:layout_width="match_parent"
-                android:layout_height="52dp"
+                android:layout_height="48dp"
                 android:text="ĐĂNG XUẤT"
-                android:textSize="16sp"
+                android:textSize="15sp"
                 android:textStyle="bold"
                 android:textColor="#FFFFFF"
                 android:backgroundTint="#B00020"
                 app:cornerRadius="8dp"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="10dp"
                 android:layout_marginBottom="40dp"/>
 
         </LinearLayout>
