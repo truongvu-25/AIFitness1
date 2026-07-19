@@ -37,49 +37,63 @@ class FitnessApplication : Application() {
     private fun initializeExerciseDatabase() {
         val db = FirebaseFirestore.getInstance()
         
-        // Master static exercise details (lightweight w3schools videos)
+        // Master static exercise details (Plank & Side Plank marked as isTimed = true with unit = "giây")
         val exercises = listOf(
             ExerciseDetails(
                 id = "pushup",
                 name = "Hít Đất (Push-up)",
                 description = "Giữ thẳng lưng, hạ ngực sát sàn rồi đẩy lên.",
-                videoUrl = "https://raw.githubusercontent.com/samarthify/AI-Fitness-Trainer/master/pushup.mp4"
+                videoUrl = "asset:///videos/push_up.mp4",
+                isTimed = false,
+                unit = "lần"
             ),
             ExerciseDetails(
                 id = "squat",
                 name = "Ngồi Xổm (Squat)",
                 description = "Gập gối hạ hông xuống sâu, giữ lưng thẳng.",
-                videoUrl = "https://raw.githubusercontent.com/samarthify/AI-Fitness-Trainer/master/squats.mp4"
+                videoUrl = "asset:///videos/squat.mp4",
+                isTimed = false,
+                unit = "lần"
             ),
             ExerciseDetails(
                 id = "jumpingjack",
                 name = "Nhảy Dang Tay Chân (Jumping Jack)",
                 description = "Bật nhảy dang rộng chân đồng thời vung hai tay chạm nhau ở trên đầu.",
-                videoUrl = "https://raw.githubusercontent.com/PegHeads-Inc/PegHeads-Tutorial-1/main/jumpingjack.mp4"
+                videoUrl = "asset:///videos/jumping_jack.mp4",
+                isTimed = false,
+                unit = "lần"
             ),
             ExerciseDetails(
                 id = "situp",
                 name = "Gập Bụng (Sit-up)",
                 description = "Nằm ngửa gối co, dùng cơ bụng kéo thân trên ngồi dậy hoàn toàn.",
-                videoUrl = "https://raw.githubusercontent.com/JasonYapzx/sportform/main/situp.mp4"
+                videoUrl = "asset:///videos/sit_up.mp4",
+                isTimed = false,
+                unit = "lần"
             ),
             ExerciseDetails(
                 id = "plank",
                 name = "Giữ Thân (Plank)",
                 description = "Tì khuỷu tay xuống sàn, giữ thẳng toàn thân song song với sàn.",
-                videoUrl = "https://www.w3schools.com/html/mov_bbb.mp4"
+                videoUrl = "asset:///videos/plank.mp4",
+                isTimed = true,
+                unit = "giây"
             ),
             ExerciseDetails(
                 id = "sideplank",
                 name = "Plank Nghiêng (Side Plank)",
                 description = "Nằm nghiêng, tì một khuỷu tay nâng hông lên cao giữ cơ thể thẳng.",
-                videoUrl = "https://www.w3schools.com/html/movie.mp4"
+                videoUrl = "asset:///videos/side_plank.mp4",
+                isTimed = true,
+                unit = "giây"
             ),
             ExerciseDetails(
                 id = "splitsquat",
                 name = "Ngồi Xổm Một Chân (Split Squat)",
                 description = "Đứng chân trước chân sau rộng, hạ đầu gối chân sau xuống vuông góc.",
-                videoUrl = "https://www.w3schools.com/html/movie.mp4"
+                videoUrl = "asset:///videos/split_squat.mp4",
+                isTimed = false,
+                unit = "lần"
             )
         )
 

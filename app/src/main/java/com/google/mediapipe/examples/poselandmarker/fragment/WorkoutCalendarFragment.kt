@@ -2,6 +2,7 @@ package com.google.mediapipe.examples.poselandmarker.fragment
 
 import android.Manifest
 import android.app.Dialog
+import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.net.Uri
@@ -31,6 +32,11 @@ import com.google.mediapipe.examples.poselandmarker.UserProfile
 import com.google.mediapipe.examples.poselandmarker.UserExercise
 import com.google.mediapipe.examples.poselandmarker.WorkoutDay
 import com.google.mediapipe.examples.poselandmarker.databinding.FragmentWorkoutCalendarBinding
+import java.io.File
+import java.io.FileOutputStream
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class WorkoutCalendarFragment : Fragment() {
 
@@ -45,10 +51,16 @@ class WorkoutCalendarFragment : Fragment() {
     private lateinit var exercisesAdapter: ExercisesAdapter
     
     private var selectedDayIndex: Int = 1
+    private var currentDayIndex: Int = 1
+    private var createdTime: Long = System.currentTimeMillis()
+    private var userBmiType: String = "CAN DOI"
+
     private var pendingExercise: Exercise? = null
 
-    // Local memory cache for static exercise details (loaded once on startup)
+    // Memory cache for static exercise details
     private val exercisesCache = HashMap<String, ExerciseDetails>()
+    // Memory list for 30 days of workout data
+    private val workoutDaysMap = HashMap<Int, WorkoutDay>()
 
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -89,8 +101,7 @@ class WorkoutCalendarFragment : Fragment() {
     private fun setupRecyclerViews() {
         daysAdapter = WorkoutDaysAdapter(emptyList(), 0) { dayNum ->
             selectedDayIndex = dayNum
-            binding.tvSelectedDay.text = "Bài tập Ngày $dayNum"
-            loadExercisesForDay(dayNum)
+            onDaySelected(dayNum)
         }
         binding.rvDays.adapter = daysAdapter
 
@@ -106,7 +117,6 @@ class WorkoutCalendarFragment : Fragment() {
         binding.rvExercises.adapter = exercisesAdapter
     }
 
-    // Loads the global 7 exercises list into memory cache, then proceeds to build the schedule
     private fun loadMasterExercisesAndInit() {
         binding.calendarProgress.visibility = View.VISIBLE
         db.collection("exercises").get()
@@ -116,13 +126,11 @@ class WorkoutCalendarFragment : Fragment() {
                     val details = document.toObject(ExerciseDetails::class.java)
                     exercisesCache[details.id] = details
                 }
-                // Once caching is complete, load the user's customized schedule
                 loadUserProfileAndPlan()
             }
             .addOnFailureListener { e ->
                 binding.calendarProgress.visibility = View.GONE
                 Toast.makeText(context, "Lỗi tải kho bài tập: ${e.message}", Toast.LENGTH_SHORT).show()
-                // Default fallback load
                 loadUserProfileAndPlan()
             }
     }
@@ -136,7 +144,6 @@ class WorkoutCalendarFragment : Fragment() {
                 if (document.exists()) {
                     val profile = document.toObject(UserProfile::class.java)
                     if (profile != null) {
-                        // 1. Check weekly forced BMI update status (7 days)
                         val lastBmiUpdated = profile.lastBmiUpdatedTime
                         val diffMs = System.currentTimeMillis() - lastBmiUpdated
                         val sevenDaysMs = 7L * 24 * 60 * 60 * 1000
@@ -146,28 +153,22 @@ class WorkoutCalendarFragment : Fragment() {
                             return@addOnSuccessListener
                         }
 
-                        // 2. Load plan display
-                        val planTypeLabel = when (profile.bmiType) {
+                        userBmiType = profile.bmiType
+                        createdTime = profile.createdTime
+
+                        val planTypeLabel = when (userBmiType) {
                             "GAY" -> "Lộ trình: Tăng Cân & Tăng Cơ (Gầy)"
                             "CAN DOI" -> "Lộ trình: Săn Chắc Thể Hình (Cân đối)"
                             else -> "Lộ trình: Đốt Mỡ & Giảm Cân (Thừa cân)"
                         }
                         binding.tvPlanType.text = planTypeLabel
 
-                        val diffPlanMs = System.currentTimeMillis() - profile.createdTime
-                        val currentDayIndex = (diffPlanMs / (24 * 60 * 60 * 1000)).toInt() + 1
-                        val defaultSelectedDay = currentDayIndex.coerceIn(1, 30)
-                        selectedDayIndex = defaultSelectedDay
-                        
-                        val dayList = (1..30).toList()
-                        daysAdapter.updateData(dayList, defaultSelectedDay - 1)
-                        
-                        binding.rvDays.post {
-                            binding.rvDays.scrollToPosition((defaultSelectedDay - 1).coerceAtLeast(0))
-                        }
+                        val diffPlanMs = System.currentTimeMillis() - createdTime
+                        val calculatedDayIdx = (diffPlanMs / (24 * 60 * 60 * 1000)).toInt() + 1
+                        currentDayIndex = calculatedDayIdx.coerceIn(1, 30)
+                        selectedDayIndex = currentDayIndex
 
-                        binding.tvSelectedDay.text = "Bài tập Ngày $selectedDayIndex"
-                        loadExercisesForDay(selectedDayIndex)
+                        loadAll30DaysWorkoutData()
                     }
                 } else {
                     binding.calendarProgress.visibility = View.GONE
@@ -180,39 +181,108 @@ class WorkoutCalendarFragment : Fragment() {
             }
     }
 
-    private fun loadExercisesForDay(dayNum: Int) {
+    private fun loadAll30DaysWorkoutData() {
         if (uid.isEmpty()) return
-        binding.calendarProgress.visibility = View.VISIBLE
         
         db.collection("users").document(uid)
-            .collection("workouts").document("day_$dayNum").get()
-            .addOnSuccessListener { document ->
+            .collection("workouts").get()
+            .addOnSuccessListener { snapshot ->
                 binding.calendarProgress.visibility = View.GONE
-                if (document.exists()) {
-                    val workoutDay = document.toObject(WorkoutDay::class.java)
-                    val userExercises = workoutDay?.exercises ?: emptyList()
-                    
-                    // Map relational UserExercise to Display Helper Exercise using the master cache
-                    val displayExercises = userExercises.map { userEx ->
-                        val details = exercisesCache[userEx.exerciseId]
-                        Exercise(
-                            id = userEx.exerciseId,
-                            name = details?.name ?: userEx.exerciseId,
-                            targetCount = userEx.targetCount,
-                            status = userEx.status,
-                            description = details?.description ?: "",
-                            videoUrl = details?.videoUrl ?: ""
-                        )
-                    }
-                    exercisesAdapter.updateData(displayExercises)
-                } else {
-                    exercisesAdapter.updateData(emptyList())
+                workoutDaysMap.clear()
+                for (doc in snapshot) {
+                    val workoutDay = doc.toObject(WorkoutDay::class.java)
+                    workoutDaysMap[workoutDay.dayIndex] = workoutDay
                 }
+
+                // Build DayItemUI list for adapter
+                val dayUiList = ArrayList<DayItemUI>()
+                val dateFormat = SimpleDateFormat("dd/MM", Locale.getDefault())
+
+                for (dayNum in 1..30) {
+                    val dayMs = createdTime + (dayNum - 1) * 24L * 60 * 60 * 1000
+                    val dateFormatted = dateFormat.format(Date(dayMs))
+                    
+                    val workoutDay = workoutDaysMap[dayNum]
+                    val isRestDay = workoutDay?.isRestDay ?: isRestDayForBmi(userBmiType, dayNum)
+                    val exercises = workoutDay?.exercises ?: emptyList()
+                    val completedCount = exercises.count { it.status == 1 }
+
+                    dayUiList.add(
+                        DayItemUI(
+                            dayIndex = dayNum,
+                            dateFormatted = dateFormatted,
+                            isRestDay = isRestDay,
+                            isCurrentDay = (dayNum == currentDayIndex),
+                            isPastDay = (dayNum < currentDayIndex),
+                            isFutureDay = (dayNum > currentDayIndex),
+                            totalExercises = exercises.size,
+                            completedExercises = completedCount
+                        )
+                    )
+                }
+
+                daysAdapter.updateData(dayUiList, selectedDayIndex - 1)
+
+                binding.rvDays.post {
+                    binding.rvDays.scrollToPosition((selectedDayIndex - 1).coerceAtLeast(0))
+                }
+
+                onDaySelected(selectedDayIndex)
             }
             .addOnFailureListener { e ->
                 binding.calendarProgress.visibility = View.GONE
-                Toast.makeText(context, "Lỗi tải bài tập: ${e.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Lỗi tải dữ liệu 30 ngày: ${e.message}", Toast.LENGTH_SHORT).show()
             }
+    }
+
+    private fun onDaySelected(dayNum: Int) {
+        val workoutDay = workoutDaysMap[dayNum]
+        val isRestDay = workoutDay?.isRestDay ?: isRestDayForBmi(userBmiType, dayNum)
+        val exercises = workoutDay?.exercises ?: emptyList()
+        val completedCount = exercises.count { it.status == 1 }
+
+        val dayMs = createdTime + (dayNum - 1) * 24L * 60 * 60 * 1000
+        val dateFormatted = SimpleDateFormat("dd/MM", Locale.getDefault()).format(Date(dayMs))
+
+        binding.tvSelectedDay.text = "Bài tập Ngày $dayNum ($dateFormatted)"
+
+        // Update notice banner logic
+        if (isRestDay) {
+            binding.cardStatusNotice.visibility = View.VISIBLE
+            binding.cardStatusNotice.setCardBackgroundColor(Color.parseColor("#FFF8E1"))
+            binding.cardStatusNotice.strokeColor = Color.parseColor("#FFB300")
+            binding.ivNoticeIcon.setImageResource(android.R.drawable.ic_dialog_info)
+            binding.tvNoticeMessage.text = "Hôm nay là Ngày Nghỉ Ngơi ($dateFormatted)! Hãy thả lỏng cơ bắp, ăn uống đủ chất và ngủ đủ 8 tiếng để phục hồi."
+            binding.tvNoticeMessage.setTextColor(Color.parseColor("#F57F17"))
+            
+            exercisesAdapter.updateData(emptyList())
+        } else {
+            if (dayNum < currentDayIndex && completedCount == 0) {
+                binding.cardStatusNotice.visibility = View.VISIBLE
+                binding.cardStatusNotice.setCardBackgroundColor(Color.parseColor("#FFEBEE"))
+                binding.cardStatusNotice.strokeColor = Color.parseColor("#EF5350")
+                binding.ivNoticeIcon.setImageResource(android.R.drawable.ic_dialog_alert)
+                binding.tvNoticeMessage.text = "Bạn đã bỏ qua lịch tập Ngày $dayNum ($dateFormatted)! Hãy cố gắng duy trì thói quen tập luyện đều đặn."
+                binding.tvNoticeMessage.setTextColor(Color.parseColor("#C62828"))
+            } else {
+                binding.cardStatusNotice.visibility = View.GONE
+            }
+
+            val displayExercises = exercises.map { userEx ->
+                val details = exercisesCache[userEx.exerciseId]
+                Exercise(
+                    id = userEx.exerciseId,
+                    name = details?.name ?: userEx.exerciseId,
+                    targetCount = userEx.targetCount,
+                    status = userEx.status,
+                    description = details?.description ?: "",
+                    videoUrl = details?.videoUrl ?: "",
+                    isTimed = details?.isTimed ?: false,
+                    unit = details?.unit ?: "lần"
+                )
+            }
+            exercisesAdapter.updateData(displayExercises)
+        }
     }
 
     private fun showResetPlanDialog() {
@@ -229,6 +299,14 @@ class WorkoutCalendarFragment : Fragment() {
             .show()
     }
 
+    private fun isRestDayForBmi(bmiType: String, dayIndex: Int): Boolean {
+        return when (bmiType) {
+            "GAY" -> dayIndex in listOf(4, 7, 11, 14, 18, 21, 25, 28)
+            "CAN DOI" -> dayIndex in listOf(4, 8, 12, 16, 20, 24, 28)
+            else -> dayIndex in listOf(5, 10, 15, 20, 25, 30) // THUA CAN
+        }
+    }
+
     private fun resetWorkoutPlan() {
         if (uid.isEmpty()) return
         binding.calendarProgress.visibility = View.VISIBLE
@@ -239,10 +317,10 @@ class WorkoutCalendarFragment : Fragment() {
                     val profile = document.toObject(UserProfile::class.java)
                     if (profile != null) {
                         val batch = db.batch()
-                        // Regenerate 30 days exercises with relational UserExercise objects
                         for (day in 1..30) {
-                            val exercises = getExercisesForBmiAndDay(profile.bmiType, day)
-                            val workoutDay = WorkoutDay(dayIndex = day, exercises = exercises)
+                            val isRestDay = isRestDayForBmi(profile.bmiType, day)
+                            val exercises = if (isRestDay) emptyList() else getExercisesForBmiAndDay(profile.bmiType, day)
+                            val workoutDay = WorkoutDay(dayIndex = day, exercises = exercises, isRestDay = isRestDay)
                             val docRef = db.collection("users").document(uid)
                                 .collection("workouts").document("day_$day")
                             batch.set(docRef, workoutDay)
@@ -255,7 +333,7 @@ class WorkoutCalendarFragment : Fragment() {
                                     .addOnSuccessListener {
                                         binding.calendarProgress.visibility = View.GONE
                                         Toast.makeText(context, "Đã tạo lộ trình 30 ngày tập luyện mới!", Toast.LENGTH_SHORT).show()
-                                        loadUserProfileAndPlan() // Refresh UI
+                                        loadUserProfileAndPlan()
                                     }
                             }
                             .addOnFailureListener { e ->
@@ -285,13 +363,13 @@ class WorkoutCalendarFragment : Fragment() {
                     listOf(
                         UserExercise("pushup", (10 * weekMultiplier).toInt()),
                         UserExercise("squat", (12 * weekMultiplier).toInt()),
-                        UserExercise("plank", (2 * weekMultiplier).toInt())
+                        UserExercise("plank", (30 * weekMultiplier).toInt())
                     )
                 } else {
                     listOf(
                         UserExercise("splitsquat", (10 * weekMultiplier).toInt()),
                         UserExercise("situp", (12 * weekMultiplier).toInt()),
-                        UserExercise("sideplank", (2 * weekMultiplier).toInt())
+                        UserExercise("sideplank", (30 * weekMultiplier).toInt())
                     )
                 }
             }
@@ -301,13 +379,13 @@ class WorkoutCalendarFragment : Fragment() {
                         UserExercise("pushup", (15 * weekMultiplier).toInt()),
                         UserExercise("squat", (15 * weekMultiplier).toInt()),
                         UserExercise("jumpingjack", (25 * weekMultiplier).toInt()),
-                        UserExercise("plank", (3 * weekMultiplier).toInt())
+                        UserExercise("plank", (40 * weekMultiplier).toInt())
                     )
                 } else {
                     listOf(
                         UserExercise("splitsquat", (12 * weekMultiplier).toInt()),
                         UserExercise("situp", (15 * weekMultiplier).toInt()),
-                        UserExercise("sideplank", (3 * weekMultiplier).toInt()),
+                        UserExercise("sideplank", (40 * weekMultiplier).toInt()),
                         UserExercise("jumpingjack", (25 * weekMultiplier).toInt())
                     )
                 }
@@ -318,17 +396,39 @@ class WorkoutCalendarFragment : Fragment() {
                         UserExercise("jumpingjack", (30 * weekMultiplier).toInt()),
                         UserExercise("squat", (20 * weekMultiplier).toInt()),
                         UserExercise("situp", (20 * weekMultiplier).toInt()),
-                        UserExercise("plank", (3 * weekMultiplier).toInt())
+                        UserExercise("plank", (45 * weekMultiplier).toInt())
                     )
                 } else {
                     listOf(
                         UserExercise("jumpingjack", (30 * weekMultiplier).toInt()),
                         UserExercise("splitsquat", (15 * weekMultiplier).toInt()),
-                        UserExercise("sideplank", (3 * weekMultiplier).toInt()),
+                        UserExercise("sideplank", (45 * weekMultiplier).toInt()),
                         UserExercise("pushup", (12 * weekMultiplier).toInt())
                     )
                 }
             }
+        }
+    }
+
+    private fun getMediaUri(context: Context, videoUrl: String): Uri {
+        return if (videoUrl.startsWith("asset:///")) {
+            val assetPath = videoUrl.substringAfter("asset:///")
+            val fileName = assetPath.substringAfterLast("/")
+            val cacheFile = File(context.cacheDir, fileName)
+            if (!cacheFile.exists() || cacheFile.length() == 0L) {
+                try {
+                    context.assets.open(assetPath).use { inputStream ->
+                        FileOutputStream(cacheFile).use { outputStream ->
+                            inputStream.copyTo(outputStream)
+                        }
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+            Uri.fromFile(cacheFile)
+        } else {
+            Uri.parse(videoUrl)
         }
     }
 
@@ -360,7 +460,7 @@ class WorkoutCalendarFragment : Fragment() {
         tvTitle.text = "Hướng dẫn: ${exercise.name}"
 
         try {
-            val videoUri = Uri.parse(url)
+            val videoUri = getMediaUri(requireContext(), url)
             videoView.setVideoURI(videoUri)
             videoView.setOnPreparedListener { mp ->
                 progressBar.visibility = View.GONE
@@ -416,14 +516,26 @@ class WorkoutCalendarFragment : Fragment() {
         _binding = null
     }
 
-    // --- HORIZONTAL RECYCLERVIEW ADAPTER FOR DAYS ---
+    // --- UI Data Holder for Horizontal Day Card ---
+    data class DayItemUI(
+        val dayIndex: Int,
+        val dateFormatted: String,
+        val isRestDay: Boolean,
+        val isCurrentDay: Boolean,
+        val isPastDay: Boolean,
+        val isFutureDay: Boolean,
+        val totalExercises: Int,
+        val completedExercises: Int
+    )
+
+    // --- HORIZONTAL RECYCLERVIEW ADAPTER FOR 6-COLOR STATUS DAYS ---
     private class WorkoutDaysAdapter(
-        private var days: List<Int>,
+        private var days: List<DayItemUI>,
         private var selectedPosition: Int,
         private val onDaySelected: (Int) -> Unit
     ) : RecyclerView.Adapter<WorkoutDaysAdapter.DayViewHolder>() {
 
-        fun updateData(newDays: List<Int>, defaultSelectedIdx: Int) {
+        fun updateData(newDays: List<DayItemUI>, defaultSelectedIdx: Int) {
             this.days = newDays
             this.selectedPosition = defaultSelectedIdx
             notifyDataSetChanged()
@@ -436,8 +548,9 @@ class WorkoutCalendarFragment : Fragment() {
         }
 
         override fun onBindViewHolder(holder: DayViewHolder, position: Int) {
-            val dayNum = days[position]
-            holder.bind(dayNum, position == selectedPosition)
+            val item = days[position]
+            val isSelected = (position == selectedPosition)
+            holder.bind(item, isSelected)
             
             holder.itemView.setOnClickListener {
                 if (position != selectedPosition) {
@@ -445,7 +558,7 @@ class WorkoutCalendarFragment : Fragment() {
                     selectedPosition = position
                     notifyItemChanged(oldPos)
                     notifyItemChanged(selectedPosition)
-                    onDaySelected(dayNum)
+                    onDaySelected(item.dayIndex)
                 }
             }
         }
@@ -454,21 +567,83 @@ class WorkoutCalendarFragment : Fragment() {
 
         class DayViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
             private val cardDay: MaterialCardView = itemView.findViewById(R.id.cardDay)
+            private val tvCalendarDate: TextView = itemView.findViewById(R.id.tvCalendarDate)
             private val tvDayNum: TextView = itemView.findViewById(R.id.tvDayNum)
             private val tvDayLabel: TextView = itemView.findViewById(R.id.tvDayLabel)
 
-            fun bind(dayNum: Int, isSelected: Boolean) {
-                tvDayNum.text = String.format("%02d", dayNum)
+            fun bind(item: DayItemUI, isSelected: Boolean) {
+                tvCalendarDate.text = item.dateFormatted
+
+                // Apply 6 Color Status Rules
+                when {
+                    item.isCurrentDay -> { // 1. CURRENT DAY -> BLUE (#007F8B)
+                        cardDay.setCardBackgroundColor(Color.parseColor("#007F8B"))
+                        cardDay.strokeColor = Color.parseColor("#004D40")
+                        tvCalendarDate.setTextColor(Color.parseColor("#B2DFDB"))
+                        tvDayNum.text = String.format("%02d", item.dayIndex)
+                        tvDayNum.setTextColor(Color.WHITE)
+                        tvDayLabel.text = "Hôm nay"
+                        tvDayLabel.setTextColor(Color.parseColor("#E0F2F1"))
+                    }
+                    item.isRestDay -> { // 5. REST DAY -> GRAY (#F5F5F5)
+                        cardDay.setCardBackgroundColor(Color.parseColor("#F5F5F5"))
+                        cardDay.strokeColor = Color.parseColor("#E0E0E0")
+                        tvCalendarDate.setTextColor(Color.parseColor("#757575"))
+                        tvDayNum.text = "NGHỈ"
+                        tvDayNum.setTextColor(Color.parseColor("#616161"))
+                        tvDayLabel.text = "Thư giãn"
+                        tvDayLabel.setTextColor(Color.parseColor("#9E9E9E"))
+                    }
+                    item.isPastDay -> { // PAST WORKOUT DAYS
+                        when {
+                            item.completedExercises > 0 && item.completedExercises == item.totalExercises -> {
+                                // 2. PAST ALL COMPLETED -> LIGHT GREEN (#E8F5E9)
+                                cardDay.setCardBackgroundColor(Color.parseColor("#E8F5E9"))
+                                cardDay.strokeColor = Color.parseColor("#4CAF50")
+                                tvCalendarDate.setTextColor(Color.parseColor("#2E7D32"))
+                                tvDayNum.text = String.format("%02d", item.dayIndex)
+                                tvDayNum.setTextColor(Color.parseColor("#1B5E20"))
+                                tvDayLabel.text = "Hoàn thành"
+                                tvDayLabel.setTextColor(Color.parseColor("#388E3C"))
+                            }
+                            item.completedExercises > 0 -> {
+                                // 3. PAST PARTIALLY COMPLETED -> LIGHT YELLOW (#FFF9C4)
+                                cardDay.setCardBackgroundColor(Color.parseColor("#FFF9C4"))
+                                cardDay.strokeColor = Color.parseColor("#FBC02D")
+                                tvCalendarDate.setTextColor(Color.parseColor("#F57F17"))
+                                tvDayNum.text = String.format("%02d", item.dayIndex)
+                                tvDayNum.setTextColor(Color.parseColor("#E65100"))
+                                tvDayLabel.text = "Dở dang"
+                                tvDayLabel.setTextColor(Color.parseColor("#F57F17"))
+                            }
+                            else -> {
+                                // 4. PAST MISSED COMPLETELY -> LIGHT RED (#FFEBEE)
+                                cardDay.setCardBackgroundColor(Color.parseColor("#FFEBEE"))
+                                cardDay.strokeColor = Color.parseColor("#EF5350")
+                                tvCalendarDate.setTextColor(Color.parseColor("#C62828"))
+                                tvDayNum.text = String.format("%02d", item.dayIndex)
+                                tvDayNum.setTextColor(Color.parseColor("#B71C1C"))
+                                tvDayLabel.text = "Bỏ qua"
+                                tvDayLabel.setTextColor(Color.parseColor("#D32F2F"))
+                            }
+                        }
+                    }
+                    else -> { // 6. FUTURE WORKOUT DAYS -> WHITE (#FFFFFF)
+                        cardDay.setCardBackgroundColor(Color.WHITE)
+                        cardDay.strokeColor = Color.parseColor("#E0E0E0")
+                        tvCalendarDate.setTextColor(Color.parseColor("#757575"))
+                        tvDayNum.text = String.format("%02d", item.dayIndex)
+                        tvDayNum.setTextColor(Color.parseColor("#212529"))
+                        tvDayLabel.text = "Ngày"
+                        tvDayLabel.setTextColor(Color.parseColor("#9E9E9E"))
+                    }
+                }
+
+                // If selected, add thicker stroke border to highlight selection
                 if (isSelected) {
-                    cardDay.setCardBackgroundColor(Color.parseColor("#007F8B"))
-                    tvDayNum.setTextColor(Color.WHITE)
-                    tvDayLabel.setTextColor(Color.parseColor("#B2DFDB"))
-                    cardDay.strokeColor = Color.parseColor("#007F8B")
+                    cardDay.strokeWidth = 6 // thicker stroke
                 } else {
-                    cardDay.setCardBackgroundColor(Color.WHITE)
-                    tvDayNum.setTextColor(Color.parseColor("#007F8B"))
-                    tvDayLabel.setTextColor(Color.parseColor("#757575"))
-                    cardDay.strokeColor = Color.parseColor("#E0E0E0")
+                    cardDay.strokeWidth = 3
                 }
             }
         }
@@ -512,7 +687,7 @@ class WorkoutCalendarFragment : Fragment() {
                 onWatchVideoClicked: (Exercise) -> Unit
             ) {
                 tvName.text = exercise.name
-                tvTarget.text = "Mục tiêu: ${exercise.targetCount} lần"
+                tvTarget.text = "Mục tiêu: ${exercise.targetCount} ${exercise.unit}"
                 tvDesc.text = exercise.description
 
                 if (exercise.status == 1) { // Completed
