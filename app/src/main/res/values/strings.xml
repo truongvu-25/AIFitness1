@@ -31,8 +31,7 @@
         threshold of pose detect results button</string>
     <string name="menu_camera">Camera</string>
     <string name="menu_gallery">Gallery</string>
-    <string name="tv_gallery_placeholder">Click + to add an image or a video
-        to begin running the pose landmarker.</string>
+    <string name="tv_gallery_placeholder">Nhấn + để thêm ảnh hoặc video để bắt đầu phân tích tư thế.</string>
 
     <string name="label_inference_time">Inference Time</string>
     <string name="label_fps">Frames per Second</string>
