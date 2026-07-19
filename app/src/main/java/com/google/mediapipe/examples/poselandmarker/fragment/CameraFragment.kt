@@ -212,12 +212,17 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
                                 val hasRemainingPending = updatedExercises.any { it.status == 0 }
                                 if (hasRemainingPending) {
                                     com.google.mediapipe.examples.poselandmarker.RestTimerService.startRestTimer(requireContext(), dayIndex)
-                                    Toast.makeText(context, "Chúc mừng! Bạn đã hoàn thành bài tập. Bắt đầu 5 phút nghỉ ngơi!", Toast.LENGTH_LONG).show()
+                                    Toast.makeText(context, "Chúc mừng! Bạn đã hoàn thành bài tập!", Toast.LENGTH_SHORT).show()
                                 } else {
                                     com.google.mediapipe.examples.poselandmarker.RestTimerService.stopService(requireContext())
                                     Toast.makeText(context, "Chúc mừng! Bạn đã hoàn thành TẤT CẢ bài tập hôm nay!", Toast.LENGTH_LONG).show()
                                 }
-                                findNavController().popBackStack()
+                                
+                                // Explicitly pop back to WorkoutCalendarFragment (R.id.workout_calendar_fragment)
+                                val popped = findNavController().popBackStack(R.id.workout_calendar_fragment, false)
+                                if (!popped) {
+                                    findNavController().navigate(R.id.workout_calendar_fragment)
+                                }
                             }
                         }
                         .addOnFailureListener { e ->
