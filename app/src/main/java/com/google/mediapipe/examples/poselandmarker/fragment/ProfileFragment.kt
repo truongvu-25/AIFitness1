@@ -11,7 +11,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.google.firebase.auth.FirebaseAuth
@@ -60,26 +59,11 @@ class ProfileFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Start Foreground Step Counter Service
+        // Start Background Step Counter Service automatically
         StepCounterService.startService(requireContext())
 
         loadUserProfile()
         loadInitialStepData()
-
-        binding.btnSimulateSteps.setOnClickListener {
-            // Send test simulation intent to service
-            val serviceIntent = Intent(requireContext(), StepCounterService::class.java)
-            requireContext().startService(serviceIntent)
-
-            // Trigger steps simulation on service if steps service running
-            val steps = StepCounterService.getSavedSteps(requireContext()) + 50
-            val calo = steps * 0.04f
-            val prefs = requireContext().getSharedPreferences("step_counter_prefs", Context.MODE_PRIVATE)
-            prefs.edit().putInt("steps_" + StepCounterService.getTodayKey(), steps).apply()
-
-            displayStepData(steps, calo)
-            Toast.makeText(context, "Đã đếm thêm 50 bước chân (+2.0 kcal)!", Toast.LENGTH_SHORT).show()
-        }
 
         binding.btnEditProfile.setOnClickListener {
             val bundle = Bundle().apply {

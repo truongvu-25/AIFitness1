@@ -232,7 +232,7 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Foreground Service Step Counter & Calorie Card -->
+            <!-- Production Daily Step Counter & Calorie Card -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardStepCounter"
                 android:layout_width="match_parent"
@@ -268,8 +268,8 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="Đếm Bước Chân &amp; Calo (Foreground Service)"
-                            android:textSize="14sp"
+                            android:text="Đếm Bước Chân &amp; Calo Hàng Ngày"
+                            android:textSize="15sp"
                             android:textStyle="bold"
                             android:textColor="#007F8B"/>
                     </LinearLayout>
@@ -278,8 +278,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
-                        android:weightSum="2"
-                        android:layout_marginBottom="12dp">
+                        android:weightSum="2">
 
                         <LinearLayout
                             android:layout_width="0dp"
@@ -288,13 +287,13 @@
                             android:orientation="vertical"
                             android:gravity="center"
                             android:background="#E8F5E9"
-                            android:padding="10dp">
+                            android:padding="12dp">
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Số bước đi hôm nay"
-                                android:textSize="11sp"
+                                android:textSize="12sp"
                                 android:textColor="#2E7D32"
                                 android:textStyle="bold"/>
 
@@ -303,14 +302,14 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="0 bước"
-                                android:textSize="18sp"
+                                android:textSize="20sp"
                                 android:textStyle="bold"
                                 android:textColor="#1B5E20"
                                 android:layout_marginTop="2dp"/>
                         </LinearLayout>
 
                         <Space
-                            android:layout_width="8dp"
+                            android:layout_width="10dp"
                             android:layout_height="wrap_content"/>
 
                         <LinearLayout
@@ -320,13 +319,13 @@
                             android:orientation="vertical"
                             android:gravity="center"
                             android:background="#FFF3E0"
-                            android:padding="10dp">
+                            android:padding="12dp">
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Calo tiêu thụ"
-                                android:textSize="11sp"
+                                android:textSize="12sp"
                                 android:textColor="#E65100"
                                 android:textStyle="bold"/>
 
@@ -335,24 +334,13 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="0.0 kcal"
-                                android:textSize="18sp"
+                                android:textSize="20sp"
                                 android:textStyle="bold"
                                 android:textColor="#BF360C"
                                 android:layout_marginTop="2dp"/>
                         </LinearLayout>
                     </LinearLayout>
 
-                    <Button
-                        android:id="@+id/btnSimulateSteps"
-                        android:layout_width="match_parent"
-                        android:layout_height="44dp"
-                        android:text="KÍCH HOẠT / ĐẾM THỬ BƯỚC CHÂN (+50)"
-                        android:textSize="12sp"
-                        android:textStyle="bold"
-                        android:textColor="#FFFFFF"
-                        android:backgroundTint="#007F8B"
-                        app:cornerRadius="8dp"
-                        android:layout_marginBottom="8dp"/>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
