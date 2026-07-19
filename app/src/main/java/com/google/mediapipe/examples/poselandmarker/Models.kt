@@ -1,5 +1,7 @@
 package com.google.mediapipe.examples.poselandmarker
 
+import com.google.firebase.firestore.PropertyName
+
 // Master static exercise details stored in global Firestore collection 'exercises'
 data class ExerciseDetails(
     val id: String = "",
@@ -21,8 +23,16 @@ data class UserExercise(
 data class WorkoutDay(
     val dayIndex: Int = 0,
     val exercises: List<UserExercise> = emptyList(),
-    val isRestDay: Boolean = false
-)
+    @get:PropertyName("isRestDay") @set:PropertyName("isRestDay")
+    @field:JvmField
+    var isRestDay: Boolean = false
+) {
+    @get:PropertyName("restDay")
+    @set:PropertyName("restDay")
+    var restDay: Boolean
+        get() = isRestDay
+        set(value) { isRestDay = value }
+}
 
 // Helper class to map relational data for the UI adapter and camera
 data class Exercise(
