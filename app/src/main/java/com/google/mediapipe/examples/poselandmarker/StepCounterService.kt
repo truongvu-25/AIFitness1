@@ -15,7 +15,6 @@ import android.os.Binder
 import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
-import androidx.core.app.ServiceCompat
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -95,22 +94,12 @@ class StepCounterService : Service(), SensorEventListener {
         val notification = buildNotification(currentStepsCount, currentStepsCount * 0.04f)
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                val type = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-                    ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC
-                } else {
-                    ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC
-                }
-                ServiceCompat.startForeground(this, NOTIFICATION_ID, notification, type)
+                startForeground(NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC)
             } else {
                 startForeground(NOTIFICATION_ID, notification)
             }
         } catch (e: Exception) {
             e.printStackTrace()
-            try {
-                startForeground(NOTIFICATION_ID, notification)
-            } catch (ex: Exception) {
-                ex.printStackTrace()
-            }
         }
         return START_STICKY
     }
