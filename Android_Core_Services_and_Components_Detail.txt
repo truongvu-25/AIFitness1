@@ -5,7 +5,7 @@
 ================================================================================
 Tên ứng dụng     : Fitness For You
 Mã nguồn        : Kotlin / Android Native SDK
-Phiên bản tài liệu: 3.0 (Bổ sung Foreground Service Đếm giờ nghỉ 5 phút & Nhắc bài tiếp theo)
+Phiên bản tài liệu: 4.0 (Bổ sung Foreground Service Đếm giờ nghỉ 5p & Điều hướng chuẩn xác)
 ================================================================================
 
 ================================================================================
@@ -30,7 +30,38 @@ Trong ứng dụng **Fitness For You**, các hình thức Android Service cốt 
    - Trích xuất qua `Context.ALARM_SERVICE` trong `NotificationHelper.kt`. Lập lịch đánh thức CPU (`RTC_WAKEUP`) lúc 8:00 AM mỗi ngày.
 
 ================================================================================
-2. BẢNG TỔNG HỢP SYSTEM SERVICES TRONG MÃ NGUỒN
+2. CHI TIẾT VỀ FOREGROUND SERVICE ĐẾM GIỜ NGHỈ 5 PHÚT (REST TIMER SERVICE)
+================================================================================
+
+File code : `RestTimerService.kt` (Kế thừa `android.app.Service`)
+Khai báo  : `AndroidManifest.xml` [Dòng 75 - 80] (`android:foregroundServiceType="dataSync"`)
+
+A. NGUYÊN LÝ HOẠT ĐỘNG:
+   - Khi người dùng hoàn thành 1 bài tập trong `CameraFragment.kt` (`completeWorkout()`), ứng dụng kiểm tra danh sách bài tập chưa hoàn thành trong ngày (`hasRemainingPending`).
+   - Nếu còn bài chưa tập -> Gọi `RestTimerService.startRestTimer(requireContext(), dayIndex)` [CameraFragment.kt:L209].
+   - Service khởi chạy CountDownTimer 5 phút (300 giây):
+     + Đếm lùi từng giây và cập nhật Thanh thông báo ngầm (*"Nghỉ giữa các bài tập: 04:59"*).
+     + Cho phép người dùng thoát khỏi app, tắt màn hình mà bộ đếm vẫn đếm ngầm chính xác.
+     + Đúng sau 5 phút: Phát thông báo ưu tiên cao `showRestExpiredNotification()` kêu gọi người dùng quay lại tập bài tiếp theo.
+   - Nếu đã hoàn thành toàn bộ bài tập trong ngày -> Gọi `RestTimerService.stopService(requireContext())` [CameraFragment.kt:L212] để ngắt và hủy dịch vụ nghỉ ngơi.
+
+================================================================================
+3. CHI TIẾT VỀ FOREGROUND SERVICE ĐẾM BƯỚC CHÂN & CALO (STEP COUNTER SERVICE)
+================================================================================
+
+File code : `StepCounterService.kt` (Kế thừa `android.app.Service`, triển khai `SensorEventListener`)
+Giao diện : Thẻ MaterialCardView trong `fragment_profile.xml:L166-224`
+Khai báo  : `AndroidManifest.xml` [Dòng 68 - 73] (`android:foregroundServiceType="dataSync"`)
+Quyền xin : `<uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />` [Manifest:L28]
+            `<uses-permission android:name="android.permission.FOREGROUND_SERVICE" />` [Manifest:L29]
+            `<uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />` [Manifest:L30]
+
+A. VAI TRÒ & NGUYÊN LÝ HOẠT ĐỘNG:
+   - Đăng ký nghe cảm biến gia tốc / đếm bước `Sensor.TYPE_STEP_COUNTER` từ Android `SensorManager`.
+   - Mỗi khi người dùng đi 1 bước -> Tính toán `Calories = steps * 0.04 kcal`, lưu `SharedPreferences` và phát Broadcast `ACTION_STEPS_UPDATED` để `ProfileFragment` cập nhật ngay trên giao diện.
+
+================================================================================
+4. BẢNG TỔNG HỢP SYSTEM SERVICES TRONG MÃ NGUỒN
 ================================================================================
 
 +----------------------------+-----------------------------------+---------------------------------------------------+
@@ -41,7 +72,7 @@ Trong ứng dụng **Fitness For You**, các hình thức Android Service cốt 
 | AlarmManager               | NotificationHelper.kt:L14         | Đặt lịch báo thức 8:00 AM đánh thức CPU (Doze)    |
 | NotificationManager        | FitnessApplication.kt:L31         | Khởi tạo NotificationChannel & phát Notification |
 | SensorManager              | StepCounterService.kt:L86         | Đăng ký lắng nghe cảm biến bước chân thiết bị     |
-| ProcessCameraProvider      | CameraFragment.kt:L324            | Quản lý phần cứng Camera hệ thống cho AI          |
+| ProcessCameraProvider      | CameraFragment.kt:L341            | Quản lý phần cứng Camera hệ thống cho AI          |
 +----------------------------+-----------------------------------+---------------------------------------------------+
 
 ================================================================================

@@ -18,7 +18,7 @@ class RestTimerService : Service() {
     companion object {
         const val CHANNEL_ID = "rest_timer_channel"
         const val NOTIFICATION_ID = 4001
-        const val REST_DURATION_MS = 10 * 1000L // 5 minutes (300 seconds)
+        const val REST_DURATION_MS = 5 * 60 * 1000L // 5 minutes (300 seconds)
 
         const val ACTION_START_REST = "com.google.mediapipe.examples.poselandmarker.START_REST"
         const val ACTION_STOP_REST = "com.google.mediapipe.examples.poselandmarker.STOP_REST"
