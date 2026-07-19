@@ -24,6 +24,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.mediapipe.examples.poselandmarker.BaseExerciseAnalyzer
 import com.google.mediapipe.examples.poselandmarker.MainViewModel
 import com.google.mediapipe.examples.poselandmarker.PoseLandmarkerHelper
 import com.google.mediapipe.examples.poselandmarker.R
@@ -68,7 +69,7 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
     private var unitStr: String = "lần"
     private var currentProgressCount: Int = 0
 
-    private var lastTimeIncrementMs: Long = 0L
+    private var exerciseAnalyzer: BaseExerciseAnalyzer? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -137,7 +138,11 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
 
         fragmentCameraBinding.tvCounterLabel.text = if (isTimed) "Thời gian giữ chuẩn tư thế" else "Số lần hoàn thành"
         fragmentCameraBinding.tvCounterValue.text = "0 / $targetCount $unitStr"
-        fragmentCameraBinding.tvFormFeedback.text = "Đứng trước camera để AI nhận diện khung xương..."
+        fragmentCameraBinding.tvFormFeedback.text = "Đứng trước camera để hệ thống nhận diện khung xương..."
+
+        exerciseAnalyzer = BaseExerciseAnalyzer.create(
+            exerciseId, exerciseName, targetCount, isTimed, unitStr
+        )
 
         fragmentCameraBinding.btnBack.setOnClickListener {
             findNavController().popBackStack()
@@ -374,36 +379,25 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
                 )
                 fragmentCameraBinding.overlay.invalidate()
 
-                // Pose Analysis and Automatic Timer/Rep Logic
+                // Pose Analysis and Exercise Specific Logic
                 val hasLandmarks = resultBundle.results.first().landmarks().isNotEmpty()
                 if (hasLandmarks) {
-                    if (isTimed) {
-                        val now = System.currentTimeMillis()
-                        if (now - lastTimeIncrementMs >= 1000L) {
-                            lastTimeIncrementMs = now
-                            if (currentProgressCount < targetCount) {
-                                currentProgressCount++
-                                fragmentCameraBinding.tvCounterValue.text = "$currentProgressCount / $targetCount giây"
-                                fragmentCameraBinding.tvFormFeedback.text = "✓ Đang giữ chuẩn tư thế ${exerciseName}!"
-                                fragmentCameraBinding.tvFormFeedback.setTextColor(Color.parseColor("#4CAF50"))
+                    val landmarks = resultBundle.results.first().landmarks().first()
+                    exerciseAnalyzer?.let { analyzer ->
+                        val result = analyzer.analyze(landmarks)
+                        
+                        currentProgressCount = result.currentProgress
+                        fragmentCameraBinding.tvCounterValue.text = "$currentProgressCount / $targetCount $unitStr"
+                        fragmentCameraBinding.tvFormFeedback.text = result.feedback
+                        fragmentCameraBinding.tvFormFeedback.setTextColor(result.feedbackColor)
 
-                                if (currentProgressCount >= targetCount) {
-                                    completeWorkout()
-                                }
-                            }
+                        if (result.isComplete) {
+                            completeWorkout()
                         }
-                    } else {
-                        fragmentCameraBinding.tvFormFeedback.text = "✓ Đang phát hiện động tác!"
-                        fragmentCameraBinding.tvFormFeedback.setTextColor(Color.parseColor("#4CAF50"))
                     }
                 } else {
-                    if (isTimed) {
-                        fragmentCameraBinding.tvFormFeedback.text = "⚠️ Hãy giữ đúng vị trí trước camera để tính giờ!"
-                        fragmentCameraBinding.tvFormFeedback.setTextColor(Color.parseColor("#FFCA28"))
-                    } else {
-                        fragmentCameraBinding.tvFormFeedback.text = "⚠️ Hãy đứng lùi lại để camera quét được toàn thân"
-                        fragmentCameraBinding.tvFormFeedback.setTextColor(Color.parseColor("#FFCA28"))
-                    }
+                    fragmentCameraBinding.tvFormFeedback.text = "Hãy đứng lùi lại để camera quét được toàn thân"
+                    fragmentCameraBinding.tvFormFeedback.setTextColor(Color.parseColor("#FFCA28"))
                 }
             }
         }

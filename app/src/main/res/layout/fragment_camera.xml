@@ -128,7 +128,7 @@
                     android:id="@+id/tvFormFeedback"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Đang quét khung xương AI..."
+                    android:text="Đang nhận diện khung xương..."
                     android:textSize="12sp"
                     android:textColor="#FFCA28"
                     android:textStyle="italic"/>
