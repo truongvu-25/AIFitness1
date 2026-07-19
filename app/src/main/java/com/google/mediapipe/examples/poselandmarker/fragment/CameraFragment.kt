@@ -338,26 +338,36 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
     }
 
     private fun setUpCamera() {
+        if (_fragmentCameraBinding == null || !isAdded) return
         val cameraProviderFuture = ProcessCameraProvider.getInstance(requireContext())
         cameraProviderFuture.addListener({
-            cameraProvider = cameraProviderFuture.get()
-            bindCameraUseCases()
+            if (_fragmentCameraBinding != null && isAdded) {
+                try {
+                    cameraProvider = cameraProviderFuture.get()
+                    bindCameraUseCases()
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error obtaining camera provider", e)
+                }
+            }
         }, ContextCompat.getMainExecutor(requireContext()))
     }
 
     @SuppressLint("UnsafeOptInUsageError")
     private fun bindCameraUseCases() {
-        val cameraProvider = cameraProvider ?: throw IllegalStateException("Camera initialization failed.")
+        if (_fragmentCameraBinding == null || !isAdded) return
+        val cameraProvider = cameraProvider ?: return
+        val display = fragmentCameraBinding.viewFinder.display ?: return
+
         val cameraSelector = CameraSelector.Builder().requireLensFacing(cameraFacing).build()
 
         preview = Preview.Builder()
             .setTargetAspectRatio(AspectRatio.RATIO_4_3)
-            .setTargetRotation(fragmentCameraBinding.viewFinder.display.rotation)
+            .setTargetRotation(display.rotation)
             .build()
 
         imageAnalyzer = ImageAnalysis.Builder()
             .setTargetAspectRatio(AspectRatio.RATIO_4_3)
-            .setTargetRotation(fragmentCameraBinding.viewFinder.display.rotation)
+            .setTargetRotation(display.rotation)
             .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
             .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_RGBA_8888)
             .build()
@@ -367,13 +377,24 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
                 }
             }
 
-        cameraProvider.unbindAll()
-
         try {
+            cameraProvider.unbindAll()
             camera = cameraProvider.bindToLifecycle(this, cameraSelector, preview, imageAnalyzer)
             preview?.setSurfaceProvider(fragmentCameraBinding.viewFinder.surfaceProvider)
         } catch (exc: Exception) {
-            Log.e(TAG, "Use case binding failed", exc)
+            Log.e(TAG, "Use case binding failed, attempting fallback camera", exc)
+            try {
+                val fallbackSelector = if (cameraFacing == CameraSelector.LENS_FACING_FRONT) {
+                    CameraSelector.DEFAULT_BACK_CAMERA
+                } else {
+                    CameraSelector.DEFAULT_FRONT_CAMERA
+                }
+                cameraProvider.unbindAll()
+                camera = cameraProvider.bindToLifecycle(this, fallbackSelector, preview, imageAnalyzer)
+                preview?.setSurfaceProvider(fragmentCameraBinding.viewFinder.surfaceProvider)
+            } catch (e: Exception) {
+                Log.e(TAG, "Fallback camera binding failed", e)
+            }
         }
     }
 
