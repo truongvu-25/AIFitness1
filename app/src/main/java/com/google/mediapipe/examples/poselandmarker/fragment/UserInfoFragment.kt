@@ -152,13 +152,22 @@ class UserInfoFragment : Fragment() {
             }
     }
 
+    private fun isRestDayForBmi(bmiType: String, dayIndex: Int): Boolean {
+        return when (bmiType) {
+            "GAY" -> dayIndex in listOf(4, 7, 11, 14, 18, 21, 25, 28)
+            "CAN DOI" -> dayIndex in listOf(4, 8, 12, 16, 20, 24, 28)
+            else -> dayIndex in listOf(5, 10, 15, 20, 25, 30) // THUA CAN
+        }
+    }
+
     private fun generateWorkoutPlan(uid: String, bmiType: String) {
         val batch = db.batch()
 
-        // Generate customized workouts based on BMI for 30 Days
+        // Generate customized workouts based on BMI for 30 Days with rest days
         for (day in 1..30) {
-            val exercises = getExercisesForBmiAndDay(bmiType, day)
-            val workoutDay = WorkoutDay(dayIndex = day, exercises = exercises)
+            val isRestDay = isRestDayForBmi(bmiType, day)
+            val exercises = if (isRestDay) emptyList() else getExercisesForBmiAndDay(bmiType, day)
+            val workoutDay = WorkoutDay(dayIndex = day, exercises = exercises, isRestDay = isRestDay)
             val dayDocRef = db.collection("users").document(uid)
                 .collection("workouts").document("day_$day")
             batch.set(dayDocRef, workoutDay)
@@ -191,13 +200,13 @@ class UserInfoFragment : Fragment() {
                     listOf(
                         UserExercise("pushup", (10 * weekMultiplier).toInt()),
                         UserExercise("squat", (12 * weekMultiplier).toInt()),
-                        UserExercise("plank", (2 * weekMultiplier).toInt())
+                        UserExercise("plank", (30 * weekMultiplier).toInt())
                     )
                 } else { // Even Days
                     listOf(
                         UserExercise("splitsquat", (10 * weekMultiplier).toInt()),
                         UserExercise("situp", (12 * weekMultiplier).toInt()),
-                        UserExercise("sideplank", (2 * weekMultiplier).toInt())
+                        UserExercise("sideplank", (30 * weekMultiplier).toInt())
                     )
                 }
             }
@@ -207,13 +216,13 @@ class UserInfoFragment : Fragment() {
                         UserExercise("pushup", (15 * weekMultiplier).toInt()),
                         UserExercise("squat", (15 * weekMultiplier).toInt()),
                         UserExercise("jumpingjack", (25 * weekMultiplier).toInt()),
-                        UserExercise("plank", (3 * weekMultiplier).toInt())
+                        UserExercise("plank", (40 * weekMultiplier).toInt())
                     )
                 } else { // Even Days
                     listOf(
                         UserExercise("splitsquat", (12 * weekMultiplier).toInt()),
                         UserExercise("situp", (15 * weekMultiplier).toInt()),
-                        UserExercise("sideplank", (3 * weekMultiplier).toInt()),
+                        UserExercise("sideplank", (40 * weekMultiplier).toInt()),
                         UserExercise("jumpingjack", (25 * weekMultiplier).toInt())
                     )
                 }
@@ -224,13 +233,13 @@ class UserInfoFragment : Fragment() {
                         UserExercise("jumpingjack", (30 * weekMultiplier).toInt()),
                         UserExercise("squat", (20 * weekMultiplier).toInt()),
                         UserExercise("situp", (20 * weekMultiplier).toInt()),
-                        UserExercise("plank", (3 * weekMultiplier).toInt())
+                        UserExercise("plank", (45 * weekMultiplier).toInt())
                     )
                 } else { // Even Days
                     listOf(
                         UserExercise("jumpingjack", (30 * weekMultiplier).toInt()),
                         UserExercise("splitsquat", (15 * weekMultiplier).toInt()),
-                        UserExercise("sideplank", (3 * weekMultiplier).toInt()),
+                        UserExercise("sideplank", (45 * weekMultiplier).toInt()),
                         UserExercise("pushup", (12 * weekMultiplier).toInt())
                     )
                 }
