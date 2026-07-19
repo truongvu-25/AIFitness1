@@ -131,6 +131,9 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // Cancel any active rest timer when starting an exercise
+        com.google.mediapipe.examples.poselandmarker.RestTimerService.stopService(requireContext())
+
         backgroundExecutor = Executors.newSingleThreadExecutor()
 
         fragmentCameraBinding.tvWorkoutTitle.text = exerciseName
@@ -206,7 +209,14 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
                     docRef.update("exercises", updatedExercises)
                         .addOnSuccessListener {
                             if (isAdded && !isStateSaved) {
-                                Toast.makeText(context, "Chúc mừng! Bạn đã hoàn thành bài tập!", Toast.LENGTH_SHORT).show()
+                                val hasRemainingPending = updatedExercises.any { it.status == 0 }
+                                if (hasRemainingPending) {
+                                    com.google.mediapipe.examples.poselandmarker.RestTimerService.startRestTimer(requireContext(), dayIndex)
+                                    Toast.makeText(context, "Chúc mừng! Bạn đã hoàn thành bài tập. Bắt đầu 5 phút nghỉ ngơi!", Toast.LENGTH_LONG).show()
+                                } else {
+                                    com.google.mediapipe.examples.poselandmarker.RestTimerService.stopService(requireContext())
+                                    Toast.makeText(context, "Chúc mừng! Bạn đã hoàn thành TẤT CẢ bài tập hôm nay!", Toast.LENGTH_LONG).show()
+                                }
                                 findNavController().popBackStack()
                             }
                         }

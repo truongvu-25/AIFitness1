@@ -5,71 +5,43 @@
 ================================================================================
 Tên ứng dụng     : Fitness For You
 Mã nguồn        : Kotlin / Android Native SDK
-Phiên bản tài liệu: 2.0 (Bổ sung Foreground Service Đếm bước chân & Calo real-time)
+Phiên bản tài liệu: 3.0 (Bổ sung Foreground Service Đếm giờ nghỉ 5 phút & Nhắc bài tiếp theo)
 ================================================================================
 
 ================================================================================
 1. TỔNG QUAN HỆ THỐNG SERVICE TRONG ỨNG DỤNG (SERVICES OVERVIEW)
 ================================================================================
 
-Trong ứng dụng **Fitness For You**, hai hình thức Service cốt lõi được sử dụng:
+Trong ứng dụng **Fitness For You**, các hình thức Android Service cốt lõi được sử dụng:
 
-1. **Foreground Service (`StepCounterService.kt`):**
-   - Dịch vụ chạy ngầm ưu tiên cao đếm số bước chân đi bộ ngầm real-time và tự động tính toán số Calo tiêu thụ (Calories Burned).
-   - Hiển thị một Thanh thông báo ngầm cố định (`setOngoing(true)`) duy trì Foreground Service không bị Android kill.
-   - Kết hợp cảm biến phần cứng `Sensor.TYPE_STEP_COUNTER` (hoặc tính năng đếm giả lập cho máy ảo).
+1. **Foreground Service 1 (`RestTimerService.kt`):**
+   - **ĐÂY LÀ MỘT SERVICE CHUẨN 100%!**
+   - Nhiệm vụ: Tự động khởi chạy ngay khi người dùng vừa tập xong 1 bài tập (nếu trong ngày vẫn còn bài tập chưa tập).
+   - Bộ đếm thời gian 5 phút nghỉ ngơi (300 giây) **vẫn chạy ngầm liên tục ngay cả khi người dùng thoát/đóng ứng dụng hay lỡ tay khóa màn hình**.
+   - Hiển thị Notification cố định đếm ngược thời gian thực (*"Nghỉ giữa các bài tập: 04:15"*).
+   - Khi hết 5 phút nghỉ ngơi: Phát thông báo nhắc nhở rầm rộ (*"Đã hết 5 phút nghỉ ngơi! Hãy vào tập bài tiếp theo ngay nhé!"*).
+   - Khi đã hoàn thành TẤT CẢ các bài tập trong ngày: Tự động hủy/dừng Service và không báo nữa.
 
-2. **System Alarm Service (`AlarmManager`):**
-   - Trích xuất qua `Context.ALARM_SERVICE` trong `NotificationHelper.kt`.
-   - Lập lịch đánh thức CPU (`RTC_WAKEUP`) lúc 8:00 AM mỗi ngày để gửi tín hiệu cho `WorkoutReminderReceiver` xử lý kiểm tra bài tập chưa làm.
+2. **Foreground Service 2 (`StepCounterService.kt`):**
+   - Dịch vụ chạy ngầm đếm số bước chân đi bộ real-time và tự động tính toán số Calo tiêu thụ (Calories Burned).
+   - Hiển thị Thanh thông báo ngầm cố định duy trì Foreground Service không bị Android kill.
 
-================================================================================
-2. CHI TIẾT VỀ FOREGROUND SERVICE ĐẾM BƯỚC CHÂN & CALO (STEP COUNTER SERVICE)
-================================================================================
-
-File code : `StepCounterService.kt` (Kế thừa `android.app.Service`, triển khai `SensorEventListener`)
-Giao diện : Thẻ MaterialCardView trong `fragment_profile.xml:L166-267`
-Khai báo  : `AndroidManifest.xml` [Dòng 68 - 73] (`android:foregroundServiceType="health"`)
-Quyền xin : `<uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />` [Manifest:L28]
-            `<uses-permission android:name="android.permission.FOREGROUND_SERVICE" />` [Manifest:L29]
-            `<uses-permission android:name="android.permission.FOREGROUND_SERVICE_HEALTH" />` [Manifest:L30]
-
-A. VAI TRÒ & NGUYÊN LÝ HOẠT ĐỘNG:
-   - Khi ứng dụng khởi chạy hoặc khi người dùng mở tab Hồ sơ (`ProfileFragment.kt:L44`), hàm `StepCounterService.startService(requireContext())` được gọi.
-   - Service đăng ký nghe cảm biến gia tốc / đếm bước `Sensor.TYPE_STEP_COUNTER` từ Android `SensorManager`.
-   - Mỗi khi người dùng đi 1 bước:
-     + Công thức tính calo: `Calories = steps * 0.04 kcal` (1 bước tương đương ~0.04 kcal).
-     + Lưu trữ theo ngày vào `SharedPreferences` (`step_counter_prefs`) với key ngày `steps_YYYYMMDD`.
-     + Phát Broadcast ngầm `ACTION_STEPS_UPDATED` để `ProfileFragment` cập nhật ngay trên giao diện.
-     + Cập nhật nội dung Thanh thông báo Foreground: *"Fitness For You - Đã đi: X bước (~Y kcal tiêu thụ)"*.
-
-B. KỊCH BẢN ĐÁNH GIÁ & LỜI KHUYÊN SỨC KHỎE AI DỰA TRÊN BMI & CALO (`ProfileFragment.kt`):
-   Dựa vào chỉ số `bmiType` của người dùng và lượng calo tiêu thụ trong ngày, hệ thống đưa ra 6 kịch bản lời khuyên cá nhân hóa:
-
-   1. **Nhóm GẦY (`bmiType == "GAY"`):**
-      - *Nếu Calo tiêu thụ > 180 kcal:* Cảnh báo tiêu thụ năng lượng cao ("⚠️ Bạn đang đi X bước, hãy nạp bổ sung 300-500 kcal từ thực phẩm giàu Protein và Tinh bột để bù năng lượng và tăng cân an toàn!"). Thẻ màu Cam (`#FFF3E0`).
-      - *Nếu Calo tiêu thụ <= 180 kcal:* Lời khuyên duy trì ("💡 Mức vận động nhẹ nhàng rất tốt cho sức khỏe, hãy kết hợp ăn uống đa lượng"). Thẻ màu Xanh lá (`#E8F5E9`).
-
-   2. **Nhóm CÂN ĐỐI (`bmiType == "CAN DOI"`):**
-      - *Nếu Calo tiêu thụ >= 240 kcal:* Biểu dương phong độ tích cực ("🎉 Rất xuất sắc! Bạn đã đi X bước, hãy tiếp tục giữ vững vóc dáng cân đối!"). Thẻ màu Xanh lá (`#E8F5E9`).
-      - *Nếu Calo tiêu thụ < 240 kcal:* Lời khuyên tăng cường ("🏃 Mức vận động hôm nay còn hơi khiêm tốn. Bạn nên dành 15-20 phút đi bộ thêm"). Thẻ màu Xanh dương (`#E1F5FE`).
-
-   3. **Nhóm THỪA CÂN (`bmiType == "THUA CAN"`):**
-      - *Nếu Calo tiêu thụ >= 240 kcal:* Khen ngợi đốt mỡ ("🔥 Tuyệt vời! Bạn đã tiêu thụ thành công X kcal mỡ thừa hôm nay. Kiên trì để đạt cân nặng lý tưởng!"). Thẻ màu Xanh lá (`#E8F5E9`).
-      - *Nếu Calo tiêu thụ < 240 kcal:* Khuyến khích đốt calo ("⚠️ Hôm nay bạn mới tiêu thụ X kcal, mức vận động này còn thấp với người THỪA CÂN. Hãy đứng dậy đi dạo hoặc tập Squat ngay nhé!"). Thẻ màu Đỏ (`#FFEBEE`).
+3. **System Alarm Service (`AlarmManager`):**
+   - Trích xuất qua `Context.ALARM_SERVICE` trong `NotificationHelper.kt`. Lập lịch đánh thức CPU (`RTC_WAKEUP`) lúc 8:00 AM mỗi ngày.
 
 ================================================================================
-3. BẢNG TỔNG HỢP SYSTEM SERVICES TRONG MÃ NGUỒN
+2. BẢNG TỔNG HỢP SYSTEM SERVICES TRONG MÃ NGUỒN
 ================================================================================
 
 +----------------------------+-----------------------------------+---------------------------------------------------+
-| Tên System Service         | File Code khởi tạo                | Nhiệm vụ chính trong dự án                        |
+| Tên Foreground / System Svc| File Code khởi tạo                | Nhiệm vụ chính trong dự án                        |
 +----------------------------+-----------------------------------+---------------------------------------------------+
-| Foreground Service         | StepCounterService.kt             | Đếm bước chân & Calo ngầm real-time               |
+| Foreground Service 1       | RestTimerService.kt               | Đếm ngược 5p nghỉ ngơi & báo bài tiếp theo ngầm   |
+| Foreground Service 2       | StepCounterService.kt             | Đếm bước chân & Calo ngầm real-time               |
 | AlarmManager               | NotificationHelper.kt:L14         | Đặt lịch báo thức 8:00 AM đánh thức CPU (Doze)    |
 | NotificationManager        | FitnessApplication.kt:L31         | Khởi tạo NotificationChannel & phát Notification |
-| SensorManager              | StepCounterService.kt:L74         | Đăng ký lắng nghe cảm biến bước chân thiết bị     |
-| ProcessCameraProvider      | CameraFragment.kt:L312            | Quản lý phần cứng Camera hệ thống cho AI          |
+| SensorManager              | StepCounterService.kt:L86         | Đăng ký lắng nghe cảm biến bước chân thiết bị     |
+| ProcessCameraProvider      | CameraFragment.kt:L324            | Quản lý phần cứng Camera hệ thống cho AI          |
 +----------------------------+-----------------------------------+---------------------------------------------------+
 
 ================================================================================

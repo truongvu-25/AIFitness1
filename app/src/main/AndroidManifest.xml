@@ -78,6 +78,13 @@
             android:foregroundServiceType="dataSync"
             tools:ignore="ForegroundServicePermission" />
 
+        <service
+            android:name=".RestTimerService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="dataSync"
+            tools:ignore="ForegroundServicePermission" />
+
     </application>
 
 </manifest>
