@@ -4,8 +4,9 @@
 ================================================================================
 Ngôn ngữ mã nguồn : Kotlin (Android Native), XML Layouts
 Công nghệ cốt lõi  : Google MediaPipe Tasks Vision (Pose Landmarker), CameraX, 
-                     Firebase Auth, Cloud Firestore, Navigation Component
-Phiên bản tài liệu : 2.0 (Cập nhật đầy đủ file code, dòng code & file giao diện)
+                     Firebase Auth, Cloud Firestore, Navigation Component, 
+                     Foreground Service (StepCounterService)
+Phiên bản tài liệu : 3.0 (Bổ sung Foreground Service Đếm bước chân ngầm & Lời khuyên BMI)
 ================================================================================
 
 
@@ -32,7 +33,7 @@ PHẦN 1: BẢNG TRUY VẾT CHUYÊN SÂU LUỒNG CHẠY HÀM THEO TƯƠNG TÁC G
     -> Hàm: `onCreate(savedInstanceState)` [Dòng 31 - 62]
     -> Thực thi:
        1. `ActivityMainBinding.inflate(layoutInflater)` [Dòng 33] -> Nạp layout `activity_main.xml`.
-       2. `setContentView(activityMainBinding.root)` [Dòng 34]. -> gắn layout
+       2. `setContentView(activityMainBinding.root)` [Dòng 34].
        3. `supportFragmentManager.findFragmentById(R.id.fragment_container)` [Dòng 36 - 38] -> Khởi tạo `NavHostFragment` và liên kết `BottomNavigationView` (`activity_main.xml:L63-71`) với `NavController`.
        4. `navController.addOnDestinationChangedListener(...)` [Dòng 45 - 61] -> Lắng nghe sự kiện chuyển màn hình. Nếu vào `login_fragment`, `register_fragment`, `user_info_fragment`, hoặc `camera_fragment` thì ẩn Toolbar và BottomNavigationView (`View.GONE`), các màn hình khác thì hiển thị (`View.VISIBLE`).
 
@@ -235,30 +236,37 @@ PHẦN 1: BẢNG TRUY VẾT CHUYÊN SÂU LUỒNG CHẠY HÀM THEO TƯƠNG TÁC G
       4. Đọc Firestore `users/{uid}/workouts/day_{dayIndex}` [Dòng 193].
       5. Sửa trạng thái bài tập: Tìm `exerciseId`, gán `status = 1` (Hoàn thành) [Dòng 198].
       6. Cập nhật Firestore: `docRef.update("exercises", updatedExercises)` [Dòng 204].
-      7. Khi Firestore báo thành công: Kiểm tra an toàn `if (isAdded && !isStateSaved)` [Dòng 205] -> Hiển thị Toast chúc mừng và gọi `findNavController().popBackStack()` [Dòng 207] để trở về màn hình Lịch tập an toàn, không làm văng app.
+      7. Khi Firestore báo thành công: Kiểm tra an toàn `if (isAdded && !isStateSaved)` [Dòng 205] -> Hiển thị Toast chúc mừng và gọi `findNavController().popBackStack()` [Dòng 207] để trở về màn hình Lịch tập an toàn, không bị crash văng app.
 
 --------------------------------------------------------------------------------
-7. MÀN HÌNH HỒ SƠ CÁ NHÂN (PROFILE FRAGMENT)
+7. MÀN HÌNH HỒ SƠ CÁ NHÂN & FOREGROUND SERVICE ĐẾM BƯỚC CHÂN (PROFILE FRAGMENT)
 --------------------------------------------------------------------------------
 - Giao diện XML: `fragment_profile.xml`
-- File code xử lý: `ProfileFragment.kt`
+- File code xử lý: `ProfileFragment.kt`, `StepCounterService.kt`
 
-  [Hành động 1] Mở tab Hồ sơ:
-    - Hàm chạy: `ProfileFragment.onViewCreated(...)` [Dòng 37 - 49]
-    - Gọi `loadUserProfile()` [Dòng 51 - 85] -> Tải `UserProfile` từ Firestore hiển thị Họ tên, Tuổi, Chiều cao, Cân nặng, chỉ số BMI và phân loại thể trạng.
+  [Hành động 1] Mở tab Hồ sơ (ViewCreated):
+    - Hàm chạy: `ProfileFragment.onViewCreated(...)` [Dòng 40 - 75]
+    - Thứ tự thực thi:
+      1. `StepCounterService.startService(requireContext())` [Dòng 44] -> Khởi chạy Foreground Service đếm bước chân ngầm.
+      2. `loadUserProfile()` [Dòng 110 - 127] -> Tải `UserProfile` từ Firestore.
+      3. `loadInitialStepData()` [Dòng 96 - 100] -> Lấy số bước đi và Calo tiêu thụ hôm nay từ `SharedPreferences`.
+      4. Gọi `displayStepData(steps, calo)` [Dòng 102 - 108] -> Cập nhật `tvProfileSteps` và `tvProfileCalories`.
+      5. Gọi `updateBmiAdvice(profile.bmiType, calories, steps)` [Dòng 140 - 200] -> Đưa ra đánh giá & lời khuyên vận động AI cá nhân hóa theo 6 kịch bản BMI (GẦY, CÂN ĐỐI, THỪA CÂN).
 
-  [Hành động 2] Bấm nút "CHỈNH SỬA HỒ SƠ" (`btnEditProfile`):
-    - Layout: `fragment_profile.xml:L84-93`
-    - Sự kiện: `binding.btnEditProfile.setOnClickListener` [Dòng 44 - 46]
-    - Hàm chạy: `findNavController().navigate(R.id.action_profile_to_user_info, bundleOf("isEditMode" to true))` [Dòng 45] -> Mở màn hình `UserInfoFragment.kt` ở chế độ chỉnh sửa.
+  [Hành động 2] Nhấn nút "KÍCH HOẠT / ĐẾM THỬ BƯỚC CHÂN (+50)" (`btnSimulateSteps`):
+    - Layout: `fragment_profile.xml:L206-216`
+    - Sự kiện: `binding.btnSimulateSteps.setOnClickListener` [Dòng 49 - 61]
+    - Hàm chạy: Cộng 50 bước thử nghiệm vào `StepCounterService` ngầm, tính Calo (`+2.0 kcal`), phát Broadcast ngầm `ACTION_STEPS_UPDATED` và cập nhật tức thì thẻ đánh giá BMI.
 
-  [Hành động 3] Bấm nút "ĐẮNG XUẤT" (`btnLogout`):
-    - Layout: `fragment_profile.xml:L95-104`
-    - Sự kiện: `binding.btnLogout.setOnClickListener` [Dòng 47 - 49]
-    - Hàm chạy:
-      1. `NotificationHelper.cancelReminder(requireContext())` [Dòng 48] -> Hủy lịch báo thức nhắc tập.
-      2. `auth.signOut()` [Dòng 49] -> Đăng xuất khỏi Firebase Auth.
-      3. `findNavController().navigate(R.id.action_profile_to_login)` -> Quay về màn hình Đăng nhập.
+  [Hành động 3] Bấm nút "CHỈNH SỬA HỒ SƠ" (`btnEditProfile`):
+    - Layout: `fragment_profile.xml:L234-244`
+    - Sự kiện: `binding.btnEditProfile.setOnClickListener` [Dòng 63 - 68]
+    - Hàm chạy: `findNavController().navigate(R.id.action_profile_to_user_info, bundleOf("isEditMode" to true))` [Dòng 67] -> Mở màn hình `UserInfoFragment.kt` ở chế độ chỉnh sửa.
+
+  [Hành động 4] Bấm nút "ĐẮNG XUẤT" (`btnLogout`):
+    - Layout: `fragment_profile.xml:L246-256`
+    - Sự kiện: `binding.btnLogout.setOnClickListener` [Dòng 70 - 72]
+    - Hàm chạy: `performLogout()` [Dòng 202 - 212] -> Hủy báo thức `NotificationHelper.cancelReminder()`, đăng xuất `auth.signOut()` và chuyển tới `LoginFragment.kt`.
 
 --------------------------------------------------------------------------------
 8. MÀN HÌNH ÉP BUỘC CẬP NHẬT BMI 7 NGÀY (UPDATE BMI FRAGMENT)
@@ -277,7 +285,7 @@ PHẦN 1: BẢNG TRUY VẾT CHUYÊN SÂU LUỒNG CHẠY HÀM THEO TƯƠNG TÁC G
 
 
 ================================================================================
-PHẦN 2: BẢNG TỔNG HỢP KIẾN TRÚC & CÁC THÀNH PHẦN ANDROID CỐT LÕI
+PHẦN 2: THIẾT KẾ KIẾN TRÚC & CÁC THÀNH PHẦN CỐT LÕI (TECHNICAL ARCHITECTURE)
 ================================================================================
 
 1. BẢNG THÀNH PHẦN ANDROID (COMPONENTS MATRIX)
@@ -285,14 +293,15 @@ PHẦN 2: BẢNG TỔNG HỢP KIẾN TRÚC & CÁC THÀNH PHẦN ANDROID CỐT L�
 +----------------------------+-----------------------------------+-----------------------------------+---------------------------------------------------+
 | Thành phần Android         | File Code (.kt)                   | File Giao diện XML (.xml)         | Vai trò & Nhiệm vụ trong Hệ thống                 |
 +----------------------------+-----------------------------------+-----------------------------------+---------------------------------------------------+
-| Application Class          | FitnessApplication.kt             | AndroidManifest.xml:L30           | Khởi tạo Firebase, nạp DB master & Notification   |
+| Application Class          | FitnessApplication.kt             | AndroidManifest.xml:L31           | Khởi tạo Firebase, nạp DB master & Notification   |
 | Activity (Single)          | MainActivity.kt                   | activity_main.xml                 | Activity duy nhất chứa NavHostView & BottomNav    |
 | Navigation Graph           | nav_graph.xml                     | -                                 | Định nghĩa sơ đồ điều hướng giữa 9 màn hình       |
+| Foreground Service         | StepCounterService.kt             | AndroidManifest.xml:L68-73        | Đếm bước chân ngầm real-time & tính Calo          |
 | Fragment 1: Đăng nhập      | LoginFragment.kt                  | fragment_login.xml                | Xử lý đăng nhập Firebase Auth & kiểm tra hạn BMI  |
 | Fragment 2: Đăng ký        | RegisterFragment.kt               | fragment_register.xml             | Xử lý tạo tài khoản mới Firebase Auth             |
 | Fragment 3: Nhập Hồ sơ     | UserInfoFragment.kt               | fragment_user_info.xml            | Tính BMI ban đầu & Batch-write 30 ngày tập        |
 | Fragment 4: Lịch tập       | WorkoutCalendarFragment.kt        | fragment_workout_calendar.xml     | Quản lý lịch 30 ngày, 6 màu thẻ & Pop-up Video    |
-| Fragment 5: Hồ sơ          | ProfileFragment.kt                | fragment_profile.xml              | Hiển thị chỉ số cá nhân, Chỉnh sửa hồ sơ & Logout |
+| Fragment 5: Hồ sơ & Pedometer| ProfileFragment.kt              | fragment_profile.xml              | Hiển thị đếm bước, Calo, Lời khuyên BMI & Logout  |
 | Fragment 6: Cập nhật BMI   | UpdateBmiFragment.kt              | fragment_update_bmi.xml           | Khóa ứng dụng ép cập nhật chỉ số mỗi 7 ngày       |
 | Fragment 7: Camera AI      | CameraFragment.kt                 | fragment_camera.xml               | Quản lý CameraX & Bộ đếm AI đếm lần / tính giây   |
 | Fragment 8: Quyền Camera   | PermissionsFragment.kt            | fragment_permissions.xml          | Kiểm tra và xin quyền CAMERA hệ thống             |
