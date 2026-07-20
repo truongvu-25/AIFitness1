@@ -6,7 +6,7 @@ Ngôn ngữ mã nguồn : Kotlin (Android Native), XML Layouts
 Công nghệ cốt lõi  : Google MediaPipe Tasks Vision (Pose Landmarker), CameraX, 
                      Firebase Auth, Cloud Firestore, Navigation Component, 
                      Foreground Services (StepCounterService, RestTimerService)
-Phiên bản tài liệu : 4.0 (Cập nhật đầy đủ đếm giờ nghỉ 5p, điều hướng chuẩn & camera null-safety)
+Phiên bản tài liệu : 4.1 (Cập nhật chuẩn xác vị trí dòng code sự kiện click ngày trong WorkoutCalendarFragment)
 ================================================================================
 
 
@@ -142,7 +142,7 @@ PHẦN 1: BẢNG TRUY VẾT CHUYÊN SÂU LUỒNG CHẠY HÀM THEO TƯƠNG TÁC G
          - Gọi `onDaySelected(selectedDayIndex)` [Dòng 214].
 
   [Hành động 2] Quy tắc phối 6 màu sắc thẻ ngày (`WorkoutDaysAdapter`):
-    - File code: `WorkoutDaysAdapter.DayViewHolder.bind(...)` [Dòng 509 - 576]
+    - File code: `WorkoutDaysAdapter.DayViewHolder.bind(...)` [Dòng 574 - 635]
     - Logic phối màu theo điều kiện:
       1. Ngày HIỆN TẠI (`item.isCurrentDay`) -> Nền màu Xanh Dương (`#007F8B`), Chữ Trắng.
       2. Ngày NGHỈ (`item.isRestDay`) -> Nền màu Xám (`#F5F5F5`), Chữ Xám, Nhãn "NGHỈ".
@@ -152,8 +152,9 @@ PHẦN 1: BẢNG TRUY VẾT CHUYÊN SÂU LUỒNG CHẠY HÀM THEO TƯƠNG TÁC G
       6. Ngày tập SẮP TỚI -> Nền màu Trắng (`#FFFFFF`), Chữ Đen.
 
   [Hành động 3] Chọn vào một Ngày tập bất kỳ trên thanh cuộn ngang:
-    - Sự kiện: `holder.itemView.setOnClickListener` [Dòng 494 - 502]
-    - Hàm chạy: `onDaySelected(dayNum)` [Dòng 221 - 267].
+    - File code: `WorkoutCalendarFragment.kt`
+    - Sự kiện: `holder.itemView.setOnClickListener` trong `WorkoutDaysAdapter` [Dòng 555 - 563]
+    - Hàm chạy khi nhấp chọn thẻ ngày: `onDaySelected(item.dayIndex)` [Dòng 221 - 267].
     - Logic xử lý:
       + Nếu là Ngày Nghỉ (`isRestDay == true`) -> Hiển thị thẻ thông báo màu vàng kem `cardStatusNotice` ("Hôm nay là Ngày Nghỉ Ngơi (DD/MM)..."), ẩn danh sách bài tập (`exercisesAdapter.updateData(emptyList())`).
       + Nếu là Ngày bỏ qua (`dayNum < currentDayIndex` & `completedCount == 0`) -> Hiển thị thẻ cảnh báo màu đỏ `cardStatusNotice` ("Bạn đã bỏ qua lịch tập Ngày X (DD/MM)...").
@@ -161,7 +162,7 @@ PHẦN 1: BẢNG TRUY VẾT CHUYÊN SÂU LUỒNG CHẠY HÀM THEO TƯƠNG TÁC G
 
   [Hành động 4] Nhấn nút "XEM VIDEO" trên thẻ bài tập (`btnWatchVideo`):
     - Layout: `item_exercise.xml:L53-62`
-    - Sự kiện: `btnWatchVideo.setOnClickListener` [Dòng 613 - 615]
+    - Sự kiện: `btnWatchVideo.setOnClickListener` [Dòng 675 - 677]
     - Hàm chạy: `showVideoTutorialDialog(exercise)` [Dòng 342 - 389].
     - Logic:
       + Nếu `videoUrl` chứa "youtube.com" hoặc "youtu.be" -> Mở Intent xem ngoài: `startActivity(Intent(ACTION_VIEW, Uri.parse(url)))` [Dòng 345 - 351].
@@ -186,12 +187,12 @@ PHẦN 1: BẢNG TRUY VẾT CHUYÊN SÂU LUỒNG CHẠY HÀM THEO TƯƠNG TÁC G
 
   [Hành động 1] Bấm nút "BẮT ĐẦU" hoặc "TẬP LẠI" ở bài tập trong Lịch tập (`btnStartExercise`):
     - Layout: `item_exercise.xml:L64-73`
-    - Sự kiện: `btnStart.setOnClickListener` [Dòng 617 - 619]
+    - Sự kiện: `btnStart.setOnClickListener` [Dòng 678 - 680]
     - Hàm chạy:
       1. `RestTimerService.stopService(requireContext())` [CameraFragment.kt:L135] -> Ngắt bộ đếm thời gian nghỉ cũ nếu có.
-      2. `checkCameraPermissionAndStart(exercise)` [Dòng 391 - 401].
+      2. `checkCameraPermissionAndStart(exercise)` [Dòng 491 - 502].
       3. Kiểm tra quyền Camera `Manifest.permission.CAMERA`. Nếu chưa cấp -> Mở Popup xin quyền `requestPermissionLauncher.launch(...)`.
-      4. Nếu đã cấp quyền -> Gọi `openWorkoutCamera(exercise)` [Dòng 403 - 412].
+      4. Nếu đã cấp quyền -> Gọi `openWorkoutCamera(exercise)` [Dòng 504 - 512].
       5. Đóng gói tham số: `exerciseId`, `exerciseName`, `targetCount`, `dayIndex` -> Gọi `findNavController().navigate(R.id.action_workout_calendar_to_camera, bundle)`.
 
   [Hành động 2] Khởi tạo Màn hình Camera AI (`CameraFragment.onViewCreated`):
@@ -259,7 +260,7 @@ PHẦN 1: BẢNG TRUY VẾT CHUYÊN SÂU LUỒNG CHẠY HÀM THEO TƯƠNG TÁC G
     - Sự kiện: `binding.btnEditProfile.setOnClickListener` [Dòng 49 - 54]
     - Hàm chạy: `findNavController().navigate(R.id.action_profile_to_user_info, bundleOf("isEditMode" to true))` [Dòng 53] -> Mở màn hình `UserInfoFragment.kt` ở chế độ chỉnh sửa.
 
-  [Hành động 3] Bấm nút "ĐẮNG XUẤT" (`btnLogout`):
+  [Hành động 3] Bấm nút "ĐĂNG XUẤT" (`btnLogout`):
     - Layout: `fragment_profile.xml:L238-248`
     - Sự kiện: `binding.btnLogout.setOnClickListener` [Dòng 56 - 58]
     - Hàm chạy: `performLogout()` [Dòng 190 - 200] -> Hủy báo thức `NotificationHelper.cancelReminder()`, đăng xuất `auth.signOut()` và chuyển tới `LoginFragment.kt`.
