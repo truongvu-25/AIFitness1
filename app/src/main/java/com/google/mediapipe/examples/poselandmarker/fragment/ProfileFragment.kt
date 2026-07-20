@@ -80,11 +80,12 @@ class ProfileFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         val filter = IntentFilter(StepCounterService.ACTION_STEPS_UPDATED)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            requireActivity().registerReceiver(stepsReceiver, filter, Context.RECEIVER_NOT_EXPORTED)
-        } else {
-            requireActivity().registerReceiver(stepsReceiver, filter)
-        }
+        androidx.core.content.ContextCompat.registerReceiver(
+            requireContext(),
+            stepsReceiver,
+            filter,
+            androidx.core.content.ContextCompat.RECEIVER_NOT_EXPORTED
+        )
         loadInitialStepData()
     }
 
