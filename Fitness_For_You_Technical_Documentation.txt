@@ -6,7 +6,7 @@ Ngôn ngữ mã nguồn : Kotlin (Android Native), XML Layouts
 Công nghệ cốt lõi  : Google MediaPipe Tasks Vision (Pose Landmarker), CameraX, 
                      Firebase Auth, Cloud Firestore, Navigation Component, 
                      Foreground Services (StepCounterService, RestTimerService)
-Phiên bản tài liệu : 5.1 (Cập nhật chính xác vị trí hàm onDaySelected trong WorkoutCalendarFragment: Dòng 238 - 286)
+Phiên bản tài liệu : 6.0 (Rà soát kiểm toán toàn bộ số dòng code từng file 100% chính xác)
 ================================================================================
 
 
@@ -131,12 +131,12 @@ PHẦN 1: BẢNG TRUY VẾT CHUYÊN SÂU LUỒNG CHẠY HÀM THEO TƯƠNG TÁC G
 - File code xử lý: `WorkoutCalendarFragment.kt`
 
   [Hành động 1] Màn hình được nạp (ViewCreated):
-    - Hàm chạy: `WorkoutCalendarFragment.onViewCreated(...)` [Dòng 79 - 88]
+    - Hàm chạy: `WorkoutCalendarFragment.onViewCreated(...)` [Dòng 90 - 99]
     - Thứ tự gọi các hàm:
-      1. `setupRecyclerViews()` [Dòng 90 - 110] -> Khởi tạo Adapter danh sách ngày nằm ngang (`WorkoutDaysAdapter`) và Adapter bài tập dọc (`ExercisesAdapter`).
-      2. `loadMasterExercisesAndInit()` [Dòng 112 - 128] -> Tải collection "exercises" từ Firestore nạp vào cache bộ nhớ `exercisesCache`.
-      3. `loadUserProfileAndPlan()` [Dòng 130 - 173] -> Tải `UserProfile`. Kiểm tra thời gian ép buộc cập nhật BMI 7 ngày. Tính chỉ số ngày hiện tại `currentDayIndex`.
-      4. `loadAll30DaysWorkoutData()` [Dòng 175 - 219] -> Tải toàn bộ 30 ngày tập từ sub-collection "workouts".
+      1. `setupRecyclerViews()` [Dòng 101 - 118] -> Khởi tạo Adapter danh sách ngày nằm ngang (`WorkoutDaysAdapter`) và Adapter bài tập dọc (`ExercisesAdapter`).
+      2. `loadMasterExercisesAndInit()` [Dòng 120 - 136] -> Tải collection "exercises" từ Firestore nạp vào cache bộ nhớ `exercisesCache`.
+      3. `loadUserProfileAndPlan()` [Dòng 138 - 182] -> Tải `UserProfile`. Kiểm tra thời gian ép buộc cập nhật BMI 7 ngày. Tính chỉ số ngày hiện tại `currentDayIndex`.
+      4. `loadAll30DaysWorkoutData()` [Dòng 184 - 236] -> Tải toàn bộ 30 ngày tập từ sub-collection "workouts".
          - Tính ngày tháng thực tế (DD/MM) cho từng ngày: `dateFormat.format(Date(createdTime + (dayNum - 1) * 24h))`.
          - Xây dựng danh sách `DayItemUI` [Dòng 520 - 529] chứa thông tin hoàn thành bài tập.
          - Nạp dữ liệu vào `daysAdapter.updateData(dayUiList, defaultSelectedIdx)` [Dòng 224].
@@ -165,13 +165,13 @@ PHẦN 1: BẢNG TRUY VẾT CHUYÊN SÂU LUỒNG CHẠY HÀM THEO TƯƠNG TÁC G
   [Hành động 4] Nhấn nút "XEM VIDEO" trên thẻ bài tập (`btnWatchVideo`):
     - Layout: `item_exercise.xml:L53-62`
     - Sự kiện: `btnWatchVideo.setOnClickListener` trong `ExercisesAdapter` [Dòng 703 - 705]
-    - Hàm chạy: `showVideoTutorialDialog(exercise)` [Dòng 342 - 389].
+    - Hàm chạy: `showVideoTutorialDialog(exercise)` [Dòng 435 - 489].
     - Logic:
-      + Nếu `videoUrl` chứa "youtube.com" hoặc "youtu.be" -> Mở Intent xem ngoài: `startActivity(Intent(ACTION_VIEW, Uri.parse(url)))` [Dòng 345 - 351].
+      + Nếu `videoUrl` chứa "youtube.com" hoặc "youtu.be" -> Mở Intent xem ngoài: `startActivity(Intent(ACTION_VIEW, Uri.parse(url)))` [Dòng 437 - 444].
       + Nếu là Video Asset ("asset:///videos/..."):
-        * Gọi helper `getMediaUri(requireContext(), url)` [Dòng 322 - 340] -> Tự động giải nén đệm file mp4 từ `assets` ra `cacheDir` của thiết bị.
-        * Nạp Uri vào `VideoView` trong Dialog đứng (`dialog_video_player.xml`) [Dòng 364].
-        * Đợi sẵn sàng và tự động phát lặp lại: `videoView.start()`, `mp.isLooping = true` [Dòng 367].
+        * Gọi helper `getMediaUri(requireContext(), url)` [Dòng 413 - 433] -> Tự động giải nén đệm file mp4 từ `assets` ra `cacheDir` của thiết bị.
+        * Nạp Uri vào `VideoView` trong Dialog đứng (`dialog_video_player.xml`) [Dòng 464].
+        * Đợi sẵn sàng và tự động phát lặp lại: `videoView.start()`, `mp.isLooping = true` [Dòng 467].
 
   [Hành động 5] Nhấn nút "BẮT ĐẦU" / "TẬP LẠI" bài tập (`btnStartExercise`):
     - Layout: `item_exercise.xml:L64-73`
@@ -180,10 +180,10 @@ PHẦN 1: BẢNG TRUY VẾT CHUYÊN SÂU LUỒNG CHẠY HÀM THEO TƯƠNG TÁC G
 
   [Hành động 6] Nhấn nút "TẠO MỚI" lộ trình 30 ngày (`btnResetPlan`):
     - Layout: `fragment_workout_calendar.xml:L38-49`
-    - Sự kiện: `binding.btnResetPlan.setOnClickListener` [Dòng 85 - 87]
+    - Sự kiện: `binding.btnResetPlan.setOnClickListener` [Dòng 96 - 98]
     - Hàm chạy theo thứ tự:
-      1. `showResetPlanDialog()` [Dòng 269 - 281] -> Hiển thị Hộp thoại AlertDialog xác nhận.
-      2. Khi bấm "Đồng ý" -> Gọi `resetWorkoutPlan()` [Dòng 283 - 320].
+      1. `showResetPlanDialog()` [Dòng 288 - 300] -> Hiển thị Hộp thoại AlertDialog xác nhận.
+      2. Khi bấm "Đồng ý" -> Gọi `resetWorkoutPlan()` [Dòng 310 - 350].
       3. Hàm `resetWorkoutPlan()` tính lại lộ trình 30 ngày mới, xóa bỏ lịch tập cũ, cập nhật `createdTime = System.currentTimeMillis()` và ghi đè Firestore.
 
 --------------------------------------------------------------------------------
