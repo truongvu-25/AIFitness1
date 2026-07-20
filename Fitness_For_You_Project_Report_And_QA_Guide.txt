@@ -1,0 +1,319 @@
+================================================================================
+    TÀI LIỆU BÁO CÁO ĐỒ ÁN VÀ KỊCH BẢN CÂU HỎI BẢO VỆ DỰ ÁN "FITNESS FOR YOU"
+              (CHI TIẾT HÀNH ĐỘNG, CHỨC NĂNG DÒNG CODE & CÂU HỎI VẤN ĐÁP)
+================================================================================
+Tên dự án        : Fitness For You (Hệ thống hỗ trợ tập luyện cá nhân hóa AI)
+Mã nguồn         : Kotlin (Android Native SDK), MediaPipe Tasks Vision, CameraX,
+                   Firebase Auth, Cloud Firestore, Navigation Component
+Người thực hiện   : Phạm Hòa Anh Nam
+Phiên bản        : 1.0 (Tài liệu báo cáo chính thức & Bộ câu hỏi bảo vệ đồ án)
+================================================================================
+
+
+================================================================================
+PHẦN 1: BÁO CÁO CHI TIẾT CÁC HÀNH ĐỘNG VÀ LUỒNG CHẠY HÀM TỪ ĐẦU TỚI CUỐI DỰ ÁN
+================================================================================
+
+--------------------------------------------------------------------------------
+1. QUÁ TRÌNH KHỞI ĐỘNG ỨNG DỤNG (APPLICATION STARTUP)
+--------------------------------------------------------------------------------
+Khi người dùng ấn vào biểu tượng App "Fitness For You" trên màn hình điện thoại:
+
+[Bước 1] Khởi tạo Lớp Application toàn cục: `FitnessApplication.kt`
+- File code : `d:\AIFitness1\app\src\main\java\com\google\mediapipe\examples\poselandmarker\FitnessApplication.kt`
+- Hàm thực thi: `onCreate()` [Dòng 16 - 21]
+- Diễn giải chi tiết:
+  1. Dòng 18 `FirebaseConfig.initialize(this)`: Kết nối ứng dụng với SDK Firebase.
+  2. Dòng 19 `initializeExerciseDatabase()` [Chi tiết Dòng 37 - 110]: Khởi tạo đối tượng `FirebaseFirestore.getInstance()`. Định nghĩa danh sách 7 bài tập master chuẩn (Hít đất, Squat, Jumping Jack, Sit-up, Plank, Side Plank, Split Squat). Sử dụng Firestore Write Batch [Dòng 101 - 106] ghi đè dữ liệu 7 bài tập này vào collection "exercises" để ứng dụng luôn có dữ liệu gốc offline/online.
+  3. Dòng 20 `createNotificationChannel()` [Chi tiết Dòng 23 - 35]: Trên Android 8.0+ (API 26+), khởi tạo Kênh thông báo `NotificationChannel(CHANNEL_ID = "workout_reminder_channel")` với mức ưu tiên `IMPORTANCE_DEFAULT` để phục vụ phát thông báo nhắc tập luyện.
+
+[Bước 2] Khởi chạy Activity Duy Nhất: `MainActivity.kt`
+- File code : `d:\AIFitness1\app\src\main\java\com\google\mediapipe\examples\poselandmarker\MainActivity.kt`
+- Layout XML: `activity_main.xml`
+- Hàm thực thi: `onCreate(savedInstanceState)` [Dòng 31 - 62]
+- Diễn giải chi tiết:
+  1. Dòng 33 `ActivityMainBinding.inflate(layoutInflater)`: Nạp giao diện XML `activity_main.xml`.
+  2. Dòng 34 `setContentView(activityMainBinding.root)`: Đặt view gốc làm màn hình chính.
+  3. Dòng 37 `NotificationHelper.scheduleDailyReminder(this)`: Tự động kích hoạt lịch báo thức nhắc tập 8:00 AM hàng ngày.
+  4. Dòng 36 - 39 `supportFragmentManager.findFragmentById(R.id.fragment_container)`: Tìm khung chứa `NavHostFragment` và liên kết thanh Menu dưới đáy `BottomNavigationView` (`activity_main.xml:L63-71`) với `NavController` qua hàm `setupWithNavController(navController)`.
+  5. Dòng 45 - 61 `navController.addOnDestinationChangedListener`: Đăng ký bộ lắng nghe chuyển màn hình. Nếu người dùng ở màn hình Đăng nhập (`login_fragment`), Đăng ký (`register_fragment`), Nhập thông số (`user_info_fragment`), hoặc Camera AI (`camera_fragment`), hệ thống tự động ẩn Toolbar và BottomNavigationView (`View.GONE`). Ở các màn hình khác thì hiển thị (`View.VISIBLE`).
+
+[Bước 3] Điều hướng Sơ đồ Navigation (`nav_graph.xml`):
+- Màn hình khởi đầu `startDestination` được chỉ định mặc định là `@id/login_fragment` (`LoginFragment.kt`).
+
+--------------------------------------------------------------------------------
+2. MÀN HÌNH ĐĂNG NHẬP (LOGIN FRAGMENT)
+--------------------------------------------------------------------------------
+- File code : `LoginFragment.kt`
+- Layout XML: `fragment_login.xml`
+
+[Kịch bản A] Đã đăng nhập trước đó (Auto Login Check):
+- Hàm thực thi: `onViewCreated()` [Dòng 36 - 52]
+- Diễn giải chi tiết:
+  1. Dòng 40 `val currentUser = auth.currentUser`: Kiểm tra phiên làm việc người dùng từ Firebase Auth.
+  2. Dòng 41 - 43: Nếu `currentUser != null`, gọi `checkUserProfileAndNavigate(currentUser.uid)` [Dòng 90 - 123].
+  3. Dòng 93 `db.collection("users").document(uid).get()`: Đọc tệp hồ sơ cá nhân từ Firestore.
+  4. Dòng 100 - 107: Tính toán mốc 7 ngày `diffMs = System.currentTimeMillis() - profile.lastBmiUpdatedTime`.
+     - Nếu `diffMs >= 7 ngày` (604.800.000 ms) ➔ Điều hướng `findNavController().navigate(R.id.action_login_to_update_bmi)` [Dòng 104] (Mở màn hình khóa ép cập nhật BMI 7 ngày `UpdateBmiFragment.kt`).
+     - Nếu dưới 7 ngày ➔ Điều hướng `findNavController().navigate(R.id.action_login_to_workout_calendar)` [Dòng 106] (Vào màn hình Lịch tập chính).
+     - Nếu chưa tạo hồ sơ ➔ Điều hướng `findNavController().navigate(R.id.action_login_to_user_info)` [Dòng 110].
+
+[Kịch bản B] Người dùng bấm nút "ĐĂNG NHẬP" (`btnLogin`):
+- Sự kiện    : `binding.btnLogin.setOnClickListener` [Dòng 45 - 47]
+- Hàm thực thi: `performLogin()` [Dòng 54 - 88]
+- Diễn giải chi tiết:
+  1. Dòng 55 - 65: Kiểm tra tính hợp lệ dữ liệu nhập (email, password không được để trống).
+  2. Dòng 67 `setLoading(true)`: Ẩn nút Đăng nhập, hiện ProgressBar xoay nạp.
+  3. Dòng 69 `auth.signInWithEmailAndPassword(email, password)`: Gửi yêu cầu xác thực tới Firebase Auth.
+  4. Dòng 74: Đăng nhập thành công ➔ Gọi `checkUserProfileAndNavigate(user.uid)` để phân luồng màn hình.
+
+[Kịch bản C] Người dùng bấm "Chưa có tài khoản? Đăng ký ngay":
+- Sự kiện    : `binding.tvGoToRegister.setOnClickListener` [Dòng 49 - 51]
+- Dòng 50 `findNavController().navigate(R.id.action_login_to_register)` ➔ Chuyển sang `RegisterFragment.kt`.
+
+--------------------------------------------------------------------------------
+3. MÀN HÌNH ĐĂNG KÝ (REGISTER FRAGMENT)
+--------------------------------------------------------------------------------
+- File code : `RegisterFragment.kt`
+- Layout XML: `fragment_register.xml`
+
+- Sự kiện nút Đăng ký : `binding.btnRegister.setOnClickListener` [Dòng 37 - 39]
+- Hàm thực thi         : `performRegistration()` [Dòng 46 - 85]
+- Diễn giải chi tiết:
+  1. Dòng 51 - 66: Validation kiểm tra Email hợp lệ, Mật khẩu >= 6 ký tự, Mật khẩu nhập lại phải trùng khớp.
+  2. Dòng 68 `setLoading(true)`: Hiện trạng thái chờ.
+  3. Dòng 70 `auth.createUserWithEmailAndPassword(email, password)`: Tạo tài khoản mới trên Firebase Auth.
+  4. Dòng 76 `findNavController().navigate(R.id.action_register_to_user_info)`: Đăng ký thành công ➔ Chuyển ngay sang màn hình nhập thông số cơ thể `UserInfoFragment.kt`.
+
+--------------------------------------------------------------------------------
+4. MÀN HÌNH KHẢO SÁT CHỈ SỐ BMI & SINH LỘ TRÌNH 30 NGÀY (USER INFO FRAGMENT)
+--------------------------------------------------------------------------------
+- File code : `UserInfoFragment.kt`
+- Layout XML: `fragment_user_info.xml`
+
+- Sự kiện nút "BẮT ĐẦU TẬP LUYỆN": `binding.btnSaveInfo.setOnClickListener` [Dòng 52 - 54]
+- Hàm thực thi                          : `saveUserInfo()` [Dòng 84 - 153]
+- Diễn giải chi tiết:
+  1. Dòng 91 - 109: Kiểm tra hợp lệ dữ liệu Họ tên, Tuổi, Chiều cao (cm), Cân nặng (kg).
+  2. Dòng 114 - 116: Thuật toán tính BMI ➔ `heightInMeters = height / 100.0`, `bmi = weight / (heightInMeters * heightInMeters)`.
+  3. Dòng 119 - 123: Thuật toán phân loại BMI (`bmiType`):
+     - `bmi < 18.5` ➔ `"GAY"` (Thiếu cân)
+     - `18.5 <= bmi < 25.0` ➔ `"CAN DOI"` (Bình thường)
+     - `bmi >= 25.0` ➔ `"THUA CAN"` (Thừa cân / Béo phì)
+  4. Dòng 127 - 137: Khởi tạo đối tượng `UserProfile` với mốc `lastBmiUpdatedTime = System.currentTimeMillis()`.
+  5. Dòng 139 `db.collection("users").document(uid).set(profile)`: Lưu hồ sơ vào Firestore.
+  6. Dòng 146 `generateWorkoutPlan(uid, bmiType)` [Chi tiết Dòng 163 - 187]:
+     - Khởi tạo `val batch = db.batch()` [Dòng 164].
+     - Vòng lặp `for (day in 1..30)` [Dòng 167 - 174]:
+       * Gọi `isRestDayForBmi(bmiType, day)` [Dòng 155 - 161] ➔ Xác định Ngày Nghỉ ngơi theo từng thể trạng:
+         + Nhóm GẦY: Nghỉ các Ngày 4, 7, 11, 14, 18, 21, 25, 28 (Tập 2-3 ngày nghỉ 1 ngày).
+         + Nhóm CÂN ĐỐI: Nghỉ các Ngày 4, 8, 12, 16, 20, 24, 28 (Tập 3 ngày nghỉ 1 ngày).
+         + Nhóm THỪA CÂN: Nghỉ các Ngày 5, 10, 15, 20, 25, 30 (Tập 4 ngày nghỉ 1 ngày).
+       * Gọi `getExercisesForBmiAndDay(bmiType, day)` [Dòng 189 - 248] ➔ Sinh danh sách bài tập tăng dần mục tiêu theo hệ số tuần `weekMultiplier` (Tuần 1: x1.0, Tuần 2: x1.2, Tuần 3: x1.4, Tuần 4: x1.6). Đặt số giây cho Plank/Side Plank (30s - 60s).
+       * Tạo tệp `WorkoutDay(dayIndex = day, exercises = exercises, isRestDay = isRestDay)`.
+       * Đưa vào Batch Write: `batch.set(dayDocRef, workoutDay)`.
+     - Dòng 176 `batch.commit()`: Đẩy toàn bộ 30 ngày tập lên CSDL Firestore cùng 1 lúc.
+  7. Dòng 181 `findNavController().navigate(R.id.action_user_info_to_workout_calendar)` ➔ Mở màn hình Lịch tập 30 ngày.
+
+--------------------------------------------------------------------------------
+5. MÀN HÌNH LỊCH TẬP 30 NGÀY (WORKOUT CALENDAR FRAGMENT)
+--------------------------------------------------------------------------------
+- File code : `WorkoutCalendarFragment.kt`
+- Layout XML: `fragment_workout_calendar.xml`, `item_workout_day.xml`, `item_exercise.xml`, `dialog_video_player.xml`
+
+[Tải dữ liệu khi mở màn hình]: `onViewCreated()` [Dòng 90 - 99]
+  1. Dòng 101 `setupRecyclerViews()`: Khởi tạo `WorkoutDaysAdapter` (ngang) và `ExercisesAdapter` (dọc).
+  2. Dòng 120 `loadMasterExercisesAndInit()`: Tải collection "exercises" lưu vào RAM cache `exercisesCache`.
+  3. Dòng 138 `loadUserProfileAndPlan()`: Tải `UserProfile`. Tính ngày tập hiện tại `currentDayIndex = (diffPlanMs / 24h) + 1`.
+  4. Dòng 184 `loadAll30DaysWorkoutData()`: Tải sub-collection "workouts" của 30 ngày. Đẩy danh sách `DayItemUI` vào `daysAdapter.updateData()` [Dòng 224] và tự động cuộn đến ngày hiện tại `rvDays.scrollToPosition()` [Dòng 227].
+
+[Quy tắc phối 6 màu sắc thẻ ngày trong `WorkoutDaysAdapter`]:
+- File code: `DayViewHolder.bind()` [Dòng 574 - 649]
+  1. Ngày HIỆN TẠI (`item.isCurrentDay`) ➔ Nền Xanh Dương (`#007F8B`), Chữ Trắng [Dòng 579 - 588].
+  2. Ngày NGHỈ (`item.isRestDay`) ➔ Nền Xám (`#F5F5F5`), Chữ Xám, Nhãn "NGHỈ" [Dòng 590 - 599].
+  3. Ngày đã qua & Hoàn thành TẤT CẢ bài ➔ Nền Xanh Lá Nhạt (`#E8F5E9`), Chữ Xanh Lá [Dòng 601 - 610].
+  4. Ngày đã qua & Hoàn thành ÍT NHẤT 1 bài ➔ Nền Vàng Nhạt (`#FFF9C4`), Chữ Vàng [Dòng 612 - 621].
+  5. Ngày đã qua & BỎ QUA HOÀN TOÀN (0 bài) ➔ Nền Đỏ Nhạt (`#FFEBEE`), Chữ Đỏ, Nhãn "Bỏ qua" [Dòng 623 - 632].
+  6. Ngày tập SẮP TỚI ➔ Nền Trắng (`#FFFFFF`), Chữ Đen [Dòng 634 - 640].
+
+[Hành động Bấm chọn 1 Ngày tập trên thanh ngang]:
+- Sự kiện    : `holder.itemView.setOnClickListener` trong `WorkoutDaysAdapter` [Dòng 555 - 563]
+- Hàm thực thi: `onDaySelected(dayNum)` [Dòng 238 - 286]
+- Diễn giải:
+  1. Dòng 239 - 242: Lấy dữ liệu bài tập của ngày đó từ RAM `workoutDaysMap`.
+  2. Dòng 247: Cập nhật tiêu đề `tvSelectedDay` (Ví dụ: "Bài tập Ngày 5 (20/07)").
+  3. Dòng 250 - 258: Nếu là Ngày Nghỉ ➔ Hiện thẻ màu Vàng Kem `cardStatusNotice` chứa lời khuyên phục hồi cơ bắp và ẩn danh sách bài tập.
+  4. Dòng 260 - 267: Nếu là Ngày Bỏ Qua ➔ Hiện thẻ cảnh báo màu Đỏ Nhạt `cardStatusNotice`.
+  5. Dòng 271 - 284: Nạp danh sách bài tập vào `exercisesAdapter.updateData(displayExercises)`.
+
+[Hành động Bấm nút "XEM VIDEO" trên bài tập]:
+- Sự kiện    : `btnWatchVideo.setOnClickListener` trong `ExercisesAdapter` [Dòng 703 - 705]
+- Hàm thực thi: `showVideoTutorialDialog(exercise)` [Dòng 435 - 489]
+- Diễn giải:
+  1. Dòng 437 - 444: Nếu `videoUrl` là link Youtube ➔ Mở App Youtube ngoài.
+  2. Dòng 463 `getMediaUri(requireContext(), url)` [Chi tiết Dòng 413 - 433]: Giải nén đệm file mp4 từ `assets/videos/` ra thư mục `cacheDir` trên thiết bị.
+  3. Dòng 464 - 468: Nạp Uri vào `VideoView` trong Dialog đứng (`dialog_video_player.xml`), cho phát tự động lặp lại (`mp.isLooping = true`).
+
+[Hành động Bấm nút "BẮT ĐẦU" / "TẬP LẠI" bài tập]:
+- Sự kiện    : `btnStart.setOnClickListener` trong `ExercisesAdapter` [Dòng 707 - 709]
+- Hàm thực thi: `checkCameraPermissionAndStart(exercise)` [Dòng 491 - 502]
+- Diễn giải: Kiểm tra quyền `Manifest.permission.CAMERA`. Nếu đã cấp ➔ Gọi `openWorkoutCamera(exercise)` [Dòng 504 - 512] đóng gói `exerciseId`, `exerciseName`, `targetCount`, `dayIndex` và chuyển sang `CameraFragment.kt`.
+
+--------------------------------------------------------------------------------
+6. MÀN HÌNH CAMERA AI QUÉT KHUNG XƯƠNG & ĐẾM NGHỈ 5 PHÚT (CAMERA FRAGMENT)
+--------------------------------------------------------------------------------
+- File code: `CameraFragment.kt`, `OverlayView.kt`, `ExerciseAnalyzer.kt`, `PoseLandmarkerHelper.kt`, `RestTimerService.kt`
+- Layout XML: `fragment_camera.xml`, `info_bottom_sheet.xml`
+
+[Hành động Mở màn hình Camera AI]:
+- Hàm thực thi: `onViewCreated()` [Dòng 131 - 184]
+- Diễn giải:
+  1. Dòng 135 `RestTimerService.stopService(requireContext())`: Ngắt dịch vụ đếm giờ nghỉ cũ nếu đang chạy.
+  2. Dòng 137 `backgroundExecutor = Executors.newSingleThreadExecutor()`: Khởi tạo Thread riêng cho tác vụ nặng AI.
+  3. Dòng 146 `exerciseAnalyzer = BaseExerciseAnalyzer.create(...)`: Khởi tạo Bộ phân tích động tác chuyên biệt cho bài tập này.
+  4. Dòng 171 - 181: Khởi tạo `PoseLandmarkerHelper` ở chế độ `RunningMode.LIVE_STREAM`.
+  5. Dòng 340 - 353 `setUpCamera()` ➔ Gọi `bindCameraUseCases()` [Dòng 355 - 399]: Khởi tạo CameraX, cấu hình độ phân giải 4:3, gắn `imageAnalyzer` nhận luồng hình ảnh ~30 khung hình/giây.
+
+[Luồng nhận diện Khung xương AI Real-time Pipeline]:
+  1. Từng khung hình từ camera truyền vào `detectPose(imageProxy)` [Dòng 401 - 408].
+  2. `poseLandmarkerHelper.detectLiveStream(...)` tính toán vị trí 33 khớp xương 3D và trả Callback `onResults(resultBundle)` [Dòng 415 - 451].
+  3. `onResults()` đẩy dữ liệu về UI Thread (`activity?.runOnUiThread`):
+     - Dòng 421 `fragmentCameraBinding.overlay.setResults(...)` ➔ Gọi `OverlayView.draw(canvas)` (`OverlayView.kt:L65-87`) vẽ 33 điểm màu vàng và các đường nối màu xanh ngọc đè lên khung hình camera.
+     - Dòng 434 `val result = analyzer.analyze(landmarks)`: Truyền 33 điểm tọa độ vào `ExerciseAnalyzer.kt`.
+     - Trong `ExerciseAnalyzer.kt`:
+       * Sử dụng công thức lượng giác `Math.atan2` tính góc hình học giữa các khớp xương (Ví dụ: Góc khuỷu tay cho Hít đất, Góc đầu gối cho Squat, Góc hông cho Plank).
+       * Bài tập đếm lần: Khi người dùng thực hiện đủ 1 chu kỳ gập/mở chuẩn ➔ Tự động tăng `currentProgress++`.
+       * Bài tập tính giây (Plank): Khi giữ đúng góc thẳng lưng ➔ Trả về `isGoodForm = true`. Trong `CameraFragment`, khi giữ chuẩn form đủ 1000ms ➔ Tự động tăng `currentProgressCount++` (đếm nhảy từng giây) [Dòng 436].
+     - Dòng 437 - 439: Cập nhật văn bản đếm số lần/giây `tvCounterValue` và thông báo hướng dẫn sửa tư thế `tvFormFeedback` (Ví dụ: "Hãy hạ ngực sâu hơn", "Giữ thẳng lưng").
+     - Dòng 442: Khi `result.isComplete == true` (Đạt đủ mục tiêu bài tập) ➔ Tự động gọi `completeWorkout()`.
+
+[Hoàn thành bài tập & Kích hoạt đếm ngầm 5 phút nghỉ]:
+- Hàm thực thi: `completeWorkout()` [Dòng 188 - 246]
+- Diễn giải:
+  1. Dòng 189 `if (isCompletingWorkout) return; isCompletingWorkout = true`: Cờ bảo vệ chống đệm duplicate callback.
+  2. Dòng 209 `docRef.update("exercises", updatedExercises)`: Cập nhật trạng thái bài tập `status = 1` (Hoàn thành) lên Firestore.
+  3. Dòng 212 `val hasRemainingPending = updatedExercises.any { it.status == 0 }`: Kiểm tra xem trong ngày hôm nay còn bài tập nào chưa làm hay không.
+     - Nếu CÒN bài chưa làm (`hasRemainingPending == true`) ➔ Gọi Foreground Service đếm ngầm 5 phút nghỉ: `RestTimerService.startRestTimer(requireContext(), dayIndex)` [Dòng 214].
+     - Nếu ĐÃ TẬP HẾT TẤT CẢ BÀI TRONG NGÀY (`hasRemainingPending == false`) ➔ Hủy Foreground Service nghỉ ngơi: `RestTimerService.stopService(requireContext())` [Dòng 217].
+  4. Dòng 222 - 225 `val popped = findNavController().popBackStack(R.id.workout_calendar_fragment, false)`: Điều hướng an toàn quay trở về đúng Màn hình Lịch tập, giữ người dùng ở lại ứng dụng chứ không thoát ra ngoài.
+
+--------------------------------------------------------------------------------
+7. MÀN HÌNH HỒ SƠ CÁ NHÂN & PEDOMETER ĐẾM BƯỚC (PROFILE FRAGMENT)
+--------------------------------------------------------------------------------
+- File code : `ProfileFragment.kt`, `StepCounterService.kt`
+- Layout XML: `fragment_profile.xml`
+
+- Sự kiện mở tab Hồ sơ : `onViewCreated()` [Dòng 60 - 79]
+- Diễn giải:
+  1. Dòng 64 `StepCounterService.startService(requireContext())`: Khởi chạy Foreground Service đếm bước chân ngầm real-time.
+  2. Dòng 117 `loadUserProfile()`: Tải thông tin `UserProfile` từ Firestore.
+  3. Dòng 102 `loadInitialStepData()`: Đọc số bước đi và Calo tiêu thụ từ `SharedPreferences`.
+  4. Dòng 108 `displayStepData(steps, calo)`: Cập nhật `tvProfileSteps` và `tvProfileCalories`.
+  5. Dòng 158 `updateBmiAdvice(profile.bmiType, calories, steps)` [Chi tiết Dòng 158 - 220]: Đánh giá và đưa ra Lời khuyên vận động AI cá nhân hóa theo 6 kịch bản thể trạng BMI:
+     - Nhóm GẦY: Cảnh báo khi tiêu thụ > 180 kcal (khuyên nạp thêm 300-500 kcal Protein & Tinh bột) và khen ngợi khi mức vận động vừa phải.
+     - Nhóm CÂN ĐỐI: Khen ngợi khi tiêu thụ >= 240 kcal và nhắc nhở tăng cường đi bộ khi tiêu thụ < 240 kcal.
+     - Nhóm THỪA CÂN: Biểu dương kết quả đốt mỡ khi tiêu thụ >= 240 kcal và khuyến khích tập Squat/Jumping Jack khi tiêu thụ < 240 kcal.
+
+[Sự kiện Nút "ĐĂNG XUẤT" (`btnLogout`)]:
+- Sự kiện    : `binding.btnLogout.setOnClickListener` [Dòng 76 - 78]
+- Hàm thực thi: `performLogout()` [Dòng 222 - 233]
+- Diễn giải: Hủy lịch báo thức `NotificationHelper.cancelReminder()`, đăng xuất tài khoản `auth.signOut()` và chuyển về `LoginFragment.kt`.
+
+--------------------------------------------------------------------------------
+8. CÁC THÀNH PHẦN DỊCH VỤ NGẦM & BÁO THỨC HỆ THỐNG
+--------------------------------------------------------------------------------
+
+1. **Foreground Service 1 (`RestTimerService.kt`):**
+   - Khai báo: `AndroidManifest.xml` (`android:foregroundServiceType="dataSync"`)
+   - Nhiệm vụ: Đếm ngược 5 phút (300 giây) nghỉ ngơi ngầm giữa các bài tập. Tiếp tục đếm chính xác kể cả khi người dùng thoát app hoặc khóa màn hình. Hiển thị thông báo đếm ngược real-time (*"Nghỉ giữa các bài tập: 04:15"*). Khi hết 5 phút ➔ Phát thông báo nhắc tập bài tiếp theo `showRestExpiredNotification()` [Dòng 138 - 160].
+
+2. **Foreground Service 2 (`StepCounterService.kt`):**
+   - Khai báo: `AndroidManifest.xml` (`android:foregroundServiceType="dataSync"`)
+   - Nhiệm vụ: Lắng nghe cảm biến bước chân `Sensor.TYPE_STEP_COUNTER` từ phần cứng điện thoại. Tính toán số Calo tiêu thụ `Calories = steps * 0.04 kcal`, phát Broadcast `ACTION_STEPS_UPDATED` cập nhật giao diện real-time.
+
+3. **System Alarm Service (`NotificationHelper.kt` & `WorkoutReminderReceiver.kt`):**
+   - Lập lịch báo thức ngầm `AlarmManager` vào đúng 8:00 AM hàng ngày. Khi đến 8:00 AM ➔ Phát thông báo nhắc tập luyện ra thanh trạng thái điện thoại.
+
+4. **KÍch hoạt lại báo thức khi khởi động lại máy (`BootReceiver.kt`):**
+   - Ngay khi điện thoại bị tắt máy và bật lại (`Intent.ACTION_BOOT_COMPLETED`), `BootReceiver.kt` tự động đặt lại lịch báo thức 8:00 AM ngầm mà người dùng không cần bấm mở app.
+
+
+================================================================================
+PHẦN 2: BỘ KỊCH BẢN CÂU HỎI VẤN ĐÁP BẢO VỆ ĐỒ ÁN VÀ CÂU TRẢ LỜI MẪU
+================================================================================
+
+❓ **CÂU HỎI 1: Tại sao ứng dụng chọn kiến trúc Single Activity (chỉ có 1 MainActivity) kết hợp Navigation Component mà không tạo mỗi màn hình là 1 Activity riêng biệt?**
+
+👉 **TRẢ LỜI MẪU:**
+"Dạ thưa Thầy/Cô, việc chọn kiến trúc **Single Activity Architecture** cùng với **Android Jetpack Navigation Component** mang lại 3 ưu điểm vượt trội cho ứng dụng Fitness của em:
+1. **Tối ưu hóa hiệu năng & Bộ nhớ:** Khởi tạo một Activity mới rất tốn tài nguyên hệ thống. Việc dùng 1 Activity duy nhất chứa các Fragment giúp chuyển đổi màn hình cực kỳ mượt mà, giảm thời gian load và tiết kiệm RAM thiết bị.
+2. **Quản lý luồng giao diện tập trung:** Toàn bộ sơ đồ chuyên trang (Đăng nhập ➔ Khảo sát BMI ➔ Lịch tập ➔ Camera AI) được quản lý trực quan trong file `nav_graph.xml`, giúp dễ dàng kiểm soát BackStack và truyền tham số giữa các màn hình.
+3. **Đồng bộ giao diện ứng dụng:** Giúp em dễ dàng ẩn/hiện Toolbar và thanh Menu dưới đáy (`BottomNavigationView`) một cách linh hoạt chỉ bằng câu lệnh lắng nghe `addOnDestinationChangedListener` trong `MainActivity.kt` [Dòng 45 - 61]."
+
+---
+
+❓ **CÂU HỎI 2: Cơ chế nhận diện tư thế và tự động đếm số lần tập luyện bằng AI MediaPipe Pose Landmarker trong ứng dụng hoạt động như thế nào?**
+
+👉 **TRẢ LỜI MẪU:**
+"Dạ thưa Thầy/Cô, luồng xử lý AI đếm động tác của ứng dụng em hoạt động qua 4 bước nối tiếp nhau:
+1. **Thu nhận luồng hình ảnh:** CameraX gửi luồng hình ảnh (~30 khung hình/giây) từ camera tới `PoseLandmarkerHelper.kt`.
+2. **Trích xuất Tọa độ Khung xương:** Mô hình AI MediaPipe Pose Landmarker nhận diện và trả về tọa độ 3D của **33 điểm khớp xương cốt lõi** trên cơ thể người dùng (Như Vai, Khuỷu tay, Cổ tay, Hông, Đầu gối, Cổ chân).
+3. **Tính toán Góc hình học (Geometry & Trigonometric Calculation):** Tọa độ 33 điểm được truyền vào `ExerciseAnalyzer.kt`. Em sử dụng công thức lượng giác `Math.atan2` để tính toán góc hình học mở/gập giữa 3 khớp xương liên tiếp.
+4. **Máy trạng thái đếm lượt (State Machine Counter):** 
+   - Với bài tập đếm lần (như Hít đất, Squat): Khi góc gập xuống nhỏ hơn ngưỡng cài đặt (Ví dụ: Góc đầu gối Squat < 90°) ➔ Trạng thái đổi thành `DOWN`. Khi người dùng đẩy thẳng chân lên (Góc đầu gối > 160°) ➔ Trạng thái đổi thành `UP` và tự động tăng số lần đếm `currentProgress++`.
+   - Với bài tập tính thời gian (Plank, Side Plank): Khi người dùng giữ góc thẳng lưng chuẩn form trong 1000ms ➔ Tự động đếm tăng 1 giây."
+
+---
+
+❓ **CÂU HỎI 3: Tại sao ứng dụng cần phải sử dụng Foreground Service (như `StepCounterService` và `RestTimerService`) thay vì dùng Thread hay Coroutine thông thường?**
+
+👉 **TRẢ LỜI MẪU:**
+"Dạ thưa Thầy/Cô, theo cơ chế quản lý vòng đời của Android:
+- Các `Thread` hoặc `Coroutine` gắn liền với màn hình (Activity/Fragment) sẽ **bị hệ thống tiêu diệt (kill) ngay lập tức** khi người dùng thoát ứng dụng hoặc khóa màn hình điện thoại.
+- Trong khi đó, 2 tính năng của ứng dụng em là **Đếm bước chân đi bộ ngầm cả ngày** (`StepCounterService`) và **Đếm ngược 5 phút nghỉ ngơi giữa các bài tập** (`RestTimerService`) bắt buộc phải hoạt động liên tục kể cả khi ứng dụng bị đóng hoàn toàn.
+- Do đó, việc triển khai **Foreground Service** hiển thị Thanh thông báo ngầm cố định sẽ báo cho hệ điều hành Android biết đây là tác vụ ưu tiên cao của người dùng, từ đó đảm bảo bộ đếm thời gian và cảm biến bước chân hoạt động chính xác 100% ngầm không bị Android ngắt."
+
+---
+
+❓ **CÂU HỎI 4: Thuật toán phân loại BMI và tự động lập lộ trình 30 ngày cá nhân hóa cho từng người dùng trong `UserInfoFragment.kt` được thiết kế ra sao?**
+
+👉 **TRẢ LỜI MẪU:**
+"Dạ thưa Thầy/Cô, thuật toán cá nhân hóa lộ trình của em dựa trên 3 trụ cột chính trong `UserInfoFragment.kt`:
+1. **Tính toán & Phân loại BMI:** Dựa trên Chiều cao (cm) và Cân nặng (kg) nhập vào, ứng dụng tính `BMI = Cân_Nặng / (Chiều_Cao_m ^ 2)` và phân loại thành 3 nhóm: `GAY` (< 18.5), `CAN DOI` (18.5 - 24.9), và `THUA CAN` (>= 25.0).
+2. **Phân bổ Ngày nghỉ ngơi khoa học (`isRestDayForBmi` - Dòng 155):** 
+   - Người GẦY cần thời gian phục hồi cơ bắp nhiều hơn ➔ Nghỉ 8 ngày/tháng (Tập 2-3 ngày nghỉ 1 ngày).
+   - Người CÂN ĐỐI ➔ Nghỉ 7 ngày/tháng (Tập 3 ngày nghỉ 1 ngày).
+   - Người THỪA CÂN cần đốt mỡ liên tục ➔ Nghỉ 6 ngày/tháng (Tập 4 ngày nghỉ 1 ngày).
+3. **Tăng trọng số bài tập theo tuần (`getExercisesForBmiAndDay` - Dòng 189):** Mỗi tuần tập, số lượng lần gập/đẩy hoặc số giây Plank sẽ tự động nhân với hệ số tuần `weekMultiplier` (Tuần 1: x1.0, Tuần 2: x1.2, Tuần 3: x1.4, Tuần 4: x1.6) để tạo độ thách thức tăng dần cho cơ thể."
+
+---
+
+❓ **CÂU HỎI 5: Các video hướng dẫn mẫu mp4 trong ứng dụng được lưu trữ và xử lý phát offline như thế nào để đảm bảo tốc độ nạp 0.0s?**
+
+👉 **TRẢ LỜI MẪU:**
+"Dạ thưa Thầy/Cô, để ứng dụng không bị phụ thuộc vào kết nối Internet và tránh độ trễ khi xem video hướng dẫn tập luyện:
+1. Em đã đóng gói trực tiếp 7 tệp video MP4 hướng dẫn chuẩn vào thư mục tài nguyên `app/src/main/assets/videos/` của dự án.
+2. Khi người dùng bấm nút "XEM VIDEO", hàm `getMediaUri()` [Dòng 413 trong `WorkoutCalendarFragment.kt`] sẽ trích xuất đệm tệp video từ `assets` ra thư mục bộ nhớ tạm `cacheDir` của ứng dụng trên thiết bị.
+3. Sau đó nạp Uri đệm này vào đối tượng `VideoView` trong Hộp thoại Dialog (`dialog_video_player.xml`), cho phép phát video hướng dẫn lặp lại mượt mà với tốc độ tức thì 0.0 giây kể cả khi không có mạng."
+
+---
+
+❓ **CÂU HỎI 6: Khi điện thoại của người dùng bị hết pin tắt nguồn hoặc khởi động lại, làm thế nào ứng dụng vẫn giữ được lịch báo thức 8:00 AM nhắc tập luyện?**
+
+👉 **TRẢ LỜI MẪU:**
+"Dạ thưa Thầy/Cô, khi điện thoại tắt nguồn hoặc khởi động lại, hệ điều hành Android sẽ xóa toàn bộ lịch hẹn báo thức trong RAM của `AlarmManager`.
+Để giải quyết vấn đề này, em đã xây dựng lớp `BootReceiver.kt` kế thừa `BroadcastReceiver`.
+Trong file `AndroidManifest.xml`, em đăng ký quyền `RECEIVE_BOOT_COMPLETED`. Ngay khi điện thoại của người dùng vừa khởi động xong, hệ thống Android phát tín hiệu `BOOT_COMPLETED`, `BootReceiver.kt` sẽ ngầm bắt lấy tín hiệu này và tự động gọi `NotificationHelper.scheduleDailyReminder(context)` để thiết lập lại lịch báo thức 8:00 AM ngầm ngay lập tức mà người dùng không cần phải chủ động mở lại ứng dụng."
+
+---
+
+❓ **CÂU HỎI 7: Ứng dụng đã xử lý các vấn đề tương thích và lỗi bảo mật Foreground Service trên Android 14 (Target SDK 34) như thế nào?**
+
+👉 **TRẢ LỜI MẪU:**
+"Dạ thưa Thầy/Cô, trên phiên bản Android 14 (API 34) mới nhất, Google thắt chặt quy định về Foreground Service và sẽ ném ngoại lệ `SecurityException` gây văng app nếu không khai báo loại dịch vụ cụ thể. Em đã khắc phục triệt để bằng 2 giải pháp:
+1. Trong `AndroidManifest.xml`, khai báo thuộc tính `android:foregroundServiceType="dataSync"` cho cả `StepCounterService` và `RestTimerService`, cùng các quyền `FOREGROUND_SERVICE` và `FOREGROUND_SERVICE_DATA_SYNC`.
+2. Trong mã nguồn Kotlin (`StepCounterService.kt` và `RestTimerService.kt`), em sử dụng hàm khởi tạo `startForeground(NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC)` dành riêng cho Android 10+ (API 29+) bọc trong khối `try-catch` an toàn, giúp ứng dụng vận hành êm ái trên mọi thiết bị từ Android cũ đến Android 14 mới nhất."
+
+================================================================================
+                               HẾT TÀI LIỆU BÁO CÁO
+================================================================================
