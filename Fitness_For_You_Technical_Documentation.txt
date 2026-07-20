@@ -6,7 +6,7 @@ Ngôn ngữ mã nguồn : Kotlin (Android Native), XML Layouts
 Công nghệ cốt lõi  : Google MediaPipe Tasks Vision (Pose Landmarker), CameraX, 
                      Firebase Auth, Cloud Firestore, Navigation Component, 
                      Foreground Services (StepCounterService, RestTimerService)
-Phiên bản tài liệu : 4.1 (Cập nhật chuẩn xác vị trí dòng code sự kiện click ngày trong WorkoutCalendarFragment)
+Phiên bản tài liệu : 4.2 (Cập nhật chuẩn xác vị trí dòng code sự kiện xem video và bắt đầu tập trong WorkoutCalendarFragment)
 ================================================================================
 
 
@@ -162,7 +162,7 @@ PHẦN 1: BẢNG TRUY VẾT CHUYÊN SÂU LUỒNG CHẠY HÀM THEO TƯƠNG TÁC G
 
   [Hành động 4] Nhấn nút "XEM VIDEO" trên thẻ bài tập (`btnWatchVideo`):
     - Layout: `item_exercise.xml:L53-62`
-    - Sự kiện: `btnWatchVideo.setOnClickListener` [Dòng 675 - 677]
+    - Sự kiện: `btnWatchVideo.setOnClickListener` trong `ExercisesAdapter` [Dòng 703 - 705]
     - Hàm chạy: `showVideoTutorialDialog(exercise)` [Dòng 342 - 389].
     - Logic:
       + Nếu `videoUrl` chứa "youtube.com" hoặc "youtu.be" -> Mở Intent xem ngoài: `startActivity(Intent(ACTION_VIEW, Uri.parse(url)))` [Dòng 345 - 351].
@@ -171,7 +171,12 @@ PHẦN 1: BẢNG TRUY VẾT CHUYÊN SÂU LUỒNG CHẠY HÀM THEO TƯƠNG TÁC G
         * Nạp Uri vào `VideoView` trong Dialog đứng (`dialog_video_player.xml`) [Dòng 364].
         * Đợi sẵn sàng và tự động phát lặp lại: `videoView.start()`, `mp.isLooping = true` [Dòng 367].
 
-  [Hành động 5] Nhấn nút "TẠO MỚI" lộ trình 30 ngày (`btnResetPlan`):
+  [Hành động 5] Nhấn nút "BẮT ĐẦU" / "TẬP LẠI" bài tập (`btnStartExercise`):
+    - Layout: `item_exercise.xml:L64-73`
+    - Sự kiện: `btnStart.setOnClickListener` trong `ExercisesAdapter` [Dòng 707 - 709]
+    - Hàm chạy: `checkCameraPermissionAndStart(exercise)` [Dòng 491 - 502].
+
+  [Hành động 6] Nhấn nút "TẠO MỚI" lộ trình 30 ngày (`btnResetPlan`):
     - Layout: `fragment_workout_calendar.xml:L38-49`
     - Sự kiện: `binding.btnResetPlan.setOnClickListener` [Dòng 85 - 87]
     - Hàm chạy theo thứ tự:
@@ -187,7 +192,7 @@ PHẦN 1: BẢNG TRUY VẾT CHUYÊN SÂU LUỒNG CHẠY HÀM THEO TƯƠNG TÁC G
 
   [Hành động 1] Bấm nút "BẮT ĐẦU" hoặc "TẬP LẠI" ở bài tập trong Lịch tập (`btnStartExercise`):
     - Layout: `item_exercise.xml:L64-73`
-    - Sự kiện: `btnStart.setOnClickListener` [Dòng 678 - 680]
+    - Sự kiện: `btnStart.setOnClickListener` [Dòng 707 - 709]
     - Hàm chạy:
       1. `RestTimerService.stopService(requireContext())` [CameraFragment.kt:L135] -> Ngắt bộ đếm thời gian nghỉ cũ nếu có.
       2. `checkCameraPermissionAndStart(exercise)` [Dòng 491 - 502].
