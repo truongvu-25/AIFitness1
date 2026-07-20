@@ -1,5 +1,6 @@
 package com.google.mediapipe.examples.poselandmarker.fragment
 
+import android.annotation.SuppressLint
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -77,15 +78,15 @@ class ProfileFragment : Fragment() {
         }
     }
 
+    @SuppressLint("UnspecifiedRegisterReceiverFlag")
     override fun onResume() {
         super.onResume()
         val filter = IntentFilter(StepCounterService.ACTION_STEPS_UPDATED)
-        androidx.core.content.ContextCompat.registerReceiver(
-            requireContext(),
-            stepsReceiver,
-            filter,
-            androidx.core.content.ContextCompat.RECEIVER_NOT_EXPORTED
-        )
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            requireActivity().registerReceiver(stepsReceiver, filter, Context.RECEIVER_NOT_EXPORTED)
+        } else {
+            requireActivity().registerReceiver(stepsReceiver, filter)
+        }
         loadInitialStepData()
     }
 
