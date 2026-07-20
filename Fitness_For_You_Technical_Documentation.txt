@@ -6,7 +6,7 @@ Ngôn ngữ mã nguồn : Kotlin (Android Native), XML Layouts
 Công nghệ cốt lõi  : Google MediaPipe Tasks Vision (Pose Landmarker), CameraX, 
                      Firebase Auth, Cloud Firestore, Navigation Component, 
                      Foreground Services (StepCounterService, RestTimerService)
-Phiên bản tài liệu : 5.0 (Rà soát và kiểm toán chuẩn xác 100% số dòng code từng file)
+Phiên bản tài liệu : 5.1 (Cập nhật chính xác vị trí hàm onDaySelected trong WorkoutCalendarFragment: Dòng 238 - 286)
 ================================================================================
 
 
@@ -139,9 +139,9 @@ PHẦN 1: BẢNG TRUY VẾT CHUYÊN SÂU LUỒNG CHẠY HÀM THEO TƯƠNG TÁC G
       4. `loadAll30DaysWorkoutData()` [Dòng 175 - 219] -> Tải toàn bộ 30 ngày tập từ sub-collection "workouts".
          - Tính ngày tháng thực tế (DD/MM) cho từng ngày: `dateFormat.format(Date(createdTime + (dayNum - 1) * 24h))`.
          - Xây dựng danh sách `DayItemUI` [Dòng 520 - 529] chứa thông tin hoàn thành bài tập.
-         - Nạp dữ liệu vào `daysAdapter.updateData(dayUiList, defaultSelectedIdx)` [Dòng 209].
-         - Tự động cuộn danh sách ngày đến ngày hiện tại: `rvDays.scrollToPosition(...)` [Dòng 212].
-         - Gọi `onDaySelected(selectedDayIndex)` [Dòng 214].
+         - Nạp dữ liệu vào `daysAdapter.updateData(dayUiList, defaultSelectedIdx)` [Dòng 224].
+         - Tự động cuộn danh sách ngày đến ngày hiện tại: `rvDays.scrollToPosition(...)` [Dòng 227].
+         - Gọi `onDaySelected(selectedDayIndex)` [Dòng 230].
 
   [Hành động 2] Quy tắc phối 6 màu sắc thẻ ngày (`WorkoutDaysAdapter`):
     - File code: `WorkoutDaysAdapter.DayViewHolder.bind(...)` [Dòng 574 - 649]
@@ -156,11 +156,11 @@ PHẦN 1: BẢNG TRUY VẾT CHUYÊN SÂU LUỒNG CHẠY HÀM THEO TƯƠNG TÁC G
   [Hành động 3] Chọn vào một Ngày tập bất kỳ trên thanh cuộn ngang:
     - File code: `WorkoutCalendarFragment.kt`
     - Sự kiện: `holder.itemView.setOnClickListener` trong `WorkoutDaysAdapter` [Dòng 555 - 563]
-    - Hàm chạy khi nhấp chọn thẻ ngày: `onDaySelected(item.dayIndex)` [Dòng 221 - 267].
+    - Hàm chạy khi nhấp chọn thẻ ngày: `onDaySelected(item.dayIndex)` [Dòng 238 - 286].
     - Logic xử lý:
-      + Nếu là Ngày Nghỉ (`isRestDay == true`) -> Hiển thị thẻ thông báo màu vàng kem `cardStatusNotice` ("Hôm nay là Ngày Nghỉ Ngơi (DD/MM)..."), ẩn danh sách bài tập (`exercisesAdapter.updateData(emptyList())`).
-      + Nếu là Ngày bỏ qua (`dayNum < currentDayIndex` & `completedCount == 0`) -> Hiển thị thẻ cảnh báo màu đỏ `cardStatusNotice` ("Bạn đã bỏ qua lịch tập Ngày X (DD/MM)...").
-      + Nạp dữ liệu bài tập tương ứng vào `exercisesAdapter.updateData(displayExercises)`.
+      + Nếu là Ngày Nghỉ (`isRestDay == true`) -> Hiển thị thẻ thông báo màu vàng kem `cardStatusNotice` ("Hôm nay là Ngày Nghỉ Ngơi (DD/MM)..."), ẩn danh sách bài tập (`exercisesAdapter.updateData(emptyList())`) [Dòng 250 - 258].
+      + Nếu là Ngày bỏ qua (`dayNum < currentDayIndex` & `completedCount == 0`) -> Hiển thị thẻ cảnh báo màu đỏ `cardStatusNotice` ("Bạn đã bỏ qua lịch tập Ngày X (DD/MM)...") [Dòng 260 - 267].
+      + Nạp dữ liệu bài tập tương ứng vào `exercisesAdapter.updateData(displayExercises)` [Dòng 271 - 284].
 
   [Hành động 4] Nhấn nút "XEM VIDEO" trên thẻ bài tập (`btnWatchVideo`):
     - Layout: `item_exercise.xml:L53-62`
