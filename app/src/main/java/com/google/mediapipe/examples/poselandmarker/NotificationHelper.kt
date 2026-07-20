@@ -23,11 +23,11 @@ object NotificationHelper {
 
         val calendar = Calendar.getInstance().apply {
             timeInMillis = System.currentTimeMillis()
-            set(Calendar.HOUR_OF_DAY, 14) // 2:43 PM (14:43) for testing
-            set(Calendar.MINUTE, 43)
+            set(Calendar.HOUR_OF_DAY, 8) // 8:00 AM daily reminder
+            set(Calendar.MINUTE, 0)
             set(Calendar.SECOND, 0)
             set(Calendar.MILLISECOND, 0)
-            // If 14:43 has already passed today, schedule for tomorrow
+            // If 8:00 AM has already passed today, schedule for tomorrow
             if (timeInMillis <= System.currentTimeMillis()) {
                 add(Calendar.DAY_OF_YEAR, 1)
             }
