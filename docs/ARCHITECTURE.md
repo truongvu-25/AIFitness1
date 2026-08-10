@@ -1,12 +1,10 @@
 # System Architecture & Technical Specifications
 
-This document details the architectural design, software patterns, data flow, and technical component specifications of **Fitness For You**.
+This document details the architectural design, software patterns, data flow, and technical component specifications of Fitness For You.
 
----
+## Architectural Overview
 
-## 📐 Architectural Overview
-
-Fitness For You is engineered using **Modern Android Development (MAD)** practices. It adopts a **Single Activity Architecture** paired with Jetpack Navigation Component, a decoupled Computer Vision engine (MediaPipe Tasks Vision + CameraX), and Android Foreground Services for continuous background operations.
+Fitness For You is engineered using Modern Android Development practices. It adopts a Single Activity Architecture paired with Jetpack Navigation Component, a decoupled Computer Vision engine (MediaPipe Tasks Vision + CameraX), and Android Foreground Services for continuous background operations.
 
 ```mermaid
 graph TD
@@ -60,9 +58,7 @@ graph TD
     SCS --> SP
 ```
 
----
-
-## 🧩 UI & Presentation Layer
+## UI & Presentation Layer
 
 The user interface uses a single hosting `MainActivity` containing a `NavHostFragment`. Top-level navigation bar (`BottomNavigationView`) visibility is managed dynamically via `navController.addOnDestinationChangedListener`.
 
@@ -78,9 +74,7 @@ The user interface uses a single hosting `MainActivity` containing a `NavHostFra
 | **Profile** | `ProfileFragment.kt` | `fragment_profile.xml` | Step counter & calorie view, profile editing, and 6 AI health advice scenarios based on BMI. |
 | **Update BMI** | `UpdateBmiFragment.kt` | `fragment_update_bmi.xml` | Mandatory screen enforcing height/weight updates every 7 days. |
 
----
-
-## 🤖 AI Pose Detection & Motion Analysis Engine
+## AI Pose Detection & Motion Analysis Engine
 
 The computer vision engine separates image acquisition, landmark extraction, visual overlay, and exercise analysis into clean, modular layers.
 
@@ -111,11 +105,9 @@ $$\theta = \left| \text{atan2}(y_C - y_B, x_C - x_B) - \text{atan2}(y_A - y_B, x
 | **Side Plank** | Shoulder, Hip, Ankle | Lateral Hip Elevation | Valid hold time increments per second when lateral hip alignment is straight. |
 | **Split Squat** | Hip, Front Knee, Ankle | Front Knee Angle | `DOWN` when front knee $\le 95^\circ$; `UP` (increment rep) when front knee $\ge 160^\circ$. |
 
----
+## Background Services & System Architecture
 
-## ⚙️ Background Services & System Architecture
-
-Continuous background operations are implemented using Android **Foreground Services** to ensure they are not terminated by the OS when the app goes into the background.
+Continuous background operations are implemented using Android Foreground Services to ensure they are not terminated by the OS when the app goes into the background.
 
 ```text
                         ┌───────────────────────────────┐
@@ -161,11 +153,9 @@ Continuous background operations are implemented using Android **Foreground Serv
    - **Trigger**: `Intent.ACTION_BOOT_COMPLETED`
    - **Behavior**: Reschedules the 8:00 AM `AlarmManager` reminder automatically after device restarts.
 
----
+## Database & Data Layer Architecture
 
-## 🗄️ Database & Data Layer Architecture
-
-The database layer utilizes **Cloud Firestore** structured as a hierarchical Document-Collection model.
+The database layer utilizes Cloud Firestore structured as a hierarchical Document-Collection model.
 
 ```text
 cloud_firestore/
@@ -183,11 +173,9 @@ cloud_firestore/
 
 ### Data Seeding & Initialization
 
-On application startup (`FitnessApplication.kt`), master exercise metadata is written to the `exercises` collection via a Firestore **Write Batch** if missing, ensuring complete self-healing capabilities when deployed to a new Firebase environment.
+On application startup (`FitnessApplication.kt`), master exercise metadata is written to the `exercises` collection via a Firestore Write Batch if missing, ensuring complete self-healing capabilities when deployed to a new Firebase environment.
 
----
-
-## 🛡️ Security & Android 14 Compliance
+## Security & Android 14 Compliance
 
 - **API 34 (Android 14) Compliance**: Foreground services declare `foregroundServiceType="dataSync"` in `AndroidManifest.xml` alongside `<uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />`.
 - **Sensitive Data Exclusion**: Local configuration files (`google-services.json`, `local.properties`, keystores) are excluded from source control via `.gitignore`.

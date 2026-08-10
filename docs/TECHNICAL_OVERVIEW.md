@@ -1,16 +1,12 @@
 # Technical Overview & Implementation Details
 
-This document provides an engineering deep dive into **Fitness For You**, detailing key technical decisions, algorithms, component responsibilities, and system mechanics.
+This document provides an engineering deep dive into Fitness For You, detailing key technical decisions, algorithms, component responsibilities, and system mechanics.
 
----
+## Executive Summary
 
-## 🎯 Executive Summary
+Fitness For You is an AI-powered native Android application engineered in Kotlin. It combines real-time on-device computer vision (Google MediaPipe Pose Landmarker), hardware sensor integrations, background Foreground Services, and cloud synchronization (Firebase Auth & Cloud Firestore) to deliver a personalized 30-day fitness experience.
 
-Fitness For You is an AI-powered native Android application engineered in **Kotlin**. It combines real-time on-device computer vision (Google MediaPipe Pose Landmarker), hardware sensor integrations, background Foreground Services, and cloud synchronization (Firebase Auth & Cloud Firestore) to deliver a personalized 30-day fitness experience.
-
----
-
-## 📋 Component Traceability Matrix
+## Component Traceability Matrix
 
 | Component | Source File | Layout XML / Resource | Technical Responsibilities |
 | :--- | :--- | :--- | :--- |
@@ -31,9 +27,7 @@ Fitness For You is an AI-powered native Android application engineered in **Kotl
 | **System Alarms** | `NotificationHelper.kt` | — | Schedules 8:00 AM daily workout reminder via `AlarmManager`. |
 | **Reboot Receiver** | `BootReceiver.kt` | — | Restores daily workout reminder alarm upon device restart (`BOOT_COMPLETED`). |
 
----
-
-## 🧮 Deep Dive: BMI Engine & 30-Day Workout Generator
+## Deep Dive: BMI Engine & 30-Day Workout Generator
 
 ### 1. BMI Calculation & Categorization
 
@@ -64,11 +58,9 @@ $$M_\text{week} = \begin{cases}
 1.6 & \text{Day } 22 - 30 \quad (\text{Week 4})
 \end{cases}$$
 
-Plan documents are committed to Cloud Firestore using a **Write Batch** operation (`db.batch()`) containing all 30 days in a single atomic network call.
+Plan documents are committed to Cloud Firestore using a Write Batch operation (`db.batch()`) containing all 30 days in a single atomic network call.
 
----
-
-## 👁️ Deep Dive: Computer Vision & Motion Analysis
+## Deep Dive: Computer Vision & Motion Analysis
 
 ### 1. CameraX & MediaPipe Pipeline
 
@@ -94,9 +86,7 @@ Angle evaluation rules:
 - **Squat**: Knee angle ($A$: Hip, $B$: Knee, $C$: Ankle). Rep completes when angle transitions from $\le 95^\circ$ to $\ge 160^\circ$.
 - **Plank**: Hip angle ($A$: Shoulder, $B$: Hip, $C$: Ankle). Hold time counter increments every $1000\text{ ms}$ while hip angle remains within $160^\circ - 180^\circ$.
 
----
-
-## 🎬 Deep Dive: Zero-Latency Tutorial Video Delivery
+## Deep Dive: Zero-Latency Tutorial Video Delivery
 
 To ensure tutorial videos play instantly without network buffering:
 1. Video files (`push_up.mp4`, `squat.mp4`, etc.) are bundled directly in `app/src/main/assets/videos/`.
@@ -104,9 +94,7 @@ To ensure tutorial videos play instantly without network buffering:
 3. The helper unpacks the MP4 file into the application's `cacheDir` (`File(context.cacheDir, fileName)`).
 4. The unpacked cache file URI is passed to `VideoView` inside `dialog_video_player.xml`, providing zero-latency offline looping playback.
 
----
-
-## ⚡ Deep Dive: Resilient Background Execution
+## Deep Dive: Resilient Background Execution
 
 ### 1. Step Counter Service (`StepCounterService.kt`)
 - Inherits from `Service()`.
@@ -120,9 +108,7 @@ To ensure tutorial videos play instantly without network buffering:
 - Displays live countdown in an ongoing Foreground notification (`CHANNEL_ID = "rest_timer_channel"`).
 - Triggers a high-priority alert notification upon expiration.
 
----
-
-## ⚙️ Build & Verification Quick Reference
+## Build & Verification Quick Reference
 
 ```powershell
 # Build debug APK
