@@ -1,108 +1,193 @@
-# Architecture
+# System Architecture & Technical Specifications
 
-This document describes the high-level technical structure of Fitness For You.
-Flow-level implementation notes are available in `docs/TECHNICAL_OVERVIEW.md`.
+This document details the architectural design, software patterns, data flow, and technical component specifications of **Fitness For You**.
 
-## Android Components
+---
 
-```text
-FitnessApplication
-+-- MainActivity
-    +-- NavHostFragment
-        +-- LoginFragment
-        +-- RegisterFragment
-        +-- UserInfoFragment
-        +-- WorkoutCalendarFragment
-        +-- CameraFragment
-        +-- ProfileFragment
-        +-- UpdateBmiFragment
-        +-- GalleryFragment
+## 📐 Architectural Overview
+
+Fitness For You is engineered using **Modern Android Development (MAD)** practices. It adopts a **Single Activity Architecture** paired with Jetpack Navigation Component, a decoupled Computer Vision engine (MediaPipe Tasks Vision + CameraX), and Android Foreground Services for continuous background operations.
+
+```mermaid
+graph TD
+    subgraph UI_Layer [Single Activity & Navigation Layer]
+        MA[MainActivity]
+        NHF[NavHostFragment]
+        MA --> NHF
+        NHF --> LF[LoginFragment]
+        NHF --> RF[RegisterFragment]
+        NHF --> UIF[UserInfoFragment]
+        NHF --> WCF[WorkoutCalendarFragment]
+        NHF --> CF[CameraFragment]
+        NHF --> PF[ProfileFragment]
+        NHF --> UBF[UpdateBmiFragment]
+    end
+
+    subgraph AI_Pipeline [AI & Pose Detection Engine]
+        CF --> CX[CameraX ImageAnalysis]
+        CX --> PLH[PoseLandmarkerHelper]
+        PLH --> MP[MediaPipe Pose Landmarker Engine]
+        MP --> OV[OverlayView - Skeleton Rendering]
+        MP --> BEA[BaseExerciseAnalyzer Factory]
+        BEA --> PA[PushupAnalyzer]
+        BEA --> SA[SquatAnalyzer]
+        BEA --> JA[JumpingJackAnalyzer]
+        BEA --> SUA[SitupAnalyzer]
+        BEA --> PLA[PlankAnalyzer]
+        BEA --> SPA[SidePlankAnalyzer]
+        BEA --> SSA[SplitSquatAnalyzer]
+    end
+
+    subgraph Services_Layer [Background Services & System Alarms]
+        SCS[StepCounterService - Hardware Pedometer]
+        RTS[RestTimerService - 5-min Rest Timer]
+        NH[NotificationHelper & AlarmManager]
+        BR[BootReceiver - Reboot Recovery]
+    end
+
+    subgraph Data_Layer [Data & Storage Layer]
+        FA[Firebase Auth]
+        CFS[(Cloud Firestore)]
+        SP[SharedPreferences]
+    end
+
+    LF <--> FA
+    UIF --> CFS
+    WCF <--> CFS
+    CF --> CFS
+    PF <--> CFS
+    PF <--> SP
+    SCS --> SP
 ```
 
-Background components:
+---
 
-- `WorkoutReminderReceiver`: receives daily workout reminder alarms.
-- `BootReceiver`: restores reminders after device reboot.
-- `StepCounterService`: Foreground Service for steps and calories.
-- `RestTimerService`: Foreground Service for 5-minute rest timing.
+## 🧩 UI & Presentation Layer
 
-## Main Data Flow
+The user interface uses a single hosting `MainActivity` containing a `NavHostFragment`. Top-level navigation bar (`BottomNavigationView`) visibility is managed dynamically via `navController.addOnDestinationChangedListener`.
 
-```text
-Firebase Auth
-+-- uid
-    +-- users/{uid}
-        +-- workouts/day_N
-```
+### Fragment Breakdown
 
-```text
-FitnessApplication
-+-- exercises/{exerciseId}
-```
+| Fragment | Class File | XML Layout | Primary Responsibility |
+| :--- | :--- | :--- | :--- |
+| **Login** | `LoginFragment.kt` | `fragment_login.xml` | User sign-in, auto-login persistence check, and 7-day BMI expiry routing. |
+| **Register** | `RegisterFragment.kt` | `fragment_register.xml` | New account registration via Firebase Auth. |
+| **User Info** | `UserInfoFragment.kt` | `fragment_user_info.xml` | Health metrics survey (height, weight, age), BMI calculation, and 30-day plan generation. |
+| **Workout Calendar** | `WorkoutCalendarFragment.kt` | `fragment_workout_calendar.xml` | Interactive 30-day calendar with 6 color-coded states, tutorial popup, and workout selection. |
+| **Camera AI** | `CameraFragment.kt` | `fragment_camera.xml` | Real-time CameraX preview, pose detection overlay, rep counting, and exercise completion. |
+| **Profile** | `ProfileFragment.kt` | `fragment_profile.xml` | Step counter & calorie view, profile editing, and 6 AI health advice scenarios based on BMI. |
+| **Update BMI** | `UpdateBmiFragment.kt` | `fragment_update_bmi.xml` | Mandatory screen enforcing height/weight updates every 7 days. |
 
-`exercises` stores shared exercise metadata.
-`users/{uid}` stores the user's health profile.
-`users/{uid}/workouts` stores the user's workout plan and progress.
+---
 
-## AI Pose Detection Flow
+## 🤖 AI Pose Detection & Motion Analysis Engine
+
+The computer vision engine separates image acquisition, landmark extraction, visual overlay, and exercise analysis into clean, modular layers.
 
 ```text
-CameraX ImageAnalysis
-+-- CameraFragment.detectPose()
-    +-- PoseLandmarkerHelper.detectLiveStream()
-        +-- MediaPipe Pose Landmarker
-            +-- OverlayView.setResults()
-            +-- ExerciseAnalyzer.analyze()
+CameraX ImageAnalysis Stream (~30 FPS)
+  └─► CameraFragment.detectPose(imageProxy)
+        └─► PoseLandmarkerHelper.detectLiveStream()
+              └─► MediaPipe Pose Landmarker Engine (33 3D landmarks)
+                    ├─► OverlayView.setResults() -> Draw Skeleton Lines & Joints
+                    └─► BaseExerciseAnalyzer.analyze(landmarks) -> Joint Angle Calculation & Rep Counter
 ```
 
-CameraX reads live camera frames.
-MediaPipe returns body landmarks.
-OverlayView draws the skeleton.
-ExerciseAnalyzer checks exercise form and returns progress.
+### Motion Analysis & Joint Angle Trigonometry
 
-## Exercise Analysis
+The `BaseExerciseAnalyzer` calculates 2D/3D joint angles using 2D/3D Euclidean coordinates and 2-argument arctangent trigonometry (`Math.atan2`):
 
-The factory in `ExerciseAnalyzer.kt` selects an analyzer by `exerciseId`.
+$$\theta = \left| \text{atan2}(y_C - y_B, x_C - x_B) - \text{atan2}(y_A - y_B, x_A - x_B) \right| \times \frac{180}{\pi}$$
+
+#### Exercise Analyzer State Machines
+
+| Exercise | Key Landmarks | Analysis Metric | State Machine Logic |
+| :--- | :--- | :--- | :--- |
+| **Push-up** | Shoulder, Elbow, Wrist | Elbow Angle | `DOWN` when angle $\le 90^\circ$; `UP` (increment rep) when angle $\ge 160^\circ$. |
+| **Squat** | Hip, Knee, Ankle | Knee Angle | `DOWN` when angle $\le 95^\circ$; `UP` (increment rep) when angle $\ge 160^\circ$. |
+| **Jumping Jack** | Wrist, Hip, Ankle | Arm & Leg Separation | `OPEN` when hands above head and feet wide; `CLOSED` (increment rep) when hands down and feet together. |
+| **Sit-up** | Shoulder, Hip, Knee | Hip Angle | `DOWN` when angle $\ge 140^\circ$; `UP` (increment rep) when angle $\le 65^\circ$. |
+| **Plank** | Shoulder, Hip, Ankle | Spine/Hip Straightness | Valid hold time increments per second ($1000\text{ ms}$) when hip angle is between $160^\circ - 180^\circ$. |
+| **Side Plank** | Shoulder, Hip, Ankle | Lateral Hip Elevation | Valid hold time increments per second when lateral hip alignment is straight. |
+| **Split Squat** | Hip, Front Knee, Ankle | Front Knee Angle | `DOWN` when front knee $\le 95^\circ$; `UP` (increment rep) when front knee $\ge 160^\circ$. |
+
+---
+
+## ⚙️ Background Services & System Architecture
+
+Continuous background operations are implemented using Android **Foreground Services** to ensure they are not terminated by the OS when the app goes into the background.
 
 ```text
-pushup      -> PushupAnalyzer
-squat       -> SquatAnalyzer
-jumpingjack -> JumpingJackAnalyzer
-situp       -> SitupAnalyzer
-plank       -> PlankAnalyzer
-sideplank   -> SidePlankAnalyzer
-splitsquat  -> SplitSquatAnalyzer
+                        ┌───────────────────────────────┐
+                        │        Android System         │
+                        └───────────────┬───────────────┘
+                                        │
+                 ┌──────────────────────┴──────────────────────┐
+                 │                                             │
+                 ▼                                             ▼
+     ┌──────────────────────┐                      ┌──────────────────────┐
+     │  StepCounterService  │                      │   RestTimerService   │
+     │  (Foreground Data)   │                      │  (Foreground Timer)  │
+     └───────────┬──────────┘                      └───────────┬──────────┘
+                 │                                             │
+                 ▼                                             ▼
+     Hardware Step Sensor                           5-Minute CountDownTimer
+     (Sensor.TYPE_STEP_COUNTER)                     (Ongoing Notification)
+                 │                                             │
+                 ▼                                             ▼
+     Save SharedPreferences                         Send Rest Expired Notification
+     & Broadcast to Profile UI                      (Priority High Alarm)
 ```
 
-Rep-based exercises use movement states such as up/down or open/closed.
-Plank and Side Plank use valid hold time.
+### Service Specifications
 
-## Services And Notifications
+1. **`StepCounterService.kt`**
+   - **Type**: `foregroundServiceType="dataSync"`
+   - **Sensor**: `Sensor.TYPE_STEP_COUNTER`
+   - **Calorie Formula**: $\text{Calories} = \text{Steps} \times 0.04\text{ kcal}$
+   - **Persistence**: Saved to `SharedPreferences`; broadcasts updates to `ProfileFragment`.
 
-`NotificationHelper` uses `AlarmManager` to schedule a reminder at 8:00 AM.
-`WorkoutReminderReceiver` checks for pending exercises before showing a
-notification.
+2. **`RestTimerService.kt`**
+   - **Type**: `foregroundServiceType="dataSync"`
+   - **Timer**: 5-minute countdown ($300,000\text{ ms}$)
+   - **Behavior**: Displays ongoing live notification (`mm:ss`). Upon completion, triggers a high-priority alert notification prompting the user to start the next exercise. Auto-stops if all today's exercises are finished.
 
-`StepCounterService` uses `Sensor.TYPE_STEP_COUNTER`.
-The service stores step data in `SharedPreferences` and estimates calories:
+3. **`NotificationHelper.kt` & `WorkoutReminderReceiver.kt`**
+   - **Mechanism**: `AlarmManager.setAndAllowWhileIdle()`
+   - **Schedule**: Daily at 8:00 AM.
+   - **Behavior**: Checks if today has pending exercises (`status == 0`) before delivering the notification.
+
+4. **`BootReceiver.kt`**
+   - **Trigger**: `Intent.ACTION_BOOT_COMPLETED`
+   - **Behavior**: Reschedules the 8:00 AM `AlarmManager` reminder automatically after device restarts.
+
+---
+
+## 🗄️ Database & Data Layer Architecture
+
+The database layer utilizes **Cloud Firestore** structured as a hierarchical Document-Collection model.
 
 ```text
-calories = steps * 0.04
+cloud_firestore/
+├── exercises/ (Collection)
+│   ├── pushup (Document)
+│   ├── squat (Document)
+│   └── ... (7 master exercise metadata documents)
+└── users/ (Collection)
+    └── {uid} (Document - UserProfile)
+        └── workouts/ (Sub-collection)
+            ├── day_1 (Document - WorkoutDay)
+            ├── day_2 (Document - WorkoutDay)
+            └── ... (day_1 to day_30 documents)
 ```
 
-`RestTimerService` runs a 5-minute `CountDownTimer`.
-When the timer ends, it sends a high-priority notification so the user can
-return to the next exercise.
+### Data Seeding & Initialization
 
-## Public Repository Configuration
+On application startup (`FitnessApplication.kt`), master exercise metadata is written to the `exercises` collection via a Firestore **Write Batch** if missing, ensuring complete self-healing capabilities when deployed to a new Firebase environment.
 
-The public repository does not track:
+---
 
-- `.idea/`.
-- `local.properties`.
-- `app/google-services.json`.
-- Release signing files.
-- Build output.
+## 🛡️ Security & Android 14 Compliance
 
-Anyone cloning the project must provide their own Firebase
-`app/google-services.json` file.
+- **API 34 (Android 14) Compliance**: Foreground services declare `foregroundServiceType="dataSync"` in `AndroidManifest.xml` alongside `<uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />`.
+- **Sensitive Data Exclusion**: Local configuration files (`google-services.json`, `local.properties`, keystores) are excluded from source control via `.gitignore`.

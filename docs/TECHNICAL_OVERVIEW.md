@@ -1,165 +1,133 @@
-# Technical Overview
+# Technical Overview & Implementation Details
 
-Fitness For You is a native Android fitness app built with Kotlin.
-It combines Firebase, CameraX, MediaPipe Pose Landmarker and Android
-Foreground Services to create a personalized workout experience.
+This document provides an engineering deep dive into **Fitness For You**, detailing key technical decisions, algorithms, component responsibilities, and system mechanics.
 
-This document is written for code reviewers and recruiters who want to
-understand the technical decisions behind the project.
+---
 
-## Product Scope
+## 🎯 Executive Summary
 
-The app helps users:
+Fitness For You is an AI-powered native Android application engineered in **Kotlin**. It combines real-time on-device computer vision (Google MediaPipe Pose Landmarker), hardware sensor integrations, background Foreground Services, and cloud synchronization (Firebase Auth & Cloud Firestore) to deliver a personalized 30-day fitness experience.
 
-- Create an account.
-- Enter personal health information.
-- Calculate BMI.
-- Receive a 30-day workout plan.
-- Watch exercise tutorial videos.
-- Train with real-time AI pose detection.
-- Track completed exercises.
-- Count daily steps and estimated calories.
-- Receive daily workout reminders.
+---
 
-## Core User Flow
+## 📋 Component Traceability Matrix
 
-```text
-Login / Register
-└── User profile input
-    └── BMI calculation
-        └── 30-day workout plan
-            └── Workout calendar
-                ├── Tutorial video
-                └── Camera AI workout
-                    └── Firestore progress update
-```
+| Component | Source File | Layout XML / Resource | Technical Responsibilities |
+| :--- | :--- | :--- | :--- |
+| **Application** | `FitnessApplication.kt` | `AndroidManifest.xml` | Global application setup, Firebase init, master exercise seeding, notification channel creation. |
+| **Main Activity** | `MainActivity.kt` | `activity_main.xml` | Single Activity container, `NavHostFragment` setup, dynamic toolbar/bottom nav visibility. |
+| **Login Screen** | `LoginFragment.kt` | `fragment_login.xml` | Firebase Auth email/password sign-in, auto-login persistence check, 7-day BMI expiry routing. |
+| **Register Screen** | `RegisterFragment.kt` | `fragment_register.xml` | New user account creation via Firebase Auth. |
+| **User Survey** | `UserInfoFragment.kt` | `fragment_user_info.xml` | Health metrics collection, BMI calculation, body categorization, 30-day workout plan batch-creation. |
+| **Workout Calendar** | `WorkoutCalendarFragment.kt` | `fragment_workout_calendar.xml` | 30-day interactive calendar (6 color states), offline video tutorial popup, exercise start handling. |
+| **Camera AI** | `CameraFragment.kt` | `fragment_camera.xml` | CameraX stream binding, MediaPipe live stream pose detection, real-time rep counting, rest timer trigger. |
+| **Profile & Pedometer** | `ProfileFragment.kt` | `fragment_profile.xml` | Foreground pedometer view, step/calorie display, 6 AI health advice scenarios, logout. |
+| **Update BMI** | `UpdateBmiFragment.kt` | `fragment_update_bmi.xml` | Enforced 7-day height/weight update survey. |
+| **Rest Timer** | `RestTimerService.kt` | — | Foreground Service executing a 5-minute ($300\text{ s}$) rest countdown with notification alerts. |
+| **Step Counter** | `StepCounterService.kt` | — | Foreground Service reading `Sensor.TYPE_STEP_COUNTER` hardware data & calculating calories. |
+| **AI Pose Engine** | `PoseLandmarkerHelper.kt` | `pose_landmarker_*.task` | Wrapper for MediaPipe Pose Landmarker Tasks Vision API. |
+| **Skeleton Overlay** | `OverlayView.kt` | — | Custom View drawing 33 landmark points (yellow) and skeletal connection lines (teal). |
+| **Motion Analyzers** | `ExerciseAnalyzer.kt` | — | Trigonometric joint angle calculation & state machine rep counters for 7 exercises. |
+| **System Alarms** | `NotificationHelper.kt` | — | Schedules 8:00 AM daily workout reminder via `AlarmManager`. |
+| **Reboot Receiver** | `BootReceiver.kt` | — | Restores daily workout reminder alarm upon device restart (`BOOT_COMPLETED`). |
 
-Important files:
+---
 
-- `LoginFragment.kt`: login and route decision after authentication.
-- `RegisterFragment.kt`: account creation.
-- `UserInfoFragment.kt`: profile input, BMI and workout plan generation.
-- `WorkoutCalendarFragment.kt`: 30-day plan UI and exercise selection.
-- `CameraFragment.kt`: real-time camera workout flow.
-- `ProfileFragment.kt`: user profile, step count and calories.
+## 🧮 Deep Dive: BMI Engine & 30-Day Workout Generator
 
-## AI Pose Detection Pipeline
+### 1. BMI Calculation & Categorization
 
-```text
-CameraX ImageAnalysis
-└── CameraFragment.detectPose()
-    └── PoseLandmarkerHelper.detectLiveStream()
-        └── MediaPipe Pose Landmarker
-            ├── OverlayView
-            └── ExerciseAnalyzer
-```
+User height ($h$ in cm) and weight ($w$ in kg) are processed in `UserInfoFragment.kt`:
 
-Responsibilities:
+$$\text{BMI} = \frac{w}{\left(\frac{h}{100}\right)^2}$$
 
-- `CameraFragment.kt` owns the camera screen and passes frames to AI.
-- `PoseLandmarkerHelper.kt` configures MediaPipe models and delegates.
-- `OverlayView.kt` draws detected landmarks and skeleton connections.
-- `ExerciseAnalyzer.kt` converts pose landmarks into workout progress.
+Categorization rules:
+- **`GAY` (Underweight)**: $\text{BMI} < 18.5$
+- **`CAN DOI` (Balanced)**: $18.5 \le \text{BMI} < 25.0$
+- **`THUA CAN` (Overweight)**: $\text{BMI} \ge 25.0$
 
-Supported exercise analyzers:
+### 2. Tailored Rest-Day Allocation
 
-- Push-up.
-- Squat.
-- Jumping Jack.
-- Sit-up.
-- Plank.
-- Side Plank.
-- Split Squat.
+Workout plans vary by body category to allow proper muscle recovery:
+- **`GAY`**: Rest days on Days 4, 7, 11, 14, 18, 21, 25, 28 (8 rest days total).
+- **`CAN DOI`**: Rest days on Days 4, 8, 12, 16, 20, 24, 28 (7 rest days total).
+- **`THUA CAN`**: Rest days on Days 5, 10, 15, 20, 25, 30 (6 rest days total).
 
-The analyzer layer is separated from the camera layer.
-This makes it easier to add new exercises without rewriting CameraX
-or MediaPipe setup code.
+### 3. Progressive Weekly Difficulty Scaling
 
-## Firebase Integration
+Exercise targets scale across the 4 weeks using a multiplier ($M_\text{week}$):
 
-The app uses:
+$$M_\text{week} = \begin{cases} 
+1.0 & \text{Day } 1 - 7 \quad (\text{Week 1}) \\
+1.2 & \text{Day } 8 - 14 \quad (\text{Week 2}) \\
+1.4 & \text{Day } 15 - 21 \quad (\text{Week 3}) \\
+1.6 & \text{Day } 22 - 30 \quad (\text{Week 4})
+\end{cases}$$
 
-- Firebase Authentication for email/password login.
-- Cloud Firestore for profile, exercise metadata and workout progress.
+Plan documents are committed to Cloud Firestore using a **Write Batch** operation (`db.batch()`) containing all 30 days in a single atomic network call.
 
-Firestore structure:
+---
+
+## 👁️ Deep Dive: Computer Vision & Motion Analysis
+
+### 1. CameraX & MediaPipe Pipeline
+
+`CameraFragment.kt` configures CameraX `ImageAnalysis` with `STRATEGY_KEEP_ONLY_LATEST` and `OUTPUT_IMAGE_FORMAT_RGBA_8888`. Live frames (~30 FPS) are passed to `PoseLandmarkerHelper.kt`, which runs MediaPipe Pose Landmarker on a dedicated single-thread executor (`backgroundExecutor`).
+
+### 2. 33 3D Joint Extraction & Overlay Rendering
+
+MediaPipe extracts 33 3D body landmarks. `OverlayView.kt` projects these coordinates onto the camera preview, drawing 33 joint markers and connecting skeletal lines.
 
 ```text
-exercises/{exerciseId}
-users/{uid}
-users/{uid}/workouts/day_1
-users/{uid}/workouts/day_2
-...
-users/{uid}/workouts/day_30
+Landmarks (33 Points) ──► OverlayView (Canvas Paint) ──► Skeleton Visual Feedback
+                       └──► ExerciseAnalyzer (Angle Math) ──► Rep/Second Counter
 ```
 
-The global `exercises` collection stores reusable exercise metadata.
-Each user owns their own workout documents under `users/{uid}/workouts`.
+### 3. Trigonometric Angle Computation
 
-Firebase is initialized through `FirebaseApp.initializeApp(context)`.
-The repository does not commit `app/google-services.json`, so anyone
-running the app must provide their own Firebase configuration.
+`ExerciseAnalyzer.kt` calculates the interior angle $\theta$ between three joint points $A(x_a, y_a)$, $B(x_b, y_b)$, and $C(x_c, y_c)$ where $B$ is the vertex:
 
-## Android Services
+$$\theta = \left| \text{atan2}(y_c - y_b, x_c - x_b) - \text{atan2}(y_a - y_b, x_a - x_b) \right| \times \frac{180}{\pi}$$
 
-### StepCounterService
+Angle evaluation rules:
+- **Push-up**: Elbow angle ($A$: Shoulder, $B$: Elbow, $C$: Wrist). Rep completes when angle transitions from $\le 90^\circ$ to $\ge 160^\circ$.
+- **Squat**: Knee angle ($A$: Hip, $B$: Knee, $C$: Ankle). Rep completes when angle transitions from $\le 95^\circ$ to $\ge 160^\circ$.
+- **Plank**: Hip angle ($A$: Shoulder, $B$: Hip, $C$: Ankle). Hold time counter increments every $1000\text{ ms}$ while hip angle remains within $160^\circ - 180^\circ$.
 
-`StepCounterService.kt` is a Foreground Service that listens to
-`Sensor.TYPE_STEP_COUNTER`.
+---
 
-It calculates:
+## 🎬 Deep Dive: Zero-Latency Tutorial Video Delivery
 
-```text
-calories = steps * 0.04
+To ensure tutorial videos play instantly without network buffering:
+1. Video files (`push_up.mp4`, `squat.mp4`, etc.) are bundled directly in `app/src/main/assets/videos/`.
+2. When the user taps **"XEM VIDEO"**, `getMediaUri()` checks if the video is an `asset:///` URI.
+3. The helper unpacks the MP4 file into the application's `cacheDir` (`File(context.cacheDir, fileName)`).
+4. The unpacked cache file URI is passed to `VideoView` inside `dialog_video_player.xml`, providing zero-latency offline looping playback.
+
+---
+
+## ⚡ Deep Dive: Resilient Background Execution
+
+### 1. Step Counter Service (`StepCounterService.kt`)
+- Inherits from `Service()`.
+- Registers `SensorEventListener` for `Sensor.TYPE_STEP_COUNTER`.
+- Computes estimated calorie burn: $\text{Calories} = \text{Steps} \times 0.04\text{ kcal}$.
+- Broadcasts updates to `ProfileFragment` via `Intent("com.google.mediapipe.examples.poselandmarker.STEPS_UPDATED")`.
+
+### 2. 5-Minute Rest Timer Service (`RestTimerService.kt`)
+- Starts automatically upon completing an exercise if pending exercises remain for the day.
+- Executes a 5-minute ($300\text{ s}$) `CountDownTimer`.
+- Displays live countdown in an ongoing Foreground notification (`CHANNEL_ID = "rest_timer_channel"`).
+- Triggers a high-priority alert notification upon expiration.
+
+---
+
+## ⚙️ Build & Verification Quick Reference
+
+```powershell
+# Build debug APK
+.\gradlew.bat assembleDebug
+
+# Run static codebase checks
+.\gradlew.bat lintDebug
 ```
-
-The result is saved in `SharedPreferences` and broadcast to
-`ProfileFragment` so the UI can update without polling.
-
-### RestTimerService
-
-`RestTimerService.kt` is a Foreground Service for a 5-minute rest timer.
-It starts after a workout is completed if there are remaining exercises
-in the same day.
-
-The service keeps counting even if the user leaves the app.
-When the timer ends, it sends a high-priority notification.
-
-### Workout Reminder
-
-`NotificationHelper.kt` schedules a daily reminder at 8:00 AM.
-`WorkoutReminderReceiver.kt` checks whether the current user still has
-pending exercises before showing a notification.
-`BootReceiver.kt` restores the reminder after device reboot.
-
-## Data Models
-
-`Models.kt` contains the Firestore-facing data classes:
-
-- `ExerciseDetails`: shared exercise metadata.
-- `UserExercise`: exercise target and completion status per user.
-- `WorkoutDay`: one day in the 30-day plan.
-- `Exercise`: UI-ready merged exercise model.
-- `UserProfile`: personal profile, BMI and timestamps.
-
-The model layer keeps Firestore data explicit and easy to inspect.
-
-## Security And Public Repo Notes
-
-The repository is prepared for public GitHub usage:
-
-- `.idea/` is ignored.
-- `local.properties` is ignored.
-- `app/google-services.json` is ignored.
-- Release signing files are ignored.
-- Firebase API keys are not hardcoded in source code.
-
-Review `SECURITY.md` before connecting a production Firebase project.
-
-## Potential Improvements
-
-- Add unit tests for BMI and workout-plan generation.
-- Add UI tests for login and workout calendar flows.
-- Replace the demo calorie formula with a more personalized calculation.
-- Add a local cache for workout data when network connection is weak.
-- Add screenshots or a demo video to the GitHub README.

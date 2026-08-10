@@ -1,38 +1,75 @@
 # Security Policy
 
-Fitness For You uses Firebase Authentication and Cloud Firestore.
-Public releases and real deployments should protect user data carefully.
+Security and data privacy are top priorities for **Fitness For You**. This document outlines our security policies, rules for open-source contributions, and vulnerability reporting procedures.
 
-## Do Not Commit
+---
 
-Do not commit these files to a public repository:
+## 🛡️ Supported Versions
 
-- `local.properties`.
-- Production `app/google-services.json`.
-- Release signing files such as `.jks`, `.keystore`, `.p12`, or `.pem`.
-- `.env` files.
-- Firestore exports or real user data.
+We provide security updates for the latest code on the `main` branch of this repository.
 
-## Firebase
+| Version / Branch | Supported | Notes |
+| :--- | :---: | :--- |
+| `main` | YES | Active development branch |
+| Older releases | NO | Please upgrade to `main` |
 
-Firebase API keys in Android apps are not server-side secrets, but they
-should still be restricted in Google Cloud Console.
+---
 
-Recommendations:
+## 🚫 Restricted Files & Sensitive Data
 
-- Use a demo Firebase project for public repositories.
-- Enable Email/Password Authentication for the current app flow.
-- Write Firestore Rules so users can only access their own `users/{uid}` data.
-- Do not use real user data in screenshots, demo videos, or sample exports.
+To protect cloud infrastructure and maintain open-source compliance, **NEVER** commit the following items to the public repository:
 
-## Reporting Security Issues
+- **Firebase Configuration**: `app/google-services.json`
+- **IDE & Local Properties**: `local.properties`, `.idea/`, `.gradle/`
+- **Keystores & Credentials**: `.jks`, `.keystore`, `.p12`, `.pem`
+- **Environment Files**: `.env`, private API keys
+- **User Data**: Real user profiles, personal identifiers, or exported Firestore collections
 
-If you find a vulnerability that could expose user data, report it privately
-to the repository owner before publishing details.
+All sensitive files must remain listed in [.gitignore](.gitignore).
 
-Please include:
+---
 
-- A clear description of the issue.
-- Reproduction steps.
-- Potential impact.
-- Suggested mitigation, if available.
+## 🔑 Firebase & Security Best Practices
+
+While Firebase API keys embedded in client applications are not secret keys, security must be enforced on the backend:
+
+1. **Firestore Security Rules**:
+   Ensure Cloud Firestore rules restrict users so they can only read and write their own documents:
+   ```javascript
+   rules_version = '2';
+   service cloud.firestore {
+     match /databases/{database}/documents {
+       // Shared exercise metadata is readable by authenticated users
+       match /exercises/{exerciseId} {
+         allow read: if request.auth != null;
+         allow write: if false; // Admin only
+       }
+       // Users can only access their own profile and workouts
+       match /users/{userId}/{document=**} {
+         allow read, write: if request.auth != null && request.auth.uid == userId;
+       }
+     }
+   }
+   ```
+
+2. **Google Cloud Console API Restrictions**:
+   Restrict Android API keys in Google Cloud Console by package name (`com.google.mediapipe.examples.poselandmarker`) and SHA-1 fingerprint.
+
+3. **Isolated Demo Environment**:
+   Use a separate Firebase project for development and testing. Do not connect production databases to public test builds.
+
+---
+
+## 📩 Reporting a Vulnerability
+
+If you discover a security vulnerability or potential privacy issue in this repository:
+
+1. **DO NOT** create a public GitHub issue.
+2. Email a detailed vulnerability report to the project owner/maintainer.
+3. Include the following details in your report:
+   - Type of issue (e.g., credential exposure, insecure Firestore rule, permission flaw).
+   - Step-by-step reproduction instructions.
+   - Potential impact and affected components.
+   - Suggested mitigation or fix, if available.
+
+We will acknowledge receipt of your report promptly and work on a fix before public disclosure.
