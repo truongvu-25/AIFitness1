@@ -1,16 +1,34 @@
+# Android Studio / IntelliJ
 *.iml
-.gradle
+.idea/
+.gradle/
+
+# Local machine config
 /local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
-.DS_Store
-/build
-/captures
-.externalNativeBuild
-.cxx
 local.properties
+firebase.properties
+.env
+.env.*
+
+# Firebase local config
+app/google-services.json
+
+# Build output
+/build/
+/captures/
+app/build/
+.externalNativeBuild/
+.cxx/
+*.apk
+*.aab
+
+# Signing files
+*.jks
+*.keystore
+*.p12
+*.pem
+
+# OS / temporary files
+.DS_Store
+Thumbs.db
 *.wav
