@@ -1,37 +1,39 @@
-# Hướng dẫn đóng góp
+# Contributing
 
-Cảm ơn bạn quan tâm tới Fitness For You.
-Tài liệu này giúp project giữ cấu trúc rõ ràng khi phát triển tiếp.
+Thank you for your interest in Fitness For You.
+This guide keeps the project structure clear as the app evolves.
 
-## Chạy project
+## Run The Project
 
 ```powershell
 .\gradlew.bat assembleDebug
 ```
 
-Mở project bằng Android Studio, sync Gradle và chạy module `app`
-trên thiết bị Android có camera.
+Open the project in Android Studio, sync Gradle, and run the `app` module
+on an Android device with camera support.
 
-## Quy ước code
+## Code Style
 
-- Viết Kotlin theo phong cách hiện có trong project.
-- Giữ logic từng màn hình trong Fragment tương ứng.
-- Giữ model dữ liệu dùng chung trong `Models.kt`.
-- Nếu thêm bài tập mới, cập nhật dữ liệu mẫu trong `FitnessApplication.kt`.
-- Nếu bài tập cần nhận diện AI, thêm analyzer trong `ExerciseAnalyzer.kt`.
-- Không commit file local, file ký release hoặc cấu hình Firebase cá nhân.
+- Follow the existing Kotlin style in the project.
+- Keep screen-specific logic inside its corresponding Fragment.
+- Keep shared Firestore data models in `Models.kt`.
+- When adding a new exercise, update seed data in `FitnessApplication.kt`.
+- When adding AI validation for an exercise, add an analyzer in
+  `ExerciseAnalyzer.kt`.
+- Do not commit local files, release signing files, or personal Firebase
+  configuration.
 
-## Quy trình đề xuất
+## Suggested Workflow
 
-1. Tạo branch mới từ branch chính.
-2. Sửa code hoặc tài liệu đúng phạm vi.
-3. Chạy build debug trước khi gửi thay đổi.
-4. Ghi chú nếu thay đổi cần dữ liệu Firestore hoặc Firebase Rules mới.
+1. Create a new branch from the main branch.
+2. Keep the change focused and scoped.
+3. Run a debug build before submitting changes.
+4. Document any required Firestore data or Firebase Rules updates.
 
-## Checklist pull request
+## Pull Request Checklist
 
-- Build debug chạy được.
-- Không có file cấu hình cá nhân bị commit.
-- README hoặc tài liệu trong `docs/` được cập nhật nếu đổi luồng app.
-- Ảnh, video hoặc model mới được đặt đúng thư mục assets/res.
-- Thay đổi không làm sai luồng đăng nhập, tạo lịch và hoàn thành bài tập.
+- Debug build passes.
+- No personal configuration files are committed.
+- README or `docs/` files are updated when app flow changes.
+- New images, videos, or models are placed in the correct assets/res folder.
+- Login, plan generation, and workout completion flows still work.

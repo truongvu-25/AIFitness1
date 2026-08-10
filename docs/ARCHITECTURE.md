@@ -1,68 +1,68 @@
-# Kiến trúc hệ thống
+# Architecture
 
-Tài liệu này mô tả cấu trúc kỹ thuật của Fitness For You ở mức tổng quan.
-Chi tiết flow kỹ thuật nằm trong `docs/TECHNICAL_OVERVIEW.md`.
+This document describes the high-level technical structure of Fitness For You.
+Flow-level implementation notes are available in `docs/TECHNICAL_OVERVIEW.md`.
 
-## Thành phần Android
+## Android Components
 
 ```text
 FitnessApplication
-└── MainActivity
-    └── NavHostFragment
-        ├── LoginFragment
-        ├── RegisterFragment
-        ├── UserInfoFragment
-        ├── WorkoutCalendarFragment
-        ├── CameraFragment
-        ├── ProfileFragment
-        ├── UpdateBmiFragment
-        └── GalleryFragment
++-- MainActivity
+    +-- NavHostFragment
+        +-- LoginFragment
+        +-- RegisterFragment
+        +-- UserInfoFragment
+        +-- WorkoutCalendarFragment
+        +-- CameraFragment
+        +-- ProfileFragment
+        +-- UpdateBmiFragment
+        +-- GalleryFragment
 ```
 
-Các thành phần chạy nền:
+Background components:
 
-- `WorkoutReminderReceiver`: nhận alarm nhắc tập luyện hằng ngày.
-- `BootReceiver`: đặt lại alarm sau khi thiết bị khởi động lại.
-- `StepCounterService`: Foreground Service đếm bước và calo.
-- `RestTimerService`: Foreground Service đếm 5 phút nghỉ giữa bài.
+- `WorkoutReminderReceiver`: receives daily workout reminder alarms.
+- `BootReceiver`: restores reminders after device reboot.
+- `StepCounterService`: Foreground Service for steps and calories.
+- `RestTimerService`: Foreground Service for 5-minute rest timing.
 
-## Luồng dữ liệu chính
+## Main Data Flow
 
 ```text
 Firebase Auth
-└── uid
-    └── users/{uid}
-        └── workouts/day_N
++-- uid
+    +-- users/{uid}
+        +-- workouts/day_N
 ```
 
 ```text
 FitnessApplication
-└── exercises/{exerciseId}
++-- exercises/{exerciseId}
 ```
 
-`exercises` là dữ liệu bài tập gốc.
-`users/{uid}` là hồ sơ cá nhân.
-`users/{uid}/workouts` là lịch tập và tiến độ riêng của người dùng.
+`exercises` stores shared exercise metadata.
+`users/{uid}` stores the user's health profile.
+`users/{uid}/workouts` stores the user's workout plan and progress.
 
-## Luồng AI nhận diện tư thế
+## AI Pose Detection Flow
 
 ```text
 CameraX ImageAnalysis
-└── CameraFragment.detectPose()
-    └── PoseLandmarkerHelper.detectLiveStream()
-        └── MediaPipe Pose Landmarker
-            ├── OverlayView.setResults()
-            └── ExerciseAnalyzer.analyze()
++-- CameraFragment.detectPose()
+    +-- PoseLandmarkerHelper.detectLiveStream()
+        +-- MediaPipe Pose Landmarker
+            +-- OverlayView.setResults()
+            +-- ExerciseAnalyzer.analyze()
 ```
 
-CameraX lấy từng frame camera.
-MediaPipe trả landmark cơ thể.
-OverlayView vẽ khung xương.
-ExerciseAnalyzer kiểm tra động tác và trả tiến độ.
+CameraX reads live camera frames.
+MediaPipe returns body landmarks.
+OverlayView draws the skeleton.
+ExerciseAnalyzer checks exercise form and returns progress.
 
-## Phân tích bài tập
+## Exercise Analysis
 
-Factory trong `ExerciseAnalyzer.kt` chọn analyzer theo `exerciseId`.
+The factory in `ExerciseAnalyzer.kt` selects an analyzer by `exerciseId`.
 
 ```text
 pushup      -> PushupAnalyzer
@@ -74,32 +74,35 @@ sideplank   -> SidePlankAnalyzer
 splitsquat  -> SplitSquatAnalyzer
 ```
 
-Các bài theo số lần dùng trạng thái lên/xuống hoặc mở/khép.
-Các bài Plank và Side Plank dùng thời gian giữ tư thế hợp lệ.
+Rep-based exercises use movement states such as up/down or open/closed.
+Plank and Side Plank use valid hold time.
 
-## Service và thông báo
+## Services And Notifications
 
-`NotificationHelper` dùng `AlarmManager` để đặt lịch lúc 8:00 sáng.
-`WorkoutReminderReceiver` kiểm tra bài chưa hoàn thành rồi mới báo.
+`NotificationHelper` uses `AlarmManager` to schedule a reminder at 8:00 AM.
+`WorkoutReminderReceiver` checks for pending exercises before showing a
+notification.
 
-`StepCounterService` dùng `Sensor.TYPE_STEP_COUNTER`.
-Service lưu số bước vào `SharedPreferences`, tính calo theo công thức:
+`StepCounterService` uses `Sensor.TYPE_STEP_COUNTER`.
+The service stores step data in `SharedPreferences` and estimates calories:
 
 ```text
 calories = steps * 0.04
 ```
 
-`RestTimerService` chạy `CountDownTimer` 5 phút.
-Nếu hết giờ nghỉ, service phát thông báo ưu tiên cao để người dùng quay lại.
+`RestTimerService` runs a 5-minute `CountDownTimer`.
+When the timer ends, it sends a high-priority notification so the user can
+return to the next exercise.
 
-## Cấu hình public
+## Public Repository Configuration
 
-Repository public không theo dõi:
+The public repository does not track:
 
 - `.idea/`.
 - `local.properties`.
 - `app/google-services.json`.
-- File ký release.
-- Output build.
+- Release signing files.
+- Build output.
 
-Người clone project cần tự thêm `app/google-services.json` từ Firebase.
+Anyone cloning the project must provide their own Firebase
+`app/google-services.json` file.

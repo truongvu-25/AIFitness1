@@ -1,37 +1,38 @@
-# Chính sách bảo mật
+# Security Policy
 
-Fitness For You dùng Firebase Authentication và Cloud Firestore.
-Khi public hoặc triển khai thật, cần chú ý bảo vệ dữ liệu người dùng.
+Fitness For You uses Firebase Authentication and Cloud Firestore.
+Public releases and real deployments should protect user data carefully.
 
-## Không commit
+## Do Not Commit
 
-Không đưa các file sau lên repository public:
+Do not commit these files to a public repository:
 
 - `local.properties`.
-- `app/google-services.json` của project production.
-- File ký release như `.jks`, `.keystore`, `.p12`, `.pem`.
-- File `.env`, dữ liệu export Firestore hoặc dữ liệu người dùng thật.
+- Production `app/google-services.json`.
+- Release signing files such as `.jks`, `.keystore`, `.p12`, or `.pem`.
+- `.env` files.
+- Firestore exports or real user data.
 
 ## Firebase
 
-Firebase API key trong app Android không phải mật khẩu server-side,
-nhưng vẫn cần giới hạn phạm vi sử dụng trong Google Cloud Console.
+Firebase API keys in Android apps are not server-side secrets, but they
+should still be restricted in Google Cloud Console.
 
-Khuyến nghị:
+Recommendations:
 
-- Dùng Firebase project demo cho repository public.
-- Bật Email/Password Authentication nếu muốn chạy đúng luồng hiện tại.
-- Viết Firestore Rules để người dùng chỉ đọc/ghi `users/{uid}` của họ.
-- Không dùng dữ liệu người dùng thật trong ảnh chụp màn hình hoặc demo.
+- Use a demo Firebase project for public repositories.
+- Enable Email/Password Authentication for the current app flow.
+- Write Firestore Rules so users can only access their own `users/{uid}` data.
+- Do not use real user data in screenshots, demo videos, or sample exports.
 
-## Báo cáo lỗi bảo mật
+## Reporting Security Issues
 
-Nếu phát hiện lỗi có thể làm lộ dữ liệu người dùng, hãy báo riêng cho
-chủ repository trước khi công khai chi tiết.
+If you find a vulnerability that could expose user data, report it privately
+to the repository owner before publishing details.
 
-Khi báo cáo, vui lòng ghi:
+Please include:
 
-- Mô tả lỗi.
-- Bước tái hiện.
-- Mức ảnh hưởng.
-- Gợi ý khắc phục nếu có.
+- A clear description of the issue.
+- Reproduction steps.
+- Potential impact.
+- Suggested mitigation, if available.
