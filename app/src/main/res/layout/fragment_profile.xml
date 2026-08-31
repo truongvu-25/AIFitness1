@@ -227,8 +227,7 @@
                                 android:textSize="12sp"
                                 android:textStyle="bold"
                                 android:textColor="@color/tri_force_white"
-                                android:background="@drawable/ic_launcher_background"
-                                android:backgroundTint="@color/mp_color_primary"
+                                android:background="@drawable/bg_bmi_badge"
                                 android:paddingHorizontal="12dp"
                                 android:paddingVertical="5dp"
                                 android:layout_marginTop="2dp"/>
