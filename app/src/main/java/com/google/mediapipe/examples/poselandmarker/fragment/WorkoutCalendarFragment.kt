@@ -118,9 +118,11 @@ class WorkoutCalendarFragment : Fragment() {
     }
 
     private fun loadMasterExercisesAndInit() {
+        if (!isAdded || _binding == null) return
         binding.calendarProgress.visibility = View.VISIBLE
         db.collection("exercises").get()
             .addOnSuccessListener { result ->
+                if (!isAdded || _binding == null) return@addOnSuccessListener
                 exercisesCache.clear()
                 for (document in result) {
                     val details = document.toObject(ExerciseDetails::class.java)
@@ -129,18 +131,21 @@ class WorkoutCalendarFragment : Fragment() {
                 loadUserProfileAndPlan()
             }
             .addOnFailureListener { e ->
+                if (!isAdded || _binding == null) return@addOnFailureListener
                 binding.calendarProgress.visibility = View.GONE
-                Toast.makeText(context, "Lỗi tải kho bài tập: ${e.message}", Toast.LENGTH_SHORT).show()
+                context?.let { Toast.makeText(it, "Lỗi tải kho bài tập: ${e.message}", Toast.LENGTH_SHORT).show() }
                 loadUserProfileAndPlan()
             }
     }
 
     private fun loadUserProfileAndPlan() {
         if (uid.isEmpty()) return
+        if (!isAdded || _binding == null) return
         
         binding.calendarProgress.visibility = View.VISIBLE
         db.collection("users").document(uid).get()
             .addOnSuccessListener { document ->
+                if (!isAdded || _binding == null) return@addOnSuccessListener
                 if (document.exists()) {
                     val profile = document.toObject(UserProfile::class.java)
                     if (profile != null) {
@@ -177,21 +182,24 @@ class WorkoutCalendarFragment : Fragment() {
                     }
                 } else {
                     binding.calendarProgress.visibility = View.GONE
-                    Toast.makeText(context, "Không tìm thấy hồ sơ người dùng.", Toast.LENGTH_SHORT).show()
+                    context?.let { Toast.makeText(it, "Không tìm thấy hồ sơ người dùng.", Toast.LENGTH_SHORT).show() }
                 }
             }
             .addOnFailureListener { e ->
+                if (!isAdded || _binding == null) return@addOnFailureListener
                 binding.calendarProgress.visibility = View.GONE
-                Toast.makeText(context, "Lỗi kết nối database: ${e.message}", Toast.LENGTH_SHORT).show()
+                context?.let { Toast.makeText(it, "Lỗi kết nối database: ${e.message}", Toast.LENGTH_SHORT).show() }
             }
     }
 
     private fun loadAll30DaysWorkoutData() {
         if (uid.isEmpty()) return
+        if (!isAdded || _binding == null) return
         
         db.collection("users").document(uid)
             .collection("workouts").get()
             .addOnSuccessListener { snapshot ->
+                if (!isAdded || _binding == null) return@addOnSuccessListener
                 binding.calendarProgress.visibility = View.GONE
                 workoutDaysMap.clear()
                 for (doc in snapshot) {
@@ -229,14 +237,17 @@ class WorkoutCalendarFragment : Fragment() {
                 daysAdapter.updateData(dayUiList, selectedDayIndex - 1)
 
                 binding.rvDays.post {
-                    binding.rvDays.scrollToPosition((selectedDayIndex - 1).coerceAtLeast(0))
+                    if (_binding != null) {
+                        binding.rvDays.scrollToPosition((selectedDayIndex - 1).coerceAtLeast(0))
+                    }
                 }
 
                 onDaySelected(selectedDayIndex)
             }
             .addOnFailureListener { e ->
+                if (!isAdded || _binding == null) return@addOnFailureListener
                 binding.calendarProgress.visibility = View.GONE
-                Toast.makeText(context, "Lỗi tải dữ liệu 30 ngày: ${e.message}", Toast.LENGTH_SHORT).show()
+                context?.let { Toast.makeText(it, "Lỗi tải dữ liệu 30 ngày: ${e.message}", Toast.LENGTH_SHORT).show() }
             }
     }
 
@@ -314,10 +325,12 @@ class WorkoutCalendarFragment : Fragment() {
 
     private fun resetWorkoutPlan() {
         if (uid.isEmpty()) return
+        if (!isAdded || _binding == null) return
         binding.calendarProgress.visibility = View.VISIBLE
 
         db.collection("users").document(uid).get()
             .addOnSuccessListener { document ->
+                if (!isAdded || _binding == null) return@addOnSuccessListener
                 if (document.exists()) {
                     val profile = document.toObject(UserProfile::class.java)
                     if (profile != null) {
@@ -333,24 +346,28 @@ class WorkoutCalendarFragment : Fragment() {
 
                         batch.commit()
                             .addOnSuccessListener {
+                                if (!isAdded || _binding == null) return@addOnSuccessListener
                                 val updatedProfile = profile.copy(createdTime = System.currentTimeMillis())
                                 db.collection("users").document(uid).set(updatedProfile)
                                     .addOnSuccessListener {
+                                        if (!isAdded || _binding == null) return@addOnSuccessListener
                                         binding.calendarProgress.visibility = View.GONE
-                                        Toast.makeText(context, "Đã tạo lộ trình 30 ngày tập luyện mới!", Toast.LENGTH_SHORT).show()
+                                        context?.let { Toast.makeText(it, "Đã tạo lộ trình 30 ngày tập luyện mới!", Toast.LENGTH_SHORT).show() }
                                         loadUserProfileAndPlan()
                                     }
                             }
                             .addOnFailureListener { e ->
+                                if (!isAdded || _binding == null) return@addOnFailureListener
                                 binding.calendarProgress.visibility = View.GONE
-                                Toast.makeText(context, "Lỗi tạo lại lộ trình: ${e.message}", Toast.LENGTH_SHORT).show()
+                                context?.let { Toast.makeText(it, "Lỗi tạo lại lộ trình: ${e.message}", Toast.LENGTH_SHORT).show() }
                             }
                     }
                 }
             }
             .addOnFailureListener { e ->
+                if (!isAdded || _binding == null) return@addOnFailureListener
                 binding.calendarProgress.visibility = View.GONE
-                Toast.makeText(context, "Lỗi tải thông tin: ${e.message}", Toast.LENGTH_SHORT).show()
+                context?.let { Toast.makeText(it, "Lỗi tải thông tin: ${e.message}", Toast.LENGTH_SHORT).show() }
             }
     }
 
