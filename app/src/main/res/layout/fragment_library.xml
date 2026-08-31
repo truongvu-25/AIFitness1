@@ -53,7 +53,7 @@
                 android:padding="3dp"
                 android:weightSum="2">
 
-                <Button
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnTabNoEquipment"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
@@ -62,12 +62,14 @@
                     android:textSize="12sp"
                     android:textStyle="bold"
                     android:textColor="@color/tri_force_white"
-                    android:backgroundTint="@color/mp_color_primary"
+                    app:backgroundTint="@color/mp_color_primary"
                     app:cornerRadius="18dp"
+                    app:elevation="0dp"
                     android:insetTop="0dp"
-                    android:insetBottom="0dp"/>
+                    android:insetBottom="0dp"
+                    style="@style/Widget.MaterialComponents.Button"/>
 
-                <Button
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnTabWithEquipment"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
@@ -76,10 +78,12 @@
                     android:textSize="12sp"
                     android:textStyle="bold"
                     android:textColor="@color/tri_force_silver"
-                    android:backgroundTint="@android:color/transparent"
+                    app:backgroundTint="@android:color/transparent"
                     app:cornerRadius="18dp"
+                    app:elevation="0dp"
                     android:insetTop="0dp"
-                    android:insetBottom="0dp"/>
+                    android:insetBottom="0dp"
+                    style="@style/Widget.MaterialComponents.Button"/>
             </LinearLayout>
 
             <!-- Secondary Sub-Segmented Bar (Tại Nhà vs Phòng Gym) - Appears when Có Dụng Cụ is active -->
@@ -94,33 +98,37 @@
                 android:visibility="gone"
                 android:weightSum="2">
 
-                <Button
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnSubTabHome"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
-                    android:text="🏠 Tại Nhà"
+                    android:text="@string/subtab_home"
                     android:textSize="11sp"
                     android:textStyle="bold"
                     android:textColor="@color/tri_force_white"
-                    android:backgroundTint="@color/mp_color_primary_variant"
+                    app:backgroundTint="@color/mp_color_primary_variant"
                     app:cornerRadius="16dp"
+                    app:elevation="0dp"
                     android:insetTop="0dp"
-                    android:insetBottom="0dp"/>
+                    android:insetBottom="0dp"
+                    style="@style/Widget.MaterialComponents.Button"/>
 
-                <Button
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnSubTabGym"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
-                    android:text="🏋️ Phòng Gym"
+                    android:text="@string/subtab_gym"
                     android:textSize="11sp"
                     android:textStyle="bold"
                     android:textColor="@color/tri_force_silver"
-                    android:backgroundTint="@android:color/transparent"
+                    app:backgroundTint="@android:color/transparent"
                     app:cornerRadius="16dp"
+                    app:elevation="0dp"
                     android:insetTop="0dp"
-                    android:insetBottom="0dp"/>
+                    android:insetBottom="0dp"
+                    style="@style/Widget.MaterialComponents.Button"/>
             </LinearLayout>
 
         </LinearLayout>

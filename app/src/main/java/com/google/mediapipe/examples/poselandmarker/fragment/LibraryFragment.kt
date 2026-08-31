@@ -1,5 +1,6 @@
 package com.google.mediapipe.examples.poselandmarker.fragment
 
+import android.content.res.ColorStateList
 import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -119,17 +120,19 @@ class LibraryFragment : Fragment() {
     }
 
     private fun updateFilter() {
-        val activeBgColor = ContextCompat.getColor(requireContext(), R.color.mp_color_primary)
-        val activeCyanColor = ContextCompat.getColor(requireContext(), R.color.mp_color_primary_variant)
+        val activePrimaryColor = ContextCompat.getColor(requireContext(), R.color.mp_color_primary)
+        val activeSecondaryColor = ContextCompat.getColor(requireContext(), R.color.mp_color_primary_variant)
         val transparentColor = Color.TRANSPARENT
         val whiteColor = ContextCompat.getColor(requireContext(), R.color.tri_force_white)
         val silverColor = ContextCompat.getColor(requireContext(), R.color.tri_force_silver)
 
         if (!isEquipmentMode) {
-            // "Không Dụng Cụ" Selected
-            binding.btnTabNoEquipment.setBackgroundColor(activeBgColor)
+            // "Không Dụng Cụ" Active -> Solid Blue Background
+            binding.btnTabNoEquipment.backgroundTintList = ColorStateList.valueOf(activePrimaryColor)
             binding.btnTabNoEquipment.setTextColor(whiteColor)
-            binding.btnTabWithEquipment.setBackgroundColor(transparentColor)
+
+            // "Có Dụng Cụ" Inactive -> Transparent Background
+            binding.btnTabWithEquipment.backgroundTintList = ColorStateList.valueOf(transparentColor)
             binding.btnTabWithEquipment.setTextColor(silverColor)
 
             binding.layoutSubTabs.visibility = View.GONE
@@ -137,28 +140,34 @@ class LibraryFragment : Fragment() {
             val filtered = allExercises.filter { it.category == "Không dụng cụ" }
             adapter.submitList(filtered)
         } else {
-            // "Có Dụng Cụ" Selected
-            binding.btnTabNoEquipment.setBackgroundColor(transparentColor)
+            // "Không Dụng Cụ" Inactive -> Transparent Background
+            binding.btnTabNoEquipment.backgroundTintList = ColorStateList.valueOf(transparentColor)
             binding.btnTabNoEquipment.setTextColor(silverColor)
-            binding.btnTabWithEquipment.setBackgroundColor(activeBgColor)
+
+            // "Có Dụng Cụ" Active -> Solid Blue Background
+            binding.btnTabWithEquipment.backgroundTintList = ColorStateList.valueOf(activePrimaryColor)
             binding.btnTabWithEquipment.setTextColor(whiteColor)
 
             binding.layoutSubTabs.visibility = View.VISIBLE
 
             if (!isGymMode) {
-                // "Tại Nhà" Selected
-                binding.btnSubTabHome.setBackgroundColor(activeCyanColor)
+                // "Tại Nhà" Active -> Solid Cyan Background
+                binding.btnSubTabHome.backgroundTintList = ColorStateList.valueOf(activeSecondaryColor)
                 binding.btnSubTabHome.setTextColor(whiteColor)
-                binding.btnSubTabGym.setBackgroundColor(transparentColor)
+
+                // "Phòng Gym" Inactive -> Transparent Background
+                binding.btnSubTabGym.backgroundTintList = ColorStateList.valueOf(transparentColor)
                 binding.btnSubTabGym.setTextColor(silverColor)
 
                 val filtered = allExercises.filter { it.category == "Tại nhà" }
                 adapter.submitList(filtered)
             } else {
-                // "Phòng Gym" Selected
-                binding.btnSubTabHome.setBackgroundColor(transparentColor)
+                // "Tại Nhà" Inactive -> Transparent Background
+                binding.btnSubTabHome.backgroundTintList = ColorStateList.valueOf(transparentColor)
                 binding.btnSubTabHome.setTextColor(silverColor)
-                binding.btnSubTabGym.setBackgroundColor(activeCyanColor)
+
+                // "Phòng Gym" Active -> Solid Cyan Background
+                binding.btnSubTabGym.backgroundTintList = ColorStateList.valueOf(activeSecondaryColor)
                 binding.btnSubTabGym.setTextColor(whiteColor)
 
                 val filtered = allExercises.filter { it.category == "Phòng gym" }
