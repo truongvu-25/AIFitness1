@@ -220,10 +220,15 @@ class CreateCustomPlanFragment : Fragment() {
                 dayObj.put("exercises", exercisesArray)
                 daysArray.put(dayObj)
             }
-            rootJson.put("days", daysArray)
-
             val prefs = requireContext().getSharedPreferences("tri_force_custom_weekly_plan", Context.MODE_PRIVATE)
-            prefs.edit().putString("active_plan_json", rootJson.toString()).apply()
+            val existingPlansStr = prefs.getString("all_saved_plans_json", "[]") ?: "[]"
+            val plansArray = JSONArray(existingPlansStr)
+            plansArray.put(rootJson)
+
+            prefs.edit()
+                .putString("all_saved_plans_json", plansArray.toString())
+                .putString("active_plan_json", rootJson.toString())
+                .apply()
 
             Toast.makeText(requireContext(), "Đã lưu lịch tập \"$planName\" thành công!", Toast.LENGTH_LONG).show()
 
