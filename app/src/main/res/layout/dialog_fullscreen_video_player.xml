@@ -5,12 +5,19 @@
     android:layout_height="match_parent"
     android:background="#000000">
 
-    <!-- Fullscreen Video View (Centered & Scaled) -->
-    <VideoView
-        android:id="@+id/fullscreenVideoView"
+    <!-- Center Container for Hardware Accelerated Video Rendering -->
+    <FrameLayout
+        android:id="@+id/videoFrameContainer"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_centerInParent="true" />
+        android:layout_centerInParent="true">
+
+        <TextureView
+            android:id="@+id/fullscreenTextureView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center" />
+    </FrameLayout>
 
     <!-- Initial Buffering Progress Indicator -->
     <ProgressBar

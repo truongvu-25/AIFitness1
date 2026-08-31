@@ -5,9 +5,13 @@ import android.app.Dialog
 import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.Color
+import android.graphics.SurfaceTexture
+import android.media.MediaPlayer
 import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.Surface
+import android.view.TextureView
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
@@ -474,7 +478,7 @@ class WorkoutCalendarFragment : Fragment() {
             ViewGroup.LayoutParams.MATCH_PARENT
         )
 
-        val videoView = dialog.findViewById<VideoView>(R.id.fullscreenVideoView)
+        val textureView = dialog.findViewById<TextureView>(R.id.fullscreenTextureView)
         val progressBar = dialog.findViewById<ProgressBar>(R.id.fullscreenVideoProgress)
         val btnClose = dialog.findViewById<ImageButton>(R.id.btnFullscreenClose)
         val tvTitle = dialog.findViewById<TextView>(R.id.tvFullscreenVideoTitle)
@@ -482,45 +486,95 @@ class WorkoutCalendarFragment : Fragment() {
         val cardReplayButton = dialog.findViewById<View>(R.id.cardReplayButton)
 
         tvTitle.text = "Hướng dẫn: ${exercise.name}"
-        videoView.setMediaController(null)
 
-        try {
-            val videoUri = getMediaUri(requireContext(), url)
-            videoView.setVideoURI(videoUri)
-            videoView.setOnPreparedListener { mp ->
-                progressBar.visibility = View.GONE
+        var mediaPlayer: MediaPlayer? = MediaPlayer()
+
+        fun playFromStart() {
+            try {
+                mediaPlayer?.seekTo(0)
+                mediaPlayer?.start()
                 layoutCenterReplay.visibility = View.GONE
-                videoView.start()
-                mp.isLooping = false
+            } catch (e: Exception) {
+                e.printStackTrace()
             }
+        }
 
-            videoView.setOnCompletionListener {
-                layoutCenterReplay.visibility = View.VISIBLE
-            }
+        fun initMediaPlayer(surface: Surface) {
+            try {
+                mediaPlayer?.reset()
+                mediaPlayer?.setSurface(surface)
 
-            videoView.setOnErrorListener { _, _, _ ->
+                if (url.startsWith("asset:///")) {
+                    val assetPath = url.substringAfter("asset:///")
+                    val afd = requireContext().assets.openFd(assetPath)
+                    mediaPlayer?.setDataSource(afd.fileDescriptor, afd.startOffset, afd.length)
+                    afd.close()
+                } else {
+                    mediaPlayer?.setDataSource(requireContext(), Uri.parse(url))
+                }
+
+                mediaPlayer?.setVideoScalingMode(MediaPlayer.VIDEO_SCALING_MODE_SCALE_TO_FIT)
+                mediaPlayer?.isLooping = false
+
+                mediaPlayer?.setOnPreparedListener { mp ->
+                    progressBar.visibility = View.GONE
+                    layoutCenterReplay.visibility = View.GONE
+                    mp.start()
+                }
+
+                mediaPlayer?.setOnCompletionListener {
+                    layoutCenterReplay.visibility = View.VISIBLE
+                }
+
+                mediaPlayer?.setOnErrorListener { _, _, _ ->
+                    progressBar.visibility = View.GONE
+                    Toast.makeText(context, "Không thể tải video hướng dẫn.", Toast.LENGTH_SHORT).show()
+                    true
+                }
+
+                mediaPlayer?.prepareAsync()
+            } catch (e: Exception) {
                 progressBar.visibility = View.GONE
-                Toast.makeText(context, "Không thể tải video hướng dẫn.", Toast.LENGTH_SHORT).show()
-                true
+                Toast.makeText(context, "Lỗi phát video: ${e.message}", Toast.LENGTH_SHORT).show()
             }
-        } catch (e: Exception) {
-            progressBar.visibility = View.GONE
-            Toast.makeText(context, "Lỗi phát video: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
+
+        textureView.surfaceTextureListener = object : TextureView.SurfaceTextureListener {
+            override fun onSurfaceTextureAvailable(surfaceTexture: SurfaceTexture, width: Int, height: Int) {
+                val surface = Surface(surfaceTexture)
+                initMediaPlayer(surface)
+            }
+
+            override fun onSurfaceTextureSizeChanged(surface: SurfaceTexture, width: Int, height: Int) {}
+            override fun onSurfaceTextureDestroyed(surface: SurfaceTexture): Boolean {
+                try {
+                    mediaPlayer?.stop()
+                    mediaPlayer?.release()
+                    mediaPlayer = null
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+                return true
+            }
+            override fun onSurfaceTextureUpdated(surface: SurfaceTexture) {}
         }
 
         cardReplayButton.setOnClickListener {
-            layoutCenterReplay.visibility = View.GONE
-            videoView.seekTo(0)
-            videoView.start()
+            playFromStart()
         }
 
         btnClose.setOnClickListener {
-            videoView.stopPlayback()
             dialog.dismiss()
         }
 
         dialog.setOnDismissListener {
-            videoView.stopPlayback()
+            try {
+                mediaPlayer?.stop()
+                mediaPlayer?.release()
+                mediaPlayer = null
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
 
         dialog.show()
