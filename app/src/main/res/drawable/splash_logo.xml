@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<inset xmlns:android="http://schemas.android.com/apk/res/android"
+    android:drawable="@drawable/tri_force_logo"
+    android:insetBottom="28dp"
+    android:insetLeft="28dp"
+    android:insetRight="28dp"
+    android:insetTop="28dp" />

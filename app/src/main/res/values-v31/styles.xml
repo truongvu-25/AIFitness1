@@ -17,9 +17,9 @@
         <item name="android:windowBackground">@color/tri_force_navy</item>
         <item name="android:windowLightStatusBar">false</item>
 
-        <!-- Android 12+ Splash Screen attributes -->
+        <!-- Android 12+ Splash Screen attributes (safe inset icon) -->
         <item name="android:windowSplashScreenBackground">@color/tri_force_navy</item>
-        <item name="android:windowSplashScreenAnimatedIcon">@drawable/tri_force_logo</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/splash_logo</item>
         <item name="android:windowSplashScreenIconBackgroundColor">@color/tri_force_navy</item>
     </style>
 </resources>
