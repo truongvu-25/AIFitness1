@@ -156,10 +156,15 @@ class WorkoutCalendarFragment : Fragment() {
                         userBmiType = profile.bmiType
                         createdTime = profile.createdTime
 
-                        val planTypeLabel = when (userBmiType) {
-                            "GAY" -> "Lộ trình: Tăng Cân & Tăng Cơ (Gầy)"
-                            "CAN DOI" -> "Lộ trình: Săn Chắc Thể Hình (Cân đối)"
-                            else -> "Lộ trình: Đốt Mỡ & Giảm Cân (Thừa cân)"
+                        val customPlanName = document.getString("customPlanName")
+                        val planTypeLabel = if (!customPlanName.isNullOrEmpty()) {
+                            "Lộ trình: $customPlanName"
+                        } else {
+                            when (userBmiType) {
+                                "GAY" -> "Lộ trình: Tăng Cân & Tăng Cơ (Gầy)"
+                                "CAN DOI" -> "Lộ trình: Săn Chắc Thể Hình (Cân đối)"
+                                else -> "Lộ trình: Đốt Mỡ & Giảm Cân (Thừa cân)"
+                            }
                         }
                         binding.tvPlanType.text = planTypeLabel
 

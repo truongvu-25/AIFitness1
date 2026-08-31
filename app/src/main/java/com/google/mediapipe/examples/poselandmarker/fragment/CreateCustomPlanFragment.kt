@@ -234,7 +234,7 @@ class CreateCustomPlanFragment : Fragment() {
             }
             rootJson.put("days", daysArray)
 
-            // 1. Local persistence
+            // 1. Local persistence as saved template
             val prefs = requireContext().getSharedPreferences("tri_force_custom_weekly_plan", Context.MODE_PRIVATE)
             val existingPlansStr = prefs.getString("all_saved_plans_json", "[]") ?: "[]"
             val plansArray = JSONArray(existingPlansStr)
@@ -242,7 +242,6 @@ class CreateCustomPlanFragment : Fragment() {
 
             prefs.edit()
                 .putString("all_saved_plans_json", plansArray.toString())
-                .putString("active_plan_json", rootJson.toString())
                 .apply()
 
             // 2. Cloud persistence to Firebase Firestore per user
@@ -263,12 +262,9 @@ class CreateCustomPlanFragment : Fragment() {
                     .addOnFailureListener { e ->
                         e.printStackTrace()
                     }
-
-                // Update active custom plan on user root doc
-                db.collection("users").document(uid).update("activeCustomPlanJson", rootJson.toString())
             }
 
-            Toast.makeText(requireContext(), "Đã lưu lịch tập \"$planName\" thành công!", Toast.LENGTH_LONG).show()
+            Toast.makeText(requireContext(), "Đã lưu tiến trình mẫu \"$planName\"!", Toast.LENGTH_LONG).show()
 
             // Navigate to Home Fragment
             findNavController().navigate(R.id.home_fragment)

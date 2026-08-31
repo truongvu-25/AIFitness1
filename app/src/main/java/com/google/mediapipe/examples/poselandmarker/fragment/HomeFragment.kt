@@ -14,6 +14,8 @@ import androidx.navigation.fragment.findNavController
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.mediapipe.examples.poselandmarker.R
+import com.google.mediapipe.examples.poselandmarker.UserExercise
+import com.google.mediapipe.examples.poselandmarker.WorkoutDay
 import com.google.mediapipe.examples.poselandmarker.databinding.FragmentHomeBinding
 import com.google.mediapipe.examples.poselandmarker.databinding.ItemExerciseBinding
 import com.google.mediapipe.examples.poselandmarker.databinding.ItemSavedPlanCardBinding
@@ -63,10 +65,10 @@ class HomeFragment : Fragment() {
     }
 
     private fun syncPlansFromCloudAndDisplay() {
-        // 1. First display local cache immediately
+        // 1. Display local cache first
         loadActiveWeeklyPlan()
 
-        // 2. Fetch latest from Firebase Firestore if user is authenticated
+        // 2. Fetch from Firebase Firestore if authenticated
         val uid = auth.currentUser?.uid ?: return
         db.collection("users").document(uid).collection("custom_plans").get()
             .addOnSuccessListener { querySnapshot ->
@@ -83,15 +85,13 @@ class HomeFragment : Fragment() {
                         }
                     }
 
-                    if (plansArray.length() > 0) {
-                        val prefs = requireContext().getSharedPreferences("tri_force_custom_weekly_plan", Context.MODE_PRIVATE)
-                        prefs.edit().putString("all_saved_plans_json", plansArray.toString()).apply()
-                        loadActiveWeeklyPlan()
-                    }
+                    val prefs = requireContext().getSharedPreferences("tri_force_custom_weekly_plan", Context.MODE_PRIVATE)
+                    prefs.edit().putString("all_saved_plans_json", plansArray.toString()).apply()
+                    loadActiveWeeklyPlan()
                 }
             }
             .addOnFailureListener {
-                // Ignore or rely on local cache
+                // Ignore failure and use local cache
             }
     }
 
@@ -129,16 +129,18 @@ class HomeFragment : Fragment() {
             try {
                 JSONObject(activePlanStr)
             } catch (e: Exception) {
-                if (plansArray.length() > 0) plansArray.getJSONObject(0) else null
+                null
             }
-        } else if (plansArray.length() > 0) {
-            plansArray.getJSONObject(0)
         } else {
             null
         }
 
         if (activeRootJson != null) {
             renderActivePlanSection(activeRootJson)
+        } else {
+            binding.cardActivePlan.visibility = View.GONE
+            binding.tvTodayTitle.visibility = View.GONE
+            binding.layoutTodayExercises.removeAllViews()
         }
 
         // Render List of Saved Plans
@@ -150,7 +152,7 @@ class HomeFragment : Fragment() {
         binding.cardActivePlan.visibility = View.VISIBLE
         binding.tvTodayTitle.visibility = View.VISIBLE
 
-        val planName = activeJson.optString("planName", "Lịch tập cá nhân")
+        val planName = activeJson.optString("planName", "Lịch tập chính")
         val daysArray = activeJson.optJSONArray("days") ?: return
 
         binding.tvHomePlanName.text = planName
@@ -275,6 +277,7 @@ class HomeFragment : Fragment() {
 
         for (i in 0 until plansArray.length()) {
             val planObj = plansArray.getJSONObject(i)
+            val planId = planObj.optString("planId", "")
             val planName = planObj.optString("planName", "Lịch tập ${i + 1}")
             val days = planObj.optJSONArray("days")
             val workoutDaysCount = if (days != null) {
@@ -289,7 +292,7 @@ class HomeFragment : Fragment() {
             itemBinding.tvSavedPlanName.text = planName
             itemBinding.tvSavedPlanDesc.text = "$workoutDaysCount buổi tập/tuần • Lặp lại hàng tuần"
 
-            val isActive = (planName == currentActivePlanName)
+            val isActive = (planName == currentActivePlanName && currentActivePlanName.isNotEmpty())
             if (isActive) {
                 itemBinding.tvActiveIndicator.visibility = View.VISIBLE
                 itemBinding.btnStartSavedPlan.text = "ĐANG TẬP"
@@ -297,38 +300,182 @@ class HomeFragment : Fragment() {
                 itemBinding.btnStartSavedPlan.isEnabled = false
             } else {
                 itemBinding.tvActiveIndicator.visibility = View.GONE
-                itemBinding.btnStartSavedPlan.text = "BẮT ĐẦU"
+                itemBinding.btnStartSavedPlan.text = "ÁP DỤNG"
                 itemBinding.btnStartSavedPlan.backgroundTintList = ContextCompat.getColorStateList(requireContext(), R.color.mp_color_primary)
                 itemBinding.btnStartSavedPlan.isEnabled = true
 
                 itemBinding.btnStartSavedPlan.setOnClickListener {
-                    showSwitchPlanConfirmationDialog(planObj, planName)
+                    showApplyPlanConfirmationDialog(planObj, planName)
                 }
+
+                itemBinding.cardSavedPlanRoot.setOnClickListener {
+                    showApplyPlanConfirmationDialog(planObj, planName)
+                }
+            }
+
+            // Top-left 'x' delete button
+            itemBinding.btnDeletePlan.setOnClickListener {
+                showDeletePlanConfirmationDialog(planId, planName, i)
             }
 
             binding.layoutSavedPlansList.addView(itemBinding.root)
         }
     }
 
-    private fun showSwitchPlanConfirmationDialog(newPlanObj: JSONObject, planName: String) {
+    private fun showDeletePlanConfirmationDialog(planId: String, planName: String, position: Int) {
         AlertDialog.Builder(requireContext(), android.R.style.Theme_DeviceDefault_Dialog_Alert)
-            .setTitle("Xác nhận đổi tiến trình tập")
-            .setMessage("Bạn có chắc chắn muốn hủy tiến trình hiện tại để bắt đầu tiến trình \"$planName\" này không?")
-            .setPositiveButton("Bắt đầu ngay") { _, _ ->
-                val prefs = requireContext().getSharedPreferences("tri_force_custom_weekly_plan", Context.MODE_PRIVATE)
-                prefs.edit().putString("active_plan_json", newPlanObj.toString()).apply()
-
-                // Update active on Firestore as well
-                val uid = auth.currentUser?.uid
-                if (uid != null) {
-                    db.collection("users").document(uid).update("activeCustomPlanJson", newPlanObj.toString())
-                }
-
-                Toast.makeText(requireContext(), "Đã áp dụng tiến trình \"$planName\"!", Toast.LENGTH_SHORT).show()
-                loadActiveWeeklyPlan()
+            .setTitle("Xác nhận xóa tiến trình")
+            .setMessage("Bạn có chắc chắn muốn xóa tiến trình \"$planName\" không? Hành động này sẽ xóa vĩnh viễn khỏi tài khoản của bạn.")
+            .setPositiveButton("Xóa") { _, _ ->
+                deletePlanLocallyAndCloud(planId, planName, position)
             }
             .setNegativeButton("Hủy", null)
             .show()
+    }
+
+    private fun deletePlanLocallyAndCloud(planId: String, planName: String, position: Int) {
+        val prefs = requireContext().getSharedPreferences("tri_force_custom_weekly_plan", Context.MODE_PRIVATE)
+        val allPlansStr = prefs.getString("all_saved_plans_json", "[]") ?: "[]"
+
+        try {
+            val plansArray = JSONArray(allPlansStr)
+            val updatedArray = JSONArray()
+
+            for (i in 0 until plansArray.length()) {
+                val obj = plansArray.getJSONObject(i)
+                val id = obj.optString("planId", "")
+                val name = obj.optString("planName", "")
+                if (id != planId && name != planName) {
+                    updatedArray.put(obj)
+                }
+            }
+
+            // Check if deleted plan is active
+            val activeStr = prefs.getString("active_plan_json", null)
+            var clearActive = false
+            if (activeStr != null) {
+                val activeObj = JSONObject(activeStr)
+                if (activeObj.optString("planId", "") == planId || activeObj.optString("planName", "") == planName) {
+                    clearActive = true
+                }
+            }
+
+            val editor = prefs.edit().putString("all_saved_plans_json", updatedArray.toString())
+            if (clearActive) {
+                editor.remove("active_plan_json")
+            }
+            editor.apply()
+
+            // Delete from Firebase Firestore
+            val uid = auth.currentUser?.uid
+            if (uid != null && planId.isNotEmpty()) {
+                db.collection("users").document(uid).collection("custom_plans").document(planId)
+                    .delete()
+                    .addOnSuccessListener {
+                        // Deleted from cloud
+                    }
+            }
+
+            Toast.makeText(requireContext(), "Đã xóa tiến trình \"$planName\"", Toast.LENGTH_SHORT).show()
+            loadActiveWeeklyPlan()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    private fun showApplyPlanConfirmationDialog(newPlanObj: JSONObject, planName: String) {
+        AlertDialog.Builder(requireContext(), android.R.style.Theme_DeviceDefault_Dialog_Alert)
+            .setTitle("Áp dụng tiến trình vào lịch tập 30 ngày?")
+            .setMessage("Bạn có chắc chắn muốn thay lịch tập 30 ngày hiện tại thành tiến trình \"$planName\" không? Toàn bộ lộ trình 30 ngày sẽ được thiết lập lại từ hôm nay đúng theo các thứ bạn đã chọn.")
+            .setPositiveButton("Đồng ý") { _, _ ->
+                applyPlanTo30DaySchedule(newPlanObj, planName)
+            }
+            .setNegativeButton("Hủy", null)
+            .show()
+    }
+
+    private fun applyPlanTo30DaySchedule(planObj: JSONObject, planName: String) {
+        val daysArray = planObj.optJSONArray("days") ?: return
+        val uid = auth.currentUser?.uid ?: return
+
+        // 1. Save as active plan in SharedPreferences
+        val prefs = requireContext().getSharedPreferences("tri_force_custom_weekly_plan", Context.MODE_PRIVATE)
+        prefs.edit().putString("active_plan_json", planObj.toString()).apply()
+
+        // 2. Map daysArray ("mon", "tue", "wed", "thu", "fri", "sat", "sun") to Day of Week
+        val daysMap = HashMap<Int, List<UserExercise>>()
+        // Mon = Calendar.MONDAY (2), Tue = Calendar.TUESDAY (3), etc.
+        for (i in 0 until daysArray.length()) {
+            val dayObj = daysArray.getJSONObject(i)
+            val dayKey = dayObj.optString("dayKey", "mon")
+            val exercisesJson = dayObj.optJSONArray("exercises")
+
+            val userExercises = mutableListOf<UserExercise>()
+            if (exercisesJson != null) {
+                for (j in 0 until exercisesJson.length()) {
+                    val exObj = exercisesJson.getJSONObject(j)
+                    val exId = exObj.optString("id", "pushup")
+                    val targetCount = exObj.optInt("targetCount", 15)
+                    userExercises.add(UserExercise(exerciseId = exId, targetCount = targetCount, status = 0))
+                }
+            }
+
+            val calDay = when (dayKey) {
+                "mon" -> Calendar.MONDAY
+                "tue" -> Calendar.TUESDAY
+                "wed" -> Calendar.WEDNESDAY
+                "thu" -> Calendar.THURSDAY
+                "fri" -> Calendar.FRIDAY
+                "sat" -> Calendar.SATURDAY
+                "sun" -> Calendar.SUNDAY
+                else -> Calendar.MONDAY
+            }
+            daysMap[calDay] = userExercises
+        }
+
+        // 3. Build 30-Day Workout Plan starting from today
+        val newCreatedTime = System.currentTimeMillis()
+        val batch = db.batch()
+        val workoutsRef = db.collection("users").document(uid).collection("workouts")
+
+        val calendar = Calendar.getInstance()
+
+        for (dayNum in 1..30) {
+            val dayMs = newCreatedTime + (dayNum - 1) * 24L * 60 * 60 * 1000
+            calendar.timeInMillis = dayMs
+            val dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK)
+
+            val dayExercises = daysMap[dayOfWeek] ?: emptyList()
+            val isRest = dayExercises.isEmpty()
+
+            val workoutDay = WorkoutDay(
+                dayIndex = dayNum,
+                isRestDay = isRest,
+                exercises = dayExercises
+            )
+
+            val docRef = workoutsRef.document("day_$dayNum")
+            batch.set(docRef, workoutDay)
+        }
+
+        // 4. Update user root document with new createdTime and planName
+        val userDocRef = db.collection("users").document(uid)
+        batch.update(userDocRef, mapOf(
+            "createdTime" to newCreatedTime,
+            "customPlanName" to planName,
+            "activeCustomPlanJson" to planObj.toString()
+        ))
+
+        // Commit batch
+        batch.commit()
+            .addOnSuccessListener {
+                Toast.makeText(requireContext(), "Đã áp dụng tiến trình \"$planName\" vào lịch tập 30 ngày!", Toast.LENGTH_LONG).show()
+                // Navigate immediately to WorkoutCalendarFragment
+                findNavController().navigate(R.id.workout_calendar_fragment)
+            }
+            .addOnFailureListener { e ->
+                Toast.makeText(requireContext(), "Lỗi cập nhật lịch tập 30 ngày: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
     }
 
     override fun onDestroyView() {
