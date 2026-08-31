@@ -23,7 +23,7 @@
     <View
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#80050811"
+        android:background="#80030E20"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent" />
 
@@ -40,11 +40,11 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
-        <!-- Unclipped, Large Tri Force Logo -->
+        <!-- 1:1 Perfect Circular Tri Force Logo -->
         <ImageView
             android:id="@+id/ivWelcomeLogo"
-            android:layout_width="280dp"
-            android:layout_height="240dp"
+            android:layout_width="260dp"
+            android:layout_height="260dp"
             android:src="@drawable/tri_force_logo"
             android:scaleType="fitCenter"
             android:contentDescription="@string/app_name" />
@@ -63,7 +63,7 @@
             android:shadowDx="0"
             android:shadowDy="4"
             android:shadowRadius="10"
-            android:layout_marginTop="12dp"/>
+            android:layout_marginTop="8dp"/>
 
         <!-- Slogan -->
         <TextView
