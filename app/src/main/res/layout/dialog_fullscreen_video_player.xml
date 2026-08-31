@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#000000">
+
+    <!-- Fullscreen Video View (Centered & Scaled) -->
+    <VideoView
+        android:id="@+id/fullscreenVideoView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_centerInParent="true" />
+
+    <!-- Initial Buffering Progress Indicator -->
+    <ProgressBar
+        android:id="@+id/fullscreenVideoProgress"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_centerInParent="true"
+        android:indeterminateTint="@color/mp_color_primary_variant"
+        android:visibility="visible" />
+
+    <!-- Top Overlay Bar (Title & 'x' Close Button) -->
+    <RelativeLayout
+        android:id="@+id/layoutTopBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:paddingHorizontal="20dp"
+        android:paddingTop="36dp"
+        android:paddingBottom="16dp"
+        android:background="#66000000">
+
+        <TextView
+            android:id="@+id/tvFullscreenVideoTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_toStartOf="@id/btnFullscreenClose"
+            android:layout_marginEnd="16dp"
+            android:layout_centerVertical="true"
+            android:text="Video hướng dẫn"
+            android:textSize="17sp"
+            android:textStyle="bold"
+            android:textColor="@color/tri_force_white"
+            android:ellipsize="end"
+            android:maxLines="1" />
+
+        <!-- Floating 'x' Close Button -->
+        <ImageButton
+            android:id="@+id/btnFullscreenClose"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:src="@android:drawable/ic_menu_close_clear_cancel"
+            app:tint="@color/tri_force_white"
+            android:background="#33FFFFFF"
+            android:padding="8dp"
+            android:contentDescription="@string/profile_title" />
+    </RelativeLayout>
+
+    <!-- Center Replay Button (Appears when video completes) -->
+    <LinearLayout
+        android:id="@+id/layoutCenterReplay"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:visibility="gone">
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardReplayButton"
+            android:layout_width="72dp"
+            android:layout_height="72dp"
+            app:cardCornerRadius="36dp"
+            app:cardElevation="10dp"
+            app:cardBackgroundColor="@color/mp_color_primary"
+            app:strokeColor="@color/mp_color_primary_variant"
+            app:strokeWidth="1.5dp"
+            android:clickable="true"
+            android:focusable="true">
+
+            <ImageView
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_chevron_right"
+                android:rotation="180"
+                app:tint="@color/tri_force_white"
+                android:contentDescription="@string/app_name" />
+        </com.google.android.material.card.MaterialCardView>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="XEM LẠI"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:textColor="@color/tri_force_white"
+            android:letterSpacing="0.06"
+            android:layout_marginTop="10dp" />
+    </LinearLayout>
+
+</RelativeLayout>

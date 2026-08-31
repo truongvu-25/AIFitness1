@@ -219,29 +219,39 @@ class LibraryFragment : Fragment() {
             return
         }
 
-        val dialog = Dialog(requireContext())
-        dialog.setContentView(R.layout.dialog_video_player)
+        val dialog = Dialog(requireContext(), android.R.style.Theme_Black_NoTitleBar_Fullscreen)
+        dialog.setContentView(R.layout.dialog_fullscreen_video_player)
 
         dialog.window?.setLayout(
             ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.WRAP_CONTENT
+            ViewGroup.LayoutParams.MATCH_PARENT
         )
 
-        val videoView = dialog.findViewById<VideoView>(R.id.dialogVideoView)
-        val progressBar = dialog.findViewById<ProgressBar>(R.id.videoProgress)
-        val btnClose = dialog.findViewById<ImageButton>(R.id.btnDialogClose)
-        val tvTitle = dialog.findViewById<TextView>(R.id.tvDialogTitle)
+        val videoView = dialog.findViewById<VideoView>(R.id.fullscreenVideoView)
+        val progressBar = dialog.findViewById<ProgressBar>(R.id.fullscreenVideoProgress)
+        val btnClose = dialog.findViewById<ImageButton>(R.id.btnFullscreenClose)
+        val tvTitle = dialog.findViewById<TextView>(R.id.tvFullscreenVideoTitle)
+        val layoutCenterReplay = dialog.findViewById<View>(R.id.layoutCenterReplay)
+        val cardReplayButton = dialog.findViewById<View>(R.id.cardReplayButton)
 
         tvTitle.text = "Hướng dẫn: ${exercise.name}"
+        videoView.setMediaController(null) // No bottom seekbar / scrub bar
 
         try {
             val videoUri = getMediaUri(requireContext(), url)
             videoView.setVideoURI(videoUri)
             videoView.setOnPreparedListener { mp ->
-                mp.isLooping = true
+                mp.isLooping = false // Do not loop automatically
                 progressBar.visibility = View.GONE
+                layoutCenterReplay.visibility = View.GONE
                 videoView.start()
             }
+
+            videoView.setOnCompletionListener {
+                // Show center replay button when finished
+                layoutCenterReplay.visibility = View.VISIBLE
+            }
+
             videoView.setOnErrorListener { _, _, _ ->
                 progressBar.visibility = View.GONE
                 Toast.makeText(context, "Lỗi khi phát video bài tập.", Toast.LENGTH_SHORT).show()
@@ -250,6 +260,12 @@ class LibraryFragment : Fragment() {
         } catch (e: Exception) {
             progressBar.visibility = View.GONE
             Toast.makeText(context, "Không tìm thấy video: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
+
+        cardReplayButton.setOnClickListener {
+            layoutCenterReplay.visibility = View.GONE
+            videoView.seekTo(0)
+            videoView.start()
         }
 
         btnClose.setOnClickListener {
