@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:background="@color/tri_force_navy">
 
-    <!-- Global Full-Screen Gym Interior Background -->
+    <!-- Global Clean Gym Interior Background -->
     <ImageView
         android:id="@+id/ivGlobalBackground"
         android:layout_width="match_parent"
@@ -15,7 +15,7 @@
         android:scaleType="centerCrop"
         android:contentDescription="@string/app_name" />
 
-    <!-- Subtle Dark Layer for High Contrast Depth -->
+    <!-- Subtle Dark Tint Layer for Maximum UI Contrast -->
     <View
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -38,6 +38,20 @@
             app:defaultNavHost="true"
             app:navGraph="@navigation/nav_graph"
             tools:context=".MainActivity" />
+
+        <!-- Metallic TRI FORCE Wordmark in Top-Left Corner -->
+        <ImageView
+            android:id="@+id/ivHeaderWordmark"
+            android:layout_width="160dp"
+            android:layout_height="38dp"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentStart="true"
+            android:layout_marginTop="38dp"
+            android:layout_marginStart="20dp"
+            android:src="@drawable/tri_force_text_logo"
+            android:scaleType="fitStart"
+            android:adjustViewBounds="true"
+            android:contentDescription="@string/app_name" />
 
         <!-- iOS-Style Floating Glassmorphic Bottom Navigation Bar -->
         <com.google.android.material.card.MaterialCardView

@@ -50,17 +50,20 @@ class MainActivity : AppCompatActivity() {
             // ignore the reselection
         }
 
-        // Manage visibility of Floating Bottom Nav dynamically
+        // Manage visibility of Top Wordmark and Floating Bottom Nav dynamically
         navController.addOnDestinationChangedListener { _, destination, _ ->
             when (destination.id) {
                 R.id.welcome_fragment,
                 R.id.login_fragment,
                 R.id.register_fragment,
                 R.id.user_info_fragment,
-                R.id.camera_fragment -> {
+                R.id.camera_fragment,
+                R.id.update_bmi_fragment -> {
+                    activityMainBinding.ivHeaderWordmark.visibility = View.GONE
                     activityMainBinding.bottomNavCard.visibility = View.GONE
                 }
                 else -> {
+                    activityMainBinding.ivHeaderWordmark.visibility = View.VISIBLE
                     activityMainBinding.bottomNavCard.visibility = View.VISIBLE
                 }
             }
