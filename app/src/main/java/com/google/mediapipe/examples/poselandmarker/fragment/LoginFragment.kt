@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.DecelerateInterpolator
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
@@ -36,6 +37,9 @@ class LoginFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // Smooth staggered entrance animation for all components
+        playEntranceAnimation()
+
         // Check if user is already logged in (persistence session check)
         val currentUser = auth.currentUser
         if (currentUser != null) {
@@ -49,6 +53,40 @@ class LoginFragment : Fragment() {
         binding.tvGoToRegister.setOnClickListener {
             findNavController().navigate(R.id.action_login_to_register)
         }
+    }
+
+    private fun playEntranceAnimation() {
+        // Animate Header (Logo + Title + Slogan)
+        binding.headerLayout.alpha = 0f
+        binding.headerLayout.translationY = 45f
+        binding.headerLayout.animate()
+            .alpha(1f)
+            .translationY(0f)
+            .setDuration(450)
+            .setInterpolator(DecelerateInterpolator())
+            .start()
+
+        // Animate Login Form Card
+        binding.cardLogin.alpha = 0f
+        binding.cardLogin.translationY = 65f
+        binding.cardLogin.animate()
+            .alpha(1f)
+            .translationY(0f)
+            .setDuration(480)
+            .setStartDelay(100)
+            .setInterpolator(DecelerateInterpolator())
+            .start()
+
+        // Animate Bottom Redirect Prompt
+        binding.redirectLayout.alpha = 0f
+        binding.redirectLayout.translationY = 35f
+        binding.redirectLayout.animate()
+            .alpha(1f)
+            .translationY(0f)
+            .setDuration(450)
+            .setStartDelay(200)
+            .setInterpolator(DecelerateInterpolator())
+            .start()
     }
 
     private fun performLogin() {
@@ -123,6 +161,7 @@ class LoginFragment : Fragment() {
     }
 
     private fun setLoading(isLoading: Boolean) {
+        if (_binding == null) return
         if (isLoading) {
             binding.btnLogin.visibility = View.GONE
             binding.loadingProgress.visibility = View.VISIBLE
