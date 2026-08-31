@@ -49,11 +49,15 @@ class HomeFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         binding.btnHomeCreatePlan.setOnClickListener {
-            findNavController().navigate(R.id.create_custom_plan_fragment)
+            if (isAdded) {
+                findNavController().navigate(R.id.create_custom_plan_fragment)
+            }
         }
 
         binding.btnGoToCurrentWorkout.setOnClickListener {
-            findNavController().navigate(R.id.workout_calendar_fragment)
+            if (isAdded) {
+                findNavController().navigate(R.id.workout_calendar_fragment)
+            }
         }
 
         syncPlansFromCloudAndDisplay()
@@ -65,6 +69,9 @@ class HomeFragment : Fragment() {
     }
 
     private fun syncPlansFromCloudAndDisplay() {
+        val ctx = context ?: return
+        if (!isAdded || _binding == null) return
+
         // 1. Display local cache first
         loadActiveWeeklyPlan()
 
@@ -72,6 +79,9 @@ class HomeFragment : Fragment() {
         val uid = auth.currentUser?.uid ?: return
         db.collection("users").document(uid).collection("custom_plans").get()
             .addOnSuccessListener { querySnapshot ->
+                if (!isAdded || _binding == null) return@addOnSuccessListener
+                val currentContext = context ?: return@addOnSuccessListener
+
                 if (!querySnapshot.isEmpty) {
                     val plansArray = JSONArray()
                     for (doc in querySnapshot.documents) {
@@ -85,7 +95,7 @@ class HomeFragment : Fragment() {
                         }
                     }
 
-                    val prefs = requireContext().getSharedPreferences("tri_force_custom_weekly_plan", Context.MODE_PRIVATE)
+                    val prefs = currentContext.getSharedPreferences("tri_force_custom_weekly_plan", Context.MODE_PRIVATE)
                     prefs.edit().putString("all_saved_plans_json", plansArray.toString()).apply()
                     loadActiveWeeklyPlan()
                 }
@@ -96,7 +106,10 @@ class HomeFragment : Fragment() {
     }
 
     private fun loadActiveWeeklyPlan() {
-        val prefs = requireContext().getSharedPreferences("tri_force_custom_weekly_plan", Context.MODE_PRIVATE)
+        val ctx = context ?: return
+        if (!isAdded || _binding == null) return
+
+        val prefs = ctx.getSharedPreferences("tri_force_custom_weekly_plan", Context.MODE_PRIVATE)
         val allPlansStr = prefs.getString("all_saved_plans_json", "[]") ?: "[]"
         val activePlanStr = prefs.getString("active_plan_json", null)
 
@@ -149,6 +162,9 @@ class HomeFragment : Fragment() {
     }
 
     private fun renderActivePlanSection(activeJson: JSONObject) {
+        val ctx = context ?: return
+        if (!isAdded || _binding == null) return
+
         binding.cardActivePlan.visibility = View.VISIBLE
         binding.tvTodayTitle.visibility = View.VISIBLE
 
@@ -193,7 +209,7 @@ class HomeFragment : Fragment() {
             if (i == currentDayIndex) {
                 // Today -> Solid Blue Highlight
                 bubble.setBackgroundResource(R.drawable.bg_bmi_badge)
-                bubble.backgroundTintList = ContextCompat.getColorStateList(requireContext(), R.color.mp_color_primary)
+                bubble.backgroundTintList = ContextCompat.getColorStateList(ctx, R.color.mp_color_primary)
                 bubble.setTextColor(Color.WHITE)
 
                 if (exArray != null) {
@@ -215,12 +231,12 @@ class HomeFragment : Fragment() {
             } else if (exCount > 0) {
                 // Other day with exercises -> Frosted Dark Glass
                 bubble.setBackgroundResource(R.drawable.bg_bmi_badge)
-                bubble.backgroundTintList = ContextCompat.getColorStateList(requireContext(), R.color.tri_force_navy)
-                bubble.setTextColor(ContextCompat.getColor(requireContext(), R.color.mp_color_primary_variant))
+                bubble.backgroundTintList = ContextCompat.getColorStateList(ctx, R.color.tri_force_navy)
+                bubble.setTextColor(ContextCompat.getColor(ctx, R.color.mp_color_primary_variant))
             } else {
                 // Rest day -> Faint Slate
                 bubble.setBackgroundResource(R.drawable.bg_bmi_badge)
-                bubble.backgroundTintList = ContextCompat.getColorStateList(requireContext(), R.color.tri_force_navy)
+                bubble.backgroundTintList = ContextCompat.getColorStateList(ctx, R.color.tri_force_navy)
                 bubble.setTextColor(Color.parseColor("#64748B"))
             }
         }
@@ -246,17 +262,20 @@ class HomeFragment : Fragment() {
                 itemBinding.tvExerciseDesc.text = ex.desc
 
                 itemBinding.btnWatchVideo.setOnClickListener {
-                    Toast.makeText(requireContext(), "Hướng dẫn bài tập: ${ex.name}", Toast.LENGTH_SHORT).show()
+                    val currentCtx = context ?: return@setOnClickListener
+                    Toast.makeText(currentCtx, "Hướng dẫn bài tập: ${ex.name}", Toast.LENGTH_SHORT).show()
                 }
 
                 itemBinding.btnStartExercise.setOnClickListener {
-                    val bundle = Bundle().apply {
-                        putString("exerciseId", ex.id)
-                        putString("exerciseName", ex.name)
-                        putInt("targetCount", ex.targetCount)
-                        putInt("dayIndex", currentDayIndex + 1)
+                    if (isAdded) {
+                        val bundle = Bundle().apply {
+                            putString("exerciseId", ex.id)
+                            putString("exerciseName", ex.name)
+                            putInt("targetCount", ex.targetCount)
+                            putInt("dayIndex", currentDayIndex + 1)
+                        }
+                        findNavController().navigate(R.id.action_home_to_camera, bundle)
                     }
-                    findNavController().navigate(R.id.action_home_to_camera, bundle)
                 }
 
                 binding.layoutTodayExercises.addView(itemBinding.root)
@@ -265,6 +284,9 @@ class HomeFragment : Fragment() {
     }
 
     private fun renderSavedPlansList(plansArray: JSONArray, currentActivePlanName: String) {
+        val ctx = context ?: return
+        if (!isAdded || _binding == null) return
+
         if (plansArray.length() == 0) {
             binding.tvSavedPlansHeader.visibility = View.GONE
             binding.layoutSavedPlansList.visibility = View.GONE
@@ -296,12 +318,12 @@ class HomeFragment : Fragment() {
             if (isActive) {
                 itemBinding.tvActiveIndicator.visibility = View.VISIBLE
                 itemBinding.btnStartSavedPlan.text = "ĐANG TẬP"
-                itemBinding.btnStartSavedPlan.backgroundTintList = ContextCompat.getColorStateList(requireContext(), R.color.tri_force_success)
+                itemBinding.btnStartSavedPlan.backgroundTintList = ContextCompat.getColorStateList(ctx, R.color.tri_force_success)
                 itemBinding.btnStartSavedPlan.isEnabled = false
             } else {
                 itemBinding.tvActiveIndicator.visibility = View.GONE
                 itemBinding.btnStartSavedPlan.text = "ÁP DỤNG"
-                itemBinding.btnStartSavedPlan.backgroundTintList = ContextCompat.getColorStateList(requireContext(), R.color.mp_color_primary)
+                itemBinding.btnStartSavedPlan.backgroundTintList = ContextCompat.getColorStateList(ctx, R.color.mp_color_primary)
                 itemBinding.btnStartSavedPlan.isEnabled = true
 
                 itemBinding.btnStartSavedPlan.setOnClickListener {
@@ -323,7 +345,8 @@ class HomeFragment : Fragment() {
     }
 
     private fun showDeletePlanConfirmationDialog(planId: String, planName: String, position: Int) {
-        AlertDialog.Builder(requireContext(), android.R.style.Theme_DeviceDefault_Dialog_Alert)
+        val ctx = context ?: return
+        AlertDialog.Builder(ctx, android.R.style.Theme_DeviceDefault_Dialog_Alert)
             .setTitle("Xác nhận xóa tiến trình")
             .setMessage("Bạn có chắc chắn muốn xóa tiến trình \"$planName\" không? Hành động này sẽ xóa vĩnh viễn khỏi tài khoản của bạn.")
             .setPositiveButton("Xóa") { _, _ ->
@@ -334,7 +357,8 @@ class HomeFragment : Fragment() {
     }
 
     private fun deletePlanLocallyAndCloud(planId: String, planName: String, position: Int) {
-        val prefs = requireContext().getSharedPreferences("tri_force_custom_weekly_plan", Context.MODE_PRIVATE)
+        val ctx = context ?: return
+        val prefs = ctx.getSharedPreferences("tri_force_custom_weekly_plan", Context.MODE_PRIVATE)
         val allPlansStr = prefs.getString("all_saved_plans_json", "[]") ?: "[]"
 
         try {
@@ -379,7 +403,7 @@ class HomeFragment : Fragment() {
                     }
             }
 
-            Toast.makeText(requireContext(), "Đã xóa tiến trình \"$planName\"", Toast.LENGTH_SHORT).show()
+            Toast.makeText(ctx, "Đã xóa tiến trình \"$planName\"", Toast.LENGTH_SHORT).show()
             loadActiveWeeklyPlan()
         } catch (e: Exception) {
             e.printStackTrace()
@@ -387,7 +411,8 @@ class HomeFragment : Fragment() {
     }
 
     private fun showApplyPlanConfirmationDialog(newPlanObj: JSONObject, planName: String) {
-        AlertDialog.Builder(requireContext(), android.R.style.Theme_DeviceDefault_Dialog_Alert)
+        val ctx = context ?: return
+        AlertDialog.Builder(ctx, android.R.style.Theme_DeviceDefault_Dialog_Alert)
             .setTitle("Xác nhận thay đổi lịch tập")
             .setMessage("Bạn có chắc chắn muốn hủy tiến trình hiện tại để bắt đầu tiến trình \"$planName\" này vào lịch tập 30 ngày không?")
             .setPositiveButton("Đồng ý đổi") { _, _ ->
@@ -400,9 +425,10 @@ class HomeFragment : Fragment() {
     private fun applyPlanTo30DaySchedule(planObj: JSONObject, planName: String) {
         val daysArray = planObj.optJSONArray("days") ?: return
         val uid = auth.currentUser?.uid ?: return
+        val ctx = context ?: return
 
         // 1. Save as active plan in SharedPreferences
-        val prefs = requireContext().getSharedPreferences("tri_force_custom_weekly_plan", Context.MODE_PRIVATE)
+        val prefs = ctx.getSharedPreferences("tri_force_custom_weekly_plan", Context.MODE_PRIVATE)
         prefs.edit().putString("active_plan_json", planObj.toString()).apply()
 
         // 2. Map daysArray ("mon", "tue", "wed", "thu", "fri", "sat", "sun") to Day of Week
@@ -472,12 +498,16 @@ class HomeFragment : Fragment() {
         // Commit batch
         batch.commit()
             .addOnSuccessListener {
-                Toast.makeText(requireContext(), "Đã áp dụng tiến trình \"$planName\" vào lịch tập 30 ngày!", Toast.LENGTH_LONG).show()
+                if (!isAdded || _binding == null) return@addOnSuccessListener
+                val currentCtx = context ?: return@addOnSuccessListener
+                Toast.makeText(currentCtx, "Đã áp dụng tiến trình \"$planName\" vào lịch tập 30 ngày!", Toast.LENGTH_LONG).show()
                 // Navigate immediately to WorkoutCalendarFragment
                 findNavController().navigate(R.id.workout_calendar_fragment)
             }
             .addOnFailureListener { e ->
-                Toast.makeText(requireContext(), "Lỗi cập nhật lịch tập 30 ngày: ${e.message}", Toast.LENGTH_SHORT).show()
+                if (!isAdded || _binding == null) return@addOnFailureListener
+                val currentCtx = context ?: return@addOnFailureListener
+                Toast.makeText(currentCtx, "Lỗi cập nhật lịch tập 30 ngày: ${e.message}", Toast.LENGTH_SHORT).show()
             }
     }
 
