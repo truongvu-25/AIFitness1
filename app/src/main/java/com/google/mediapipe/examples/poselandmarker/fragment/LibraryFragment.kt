@@ -83,24 +83,14 @@ class LibraryFragment : Fragment() {
 
     private fun setupRecyclerView() {
         adapter = LibraryExerciseAdapter { exercise ->
-            // Launch Camera Workout AI HUD
-            try {
-                val action = LibraryFragmentDirections.actionLibraryToCamera(
-                    exerciseId = exercise.id,
-                    exerciseName = exercise.name,
-                    targetCount = exercise.targetCount,
-                    dayIndex = 1
-                )
-                findNavController().navigate(action)
-            } catch (e: Exception) {
-                val bundle = Bundle().apply {
-                    putString("exerciseId", exercise.id)
-                    putString("exerciseName", exercise.name)
-                    putInt("targetCount", exercise.targetCount)
-                    putInt("dayIndex", 1)
-                }
-                findNavController().navigate(R.id.camera_fragment, bundle)
+            // Launch Camera Workout AI HUD with bundle arguments
+            val bundle = Bundle().apply {
+                putString("exerciseId", exercise.id)
+                putString("exerciseName", exercise.name)
+                putInt("targetCount", exercise.targetCount)
+                putInt("dayIndex", 1)
             }
+            findNavController().navigate(R.id.action_library_to_camera, bundle)
         }
         binding.rvLibraryExercises.layoutManager = LinearLayoutManager(requireContext())
         binding.rvLibraryExercises.adapter = adapter
