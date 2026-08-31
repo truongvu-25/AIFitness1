@@ -2,7 +2,34 @@
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/login_fragment">
+    app:startDestination="@id/welcome_fragment">
+
+    <fragment
+        android:id="@+id/welcome_fragment"
+        android:name="com.google.mediapipe.examples.poselandmarker.fragment.WelcomeFragment"
+        android:label="WelcomeFragment">
+        <action
+            android:id="@+id/action_welcome_to_login"
+            app:destination="@id/login_fragment" />
+        <action
+            android:id="@+id/action_welcome_to_register"
+            app:destination="@id/register_fragment" />
+        <action
+            android:id="@+id/action_welcome_to_workout_calendar"
+            app:destination="@id/workout_calendar_fragment"
+            app:popUpTo="@id/welcome_fragment"
+            app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_welcome_to_update_bmi"
+            app:destination="@id/update_bmi_fragment"
+            app:popUpTo="@id/welcome_fragment"
+            app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_welcome_to_user_info"
+            app:destination="@id/user_info_fragment"
+            app:popUpTo="@id/welcome_fragment"
+            app:popUpToInclusive="true" />
+    </fragment>
 
     <fragment
         android:id="@+id/login_fragment"
@@ -14,17 +41,17 @@
         <action
             android:id="@+id/action_login_to_user_info"
             app:destination="@id/user_info_fragment"
-            app:popUpTo="@id/login_fragment"
+            app:popUpTo="@id/welcome_fragment"
             app:popUpToInclusive="true" />
         <action
             android:id="@+id/action_login_to_workout_calendar"
             app:destination="@id/workout_calendar_fragment"
-            app:popUpTo="@id/login_fragment"
+            app:popUpTo="@id/welcome_fragment"
             app:popUpToInclusive="true" />
         <action
             android:id="@+id/action_login_to_update_bmi"
             app:destination="@id/update_bmi_fragment"
-            app:popUpTo="@id/login_fragment"
+            app:popUpTo="@id/welcome_fragment"
             app:popUpToInclusive="true" />
     </fragment>
 
@@ -40,7 +67,7 @@
         <action
             android:id="@+id/action_register_to_user_info"
             app:destination="@id/user_info_fragment"
-            app:popUpTo="@id/register_fragment"
+            app:popUpTo="@id/welcome_fragment"
             app:popUpToInclusive="true" />
     </fragment>
 
@@ -55,7 +82,7 @@
         <action
             android:id="@+id/action_user_info_to_workout_calendar"
             app:destination="@id/workout_calendar_fragment"
-            app:popUpTo="@id/user_info_fragment"
+            app:popUpTo="@id/welcome_fragment"
             app:popUpToInclusive="true" />
     </fragment>
 
@@ -83,6 +110,11 @@
         <action
             android:id="@+id/action_profile_to_login"
             app:destination="@id/login_fragment"
+            app:popUpTo="@id/workout_calendar_fragment"
+            app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_profile_to_welcome"
+            app:destination="@id/welcome_fragment"
             app:popUpTo="@id/workout_calendar_fragment"
             app:popUpToInclusive="true" />
         <action

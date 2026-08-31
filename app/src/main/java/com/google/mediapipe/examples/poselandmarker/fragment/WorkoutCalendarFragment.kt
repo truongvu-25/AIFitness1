@@ -576,14 +576,14 @@ class WorkoutCalendarFragment : Fragment() {
 
                 // Apply 6 Color Status Rules
                 when {
-                    item.isCurrentDay -> { // 1. CURRENT DAY -> BLUE (#007F8B)
-                        cardDay.setCardBackgroundColor(Color.parseColor("#007F8B"))
-                        cardDay.strokeColor = Color.parseColor("#004D40")
-                        tvCalendarDate.setTextColor(Color.parseColor("#B2DFDB"))
+                    item.isCurrentDay -> { // 1. CURRENT DAY -> TRI FORCE ELECTRIC BLUE (#0066FF)
+                        cardDay.setCardBackgroundColor(Color.parseColor("#0066FF"))
+                        cardDay.strokeColor = Color.parseColor("#0047BA")
+                        tvCalendarDate.setTextColor(Color.parseColor("#93C5FD"))
                         tvDayNum.text = String.format("%02d", item.dayIndex)
                         tvDayNum.setTextColor(Color.WHITE)
                         tvDayLabel.text = "Hôm nay"
-                        tvDayLabel.setTextColor(Color.parseColor("#E0F2F1"))
+                        tvDayLabel.setTextColor(Color.parseColor("#DBEAFE"))
                     }
                     item.isRestDay -> { // 5. REST DAY -> GRAY (#F5F5F5)
                         cardDay.setCardBackgroundColor(Color.parseColor("#F5F5F5"))
@@ -697,7 +697,7 @@ class WorkoutCalendarFragment : Fragment() {
                 } else { // Pending
                     tvStatus.visibility = View.GONE
                     btnStart.text = "BẮT ĐẦU"
-                    btnStart.setBackgroundColor(Color.parseColor("#007F8B"))
+                    btnStart.setBackgroundColor(Color.parseColor("#0066FF"))
                 }
 
                 btnWatchVideo.setOnClickListener {

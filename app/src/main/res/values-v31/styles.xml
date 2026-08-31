@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Base Tri Force application theme for Android 12+ (API 31+) -->
+    <style name="AppTheme" parent="Theme.MaterialComponents.NoActionBar">
+        <!-- Primary brand color. -->
+        <item name="colorPrimary">@color/mp_color_primary</item>
+        <item name="colorPrimaryVariant">@color/mp_color_primary_variant</item>
+        <item name="colorPrimaryDark">@color/mp_color_primary_dark</item>
+        <!-- Secondary brand color. -->
+        <item name="colorSecondary">@color/mp_color_secondary</item>
+        <item name="colorSecondaryVariant">@color/mp_color_secondary_variant</item>
+        <item name="colorError">@color/mp_color_error</item>
+
+        <!-- Status bar, Navigation bar, and Window background -->
+        <item name="android:statusBarColor">@color/tri_force_navy</item>
+        <item name="android:navigationBarColor">@color/tri_force_navy</item>
+        <item name="android:windowBackground">@color/tri_force_navy</item>
+        <item name="android:windowLightStatusBar">false</item>
+
+        <!-- Android 12+ Splash Screen attributes -->
+        <item name="android:windowSplashScreenBackground">@color/tri_force_navy</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/tri_force_logo</item>
+        <item name="android:windowSplashScreenIconBackgroundColor">@color/tri_force_navy</item>
+    </style>
+</resources>

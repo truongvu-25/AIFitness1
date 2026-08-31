@@ -2,12 +2,12 @@
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/cardDay"
-    android:layout_width="64dp"
-    android:layout_height="64dp"
+    android:layout_width="66dp"
+    android:layout_height="66dp"
     android:layout_margin="5dp"
-    app:cardCornerRadius="12dp"
+    app:cardCornerRadius="14dp"
     app:cardElevation="2dp"
-    app:strokeColor="#007F8B"
+    app:strokeColor="@color/mp_color_primary"
     app:strokeWidth="1.5dp">
 
     <LinearLayout
@@ -24,7 +24,7 @@
             android:text="19/07"
             android:textSize="11sp"
             android:textStyle="bold"
-            android:textColor="#007F8B"/>
+            android:textColor="@color/mp_color_primary"/>
 
         <TextView
             android:id="@+id/tvDayNum"
@@ -33,7 +33,7 @@
             android:text="01"
             android:textSize="15sp"
             android:textStyle="bold"
-            android:textColor="#007F8B"
+            android:textColor="@color/mp_color_primary"
             android:layout_marginVertical="1dp"/>
 
         <TextView
@@ -42,6 +42,6 @@
             android:layout_height="wrap_content"
             android:text="Ngày"
             android:textSize="9sp"
-            android:textColor="#757575"/>
+            android:textColor="@color/tri_force_slate"/>
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

@@ -1,49 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-    ~ Copyright 2023 The TensorFlow Authors. All Rights Reserved.
-    ~
-    ~ Licensed under the Apache License, Version 2.0 (the "License");
-    ~ you may not use this file except in compliance with the License.
-    ~ You may obtain a copy of the License at
-    ~
-    ~       http://www.apache.org/licenses/LICENSE-2.0
-    ~
-    ~ Unless required by applicable law or agreed to in writing, software
-    ~ distributed under the License is distributed on an "AS IS" BASIS,
-    ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    ~ See the License for the specific language governing permissions and
-    ~ limitations under the License.
--->
 <resources>
-    <string name="app_name">Fitness For You</string>
+    <string name="app_name">Tri Force</string>
+    <string name="media_pipe">Tri Force</string>
 
-    <string name="media_pipe">Fitness For You</string>
+    <string name="welcome_app_name">TRI FORCE</string>
+    <string name="welcome_tagline">Sức Mạnh • Kỷ Luật • Bứt Phá</string>
+    <string name="welcome_subtitle">Huấn luyện viên thể hình AI thông minh &amp; Lộ trình cá nhân hóa</string>
+    <string name="welcome_btn_start">BẮT ĐẦU NGAY</string>
+    <string name="welcome_btn_login">ĐÃ CÓ TÀI KHOẢN? ĐĂNG NHẬP</string>
+
+    <string name="feature_ai_title">AI Pose Coach 3D</string>
+    <string name="feature_ai_desc">Quét 33 khớp xương &amp; tự động đếm chuẩn xác từng hiệp tập</string>
+    <string name="feature_plan_title">Lộ Trình 30 Ngày</string>
+    <string name="feature_plan_desc">Thiết kế bài tập khoa học theo thể trạng BMI của riêng bạn</string>
+    <string name="feature_track_title">Đếm Bước &amp; Calo</string>
+    <string name="feature_track_desc">Đo lường năng lượng tiêu thụ &amp; nhắc nhở tập luyện đều đặn</string>
 
     <string name="alt_bottom_sheet_chevron">Bottom sheet expandable indicator</string>
-
-    <string name="alt_bottom_sheet_max_results_button_minus">Decreasing
-        maximum pose results button</string>
-    <string name="alt_bottom_sheet_max_results_button_plus">Increasing
-        maximum pose results button</string>
-    <string name="alt_bottom_sheet_threshold_button_minus">Decreasing
-        threshold of pose detect results button</string>
-    <string name="alt_bottom_sheet_threshold_button_plus">Increasing
-        threshold of pose detect results button</string>
+    <string name="alt_bottom_sheet_max_results_button_minus">Giảm số lượng kết quả</string>
+    <string name="alt_bottom_sheet_max_results_button_plus">Tăng số lượng kết quả</string>
+    <string name="alt_bottom_sheet_threshold_button_minus">Giảm ngưỡng phát hiện</string>
+    <string name="alt_bottom_sheet_threshold_button_plus">Tăng ngưỡng phát hiện</string>
     <string name="menu_camera">Camera</string>
-    <string name="menu_gallery">Gallery</string>
+    <string name="menu_gallery">Thư viện</string>
     <string name="tv_gallery_placeholder">Nhấn + để thêm ảnh hoặc video để bắt đầu phân tích tư thế.</string>
 
-    <string name="label_inference_time">Inference Time</string>
-    <string name="label_fps">Frames per Second</string>
-    <string name="label_pose_detection_confidence_threshold">Detection
-        Threshold</string>
-    <string name="label_pose_tracking_confidence_threshold">Tracking
-        Threshold</string>
-    <string name="label_pose_presence_confidence_threshold">Presence
-        Threshold</string>
-    <string name="label_num_poses">Number of Poses</string>
-    <string name="label_delegate">Delegate</string>
-    <string name="label_models">Model</string>
+    <string name="label_inference_time">Thời gian xử lý</string>
+    <string name="label_fps">Khung hình/giây</string>
+    <string name="label_pose_detection_confidence_threshold">Ngưỡng phát hiện</string>
+    <string name="label_pose_tracking_confidence_threshold">Ngưỡng theo dõi</string>
+    <string name="label_pose_presence_confidence_threshold">Ngưỡng hiện diện</string>
+    <string name="label_num_poses">Số lượng dáng người</string>
+    <string name="label_delegate">Bộ xử lý</string>
+    <string name="label_models">Mô hình AI</string>
 
     <string-array name="delegate_spinner_titles">
         <item>CPU</item>
@@ -51,8 +40,8 @@
     </string-array>
 
     <string-array name="models_spinner_titles">
-        <item>Pose Landmarker Full</item>
-        <item>Pose Landmarker Lite</item>
-        <item>Pose Landmarker Heavy</item>
+        <item>Pose Landmarker Full (Chuẩn)</item>
+        <item>Pose Landmarker Lite (Nhẹ)</item>
+        <item>Pose Landmarker Heavy (Chính xác cao)</item>
     </string-array>
 </resources>

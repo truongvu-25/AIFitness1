@@ -21,14 +21,14 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:padding="16dp"
-        android:background="#80000000">
+        android:background="#CC0B1118">
 
         <ImageButton
             android:id="@+id/btnBack"
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:src="@android:drawable/ic_menu_revert"
-            android:tint="#FFFFFF"
+            app:tint="@color/tri_force_white"
             android:background="?attr/selectableItemBackgroundBorderless"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
@@ -52,7 +52,7 @@
                 android:text="Tên bài tập"
                 android:textSize="18sp"
                 android:textStyle="bold"
-                android:textColor="#FFFFFF"/>
+                android:textColor="@color/tri_force_white"/>
 
             <TextView
                 android:id="@+id/tvWorkoutTarget"
@@ -60,7 +60,7 @@
                 android:layout_height="wrap_content"
                 android:text="Mục tiêu: --"
                 android:textSize="14sp"
-                android:textColor="#12B5CB"
+                android:textColor="@color/mp_color_primary_variant"
                 android:textStyle="bold"/>
         </LinearLayout>
 
@@ -69,9 +69,9 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@android:drawable/ic_menu_camera"
-            android:tint="#FFFFFF"
+            app:tint="@color/tri_force_white"
             app:fabSize="mini"
-            app:backgroundTint="#007F8B"
+            app:backgroundTint="@color/mp_color_primary"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -93,9 +93,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
-            app:cardBackgroundColor="#CC000000"
-            app:cardCornerRadius="16dp"
-            app:strokeColor="#007F8B"
+            app:cardBackgroundColor="#E60B1118"
+            app:cardCornerRadius="18dp"
+            app:strokeColor="@color/mp_color_primary"
             app:strokeWidth="1.5dp">
 
             <LinearLayout
@@ -103,7 +103,7 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:gravity="center"
-                android:padding="12dp">
+                android:padding="14dp">
 
                 <TextView
                     android:id="@+id/tvCounterLabel"
@@ -111,7 +111,7 @@
                     android:layout_height="wrap_content"
                     android:text="Thời gian giữ chuẩn tư thế"
                     android:textSize="13sp"
-                    android:textColor="#B2DFDB"
+                    android:textColor="@color/mp_color_primary_variant"
                     android:textStyle="bold"/>
 
                 <TextView
@@ -119,9 +119,9 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="0 / 30 giây"
-                    android:textSize="28sp"
+                    android:textSize="32sp"
                     android:textStyle="bold"
-                    android:textColor="#FFFFFF"
+                    android:textColor="@color/tri_force_white"
                     android:layout_marginVertical="4dp"/>
 
                 <TextView
@@ -130,7 +130,7 @@
                     android:layout_height="wrap_content"
                     android:text="Đang nhận diện khung xương..."
                     android:textSize="12sp"
-                    android:textColor="#FFCA28"
+                    android:textColor="@color/tri_force_warning"
                     android:textStyle="italic"/>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
@@ -142,8 +142,9 @@
             android:text="HOÀN THÀNH BÀI TẬP"
             android:textSize="16sp"
             android:textStyle="bold"
-            android:backgroundTint="#2E7D32"
-            app:cornerRadius="12dp"
+            android:textColor="@color/tri_force_white"
+            android:backgroundTint="@color/tri_force_success"
+            app:cornerRadius="14dp"
             app:elevation="8dp"/>
     </LinearLayout>
 

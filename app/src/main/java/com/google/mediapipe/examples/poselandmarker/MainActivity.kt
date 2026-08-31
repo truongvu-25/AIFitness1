@@ -47,6 +47,7 @@ class MainActivity : AppCompatActivity() {
         // Manage visibility of ToolBar and BottomNavigationView dynamically
         navController.addOnDestinationChangedListener { _, destination, _ ->
             when (destination.id) {
+                R.id.welcome_fragment,
                 R.id.login_fragment,
                 R.id.register_fragment,
                 R.id.user_info_fragment,

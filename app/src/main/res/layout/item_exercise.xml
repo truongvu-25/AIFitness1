@@ -4,8 +4,11 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginVertical="6dp"
-    app:cardCornerRadius="14dp"
-    app:cardElevation="2dp">
+    app:cardCornerRadius="16dp"
+    app:cardElevation="2dp"
+    app:cardBackgroundColor="@color/tri_force_white"
+    app:strokeColor="#E2E8F0"
+    app:strokeWidth="1dp">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -25,17 +28,17 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Hít Đất (Push Up)"
-                android:textSize="18sp"
+                android:textSize="17sp"
                 android:textStyle="bold"
-                android:textColor="#212529"/>
+                android:textColor="@color/tri_force_text_primary"/>
 
             <TextView
                 android:id="@+id/tvExerciseTarget"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Mục tiêu: 10 lần"
-                android:textSize="14sp"
-                android:textColor="#007F8B"
+                android:textSize="13sp"
+                android:textColor="@color/mp_color_primary"
                 android:textStyle="bold"
                 android:layout_marginTop="4dp"/>
 
@@ -45,7 +48,7 @@
                 android:layout_height="wrap_content"
                 android:text="Giữ người thẳng, hạ thấp ngực xuống gần sàn rồi đẩy lên."
                 android:textSize="12sp"
-                android:textColor="#6C757D"
+                android:textColor="@color/tri_force_slate"
                 android:layout_marginTop="6dp"/>
         </LinearLayout>
 
@@ -61,10 +64,10 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Đã hoàn thành"
-                android:textSize="12sp"
+                android:textSize="11sp"
                 android:textStyle="bold"
-                android:textColor="#2E7D32"
-                android:background="#E8F5E9"
+                android:textColor="@color/tri_force_success"
+                android:background="@color/tri_force_success_bg"
                 android:paddingHorizontal="8dp"
                 android:paddingVertical="4dp"
                 android:layout_marginBottom="8dp"
@@ -73,26 +76,27 @@
             <Button
                 android:id="@+id/btnWatchVideo"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="36dp"
                 android:text="XEM VIDEO"
                 android:textSize="11sp"
                 android:textStyle="bold"
-                android:textColor="#007F8B"
-                android:backgroundTint="#E0F2F1"
-                app:cornerRadius="6dp"
-                android:paddingHorizontal="12dp"
-                android:layout_marginBottom="8dp"
+                android:textColor="@color/mp_color_primary"
+                android:backgroundTint="#EDF2F7"
+                app:cornerRadius="8dp"
+                android:paddingHorizontal="10dp"
+                android:layout_marginBottom="6dp"
                 style="@style/Widget.MaterialComponents.Button"/>
 
             <Button
                 android:id="@+id/btnStartExercise"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="36dp"
                 android:text="BẮT ĐẦU"
                 android:textSize="11sp"
                 android:textStyle="bold"
-                android:backgroundTint="#007F8B"
-                app:cornerRadius="6dp"
+                android:textColor="@color/tri_force_white"
+                android:backgroundTint="@color/mp_color_primary"
+                app:cornerRadius="8dp"
                 android:paddingHorizontal="12dp"
                 style="@style/Widget.MaterialComponents.Button"/>
         </LinearLayout>

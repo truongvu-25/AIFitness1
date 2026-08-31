@@ -3,97 +3,138 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F8F9FA"
+    android:background="@color/tri_force_bg"
     android:padding="24dp">
 
-    <LinearLayout
+    <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:gravity="center_horizontal">
+        android:fillViewport="true"
+        android:scrollbars="none">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Cập Nhật Chỉ Số Cơ Thể"
-            android:textSize="24sp"
-            android:textStyle="bold"
-            android:textColor="#B00020"
-            android:layout_marginTop="50dp"
-            android:layout_marginBottom="8dp"/>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Đã hơn 7 ngày kể từ lần cập nhật chỉ số cơ thể cuối cùng của bạn. Vui lòng nhập chiều cao và cân nặng hiện tại để tính toán lại chỉ số BMI phù hợp."
-            android:textSize="14sp"
-            android:textColor="#495057"
-            android:gravity="center"
-            android:layout_marginBottom="30dp"
-            android:paddingHorizontal="16dp"/>
-
-        <com.google.android.material.card.MaterialCardView
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="4dp"
-            app:cardUseCompatPadding="true">
+            android:orientation="vertical"
+            android:gravity="center_horizontal">
 
-            <LinearLayout
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:layout_marginTop="32dp"
+                app:cardCornerRadius="32dp"
+                app:cardElevation="2dp"
+                app:strokeColor="@color/mp_color_primary_variant"
+                app:strokeWidth="1.5dp">
+
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/tri_force_logo"
+                    android:scaleType="centerCrop"
+                    android:contentDescription="@string/app_name"/>
+            </com.google.android.material.card.MaterialCardView>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Cập Nhật Chỉ Số Cơ Thể"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                android:textColor="@color/tri_force_text_primary"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="8dp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Đã hơn 7 ngày kể từ lần cập nhật chỉ số gần nhất. Vui lòng nhập chiều cao và cân nặng hiện tại để Tri Force tính toán lại chỉ số BMI tối ưu nhất cho bạn."
+                android:textSize="13sp"
+                android:textColor="@color/tri_force_text_secondary"
+                android:gravity="center"
+                android:layout_marginBottom="28dp"
+                android:paddingHorizontal="16dp"/>
+
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="20dp">
+                app:cardCornerRadius="20dp"
+                app:cardElevation="3dp"
+                app:cardBackgroundColor="@color/tri_force_white"
+                app:strokeColor="#E2E8F0"
+                app:strokeWidth="1dp"
+                app:cardUseCompatPadding="true">
 
-                <com.google.android.material.textfield.TextInputLayout
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Chiều cao mới (cm)"
-                    android:layout_marginBottom="16dp"
-                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+                    android:orientation="vertical"
+                    android:padding="22dp">
 
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/etUpdateHeight"
+                    <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:inputType="numberDecimal"/>
-                </com.google.android.material.textfield.TextInputLayout>
+                        android:hint="Chiều cao mới (cm)"
+                        android:layout_marginBottom="16dp"
+                        app:boxStrokeColor="@color/mp_color_primary"
+                        app:boxCornerRadiusTopStart="12dp"
+                        app:boxCornerRadiusTopEnd="12dp"
+                        app:boxCornerRadiusBottomStart="12dp"
+                        app:boxCornerRadiusBottomEnd="12dp"
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
-                <com.google.android.material.textfield.TextInputLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:hint="Cân nặng mới (kg)"
-                    android:layout_marginBottom="24dp"
-                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etUpdateHeight"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/tri_force_text_primary"
+                            android:inputType="numberDecimal"/>
+                    </com.google.android.material.textfield.TextInputLayout>
 
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/etUpdateWeight"
+                    <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:inputType="numberDecimal"/>
-                </com.google.android.material.textfield.TextInputLayout>
+                        android:hint="Cân nặng mới (kg)"
+                        android:layout_marginBottom="24dp"
+                        app:boxStrokeColor="@color/mp_color_primary"
+                        app:boxCornerRadiusTopStart="12dp"
+                        app:boxCornerRadiusTopEnd="12dp"
+                        app:boxCornerRadiusBottomStart="12dp"
+                        app:boxCornerRadiusBottomEnd="12dp"
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
-                <Button
-                    android:id="@+id/btnUpdateBmi"
-                    android:layout_width="match_parent"
-                    android:layout_height="52dp"
-                    android:text="CẬP NHẬT CHỈ SỐ"
-                    android:textSize="16sp"
-                    android:textStyle="bold"
-                    android:backgroundTint="#B00020"
-                    app:cornerRadius="8dp"/>
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etUpdateWeight"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/tri_force_text_primary"
+                            android:inputType="numberDecimal"/>
+                    </com.google.android.material.textfield.TextInputLayout>
 
-                <ProgressBar
-                    android:id="@+id/updateBmiProgress"
-                    android:layout_width="36dp"
-                    android:layout_height="36dp"
-                    android:layout_gravity="center"
-                    android:layout_marginTop="12dp"
-                    android:visibility="gone"/>
+                    <Button
+                        android:id="@+id/btnUpdateBmi"
+                        android:layout_width="match_parent"
+                        android:layout_height="52dp"
+                        android:text="CẬP NHẬT CHỈ SỐ BMI"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/tri_force_white"
+                        android:backgroundTint="@color/mp_color_primary"
+                        app:cornerRadius="12dp"/>
 
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
+                    <ProgressBar
+                        android:id="@+id/updateBmiProgress"
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:layout_gravity="center"
+                        android:layout_marginTop="12dp"
+                        android:indeterminateTint="@color/mp_color_primary"
+                        android:visibility="gone"/>
 
-    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+        </LinearLayout>
+    </ScrollView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

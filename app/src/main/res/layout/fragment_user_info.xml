@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F8F9FA"
+    android:background="@color/tri_force_bg"
     android:padding="24dp">
 
     <ScrollView
@@ -18,65 +18,97 @@
             android:orientation="vertical"
             android:gravity="center_horizontal">
 
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:layout_marginTop="24dp"
+                app:cardCornerRadius="32dp"
+                app:cardElevation="2dp"
+                app:strokeColor="@color/mp_color_primary_variant"
+                app:strokeWidth="1.5dp">
+
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/tri_force_logo"
+                    android:scaleType="centerCrop"
+                    android:contentDescription="@string/app_name"/>
+            </com.google.android.material.card.MaterialCardView>
+
             <TextView
                 android:id="@+id/tvUserInfoTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Thông Tin Cá Nhân"
-                android:textSize="26sp"
+                android:text="Thiết Lập Hồ Sơ Cá Nhân"
+                android:textSize="22sp"
                 android:textStyle="bold"
-                android:textColor="#007F8B"
-                android:layout_marginTop="40dp"
-                android:layout_marginBottom="8dp"/>
+                android:textColor="@color/tri_force_text_primary"
+                android:layout_marginTop="14dp"
+                android:layout_marginBottom="6dp"/>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Hãy cung cấp các thông tin dưới đây để chúng tôi thiết lập lộ trình tập luyện 30 ngày phù hợp nhất với bạn."
-                android:textSize="14sp"
-                android:textColor="#6C757D"
+                android:text="Cung cấp các chỉ số cơ bản để Tri Force tính toán BMI và tự động tạo lộ trình 30 ngày tối ưu cho bạn."
+                android:textSize="13sp"
+                android:textColor="@color/tri_force_text_secondary"
                 android:gravity="center"
-                android:layout_marginBottom="30dp"
-                android:paddingHorizontal="16dp"/>
+                android:layout_marginBottom="24dp"
+                android:paddingHorizontal="12dp"/>
 
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="4dp"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="3dp"
+                app:cardBackgroundColor="@color/tri_force_white"
+                app:strokeColor="#E2E8F0"
+                app:strokeWidth="1dp"
                 app:cardUseCompatPadding="true">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="20dp">
+                    android:padding="22dp">
 
                     <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:hint="Họ và Tên"
                         android:layout_marginBottom="16dp"
+                        app:boxStrokeColor="@color/mp_color_primary"
+                        app:boxCornerRadiusTopStart="12dp"
+                        app:boxCornerRadiusTopEnd="12dp"
+                        app:boxCornerRadiusBottomStart="12dp"
+                        app:boxCornerRadiusBottomEnd="12dp"
                         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/etFullName"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
+                            android:textColor="@color/tri_force_text_primary"
                             android:inputType="textPersonName"/>
                     </com.google.android.material.textfield.TextInputLayout>
 
                     <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="Tuổi"
+                        android:hint="Tuổi (năm)"
                         android:layout_marginBottom="16dp"
+                        app:boxStrokeColor="@color/mp_color_primary"
+                        app:boxCornerRadiusTopStart="12dp"
+                        app:boxCornerRadiusTopEnd="12dp"
+                        app:boxCornerRadiusBottomStart="12dp"
+                        app:boxCornerRadiusBottomEnd="12dp"
                         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/etAge"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
+                            android:textColor="@color/tri_force_text_primary"
                             android:inputType="number"/>
                     </com.google.android.material.textfield.TextInputLayout>
 
@@ -85,12 +117,18 @@
                         android:layout_height="wrap_content"
                         android:hint="Chiều cao (cm)"
                         android:layout_marginBottom="16dp"
+                        app:boxStrokeColor="@color/mp_color_primary"
+                        app:boxCornerRadiusTopStart="12dp"
+                        app:boxCornerRadiusTopEnd="12dp"
+                        app:boxCornerRadiusBottomStart="12dp"
+                        app:boxCornerRadiusBottomEnd="12dp"
                         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/etHeight"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
+                            android:textColor="@color/tri_force_text_primary"
                             android:inputType="numberDecimal"/>
                     </com.google.android.material.textfield.TextInputLayout>
 
@@ -99,12 +137,18 @@
                         android:layout_height="wrap_content"
                         android:hint="Cân nặng (kg)"
                         android:layout_marginBottom="24dp"
+                        app:boxStrokeColor="@color/mp_color_primary"
+                        app:boxCornerRadiusTopStart="12dp"
+                        app:boxCornerRadiusTopEnd="12dp"
+                        app:boxCornerRadiusBottomStart="12dp"
+                        app:boxCornerRadiusBottomEnd="12dp"
                         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/etWeight"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
+                            android:textColor="@color/tri_force_text_primary"
                             android:inputType="numberDecimal"/>
                     </com.google.android.material.textfield.TextInputLayout>
 
@@ -112,11 +156,12 @@
                         android:id="@+id/btnSaveInfo"
                         android:layout_width="match_parent"
                         android:layout_height="52dp"
-                        android:text="LƯU &amp; TẠO LỘ TRÌNH"
-                        android:textSize="16sp"
+                        android:text="LƯU &amp; TẠO LỘ TRÌNH 30 NGÀY"
+                        android:textSize="15sp"
                         android:textStyle="bold"
-                        android:backgroundTint="#007F8B"
-                        app:cornerRadius="8dp"/>
+                        android:textColor="@color/tri_force_white"
+                        android:backgroundTint="@color/mp_color_primary"
+                        app:cornerRadius="12dp"/>
 
                     <ProgressBar
                         android:id="@+id/infoProgress"
@@ -124,6 +169,7 @@
                         android:layout_height="36dp"
                         android:layout_gravity="center"
                         android:layout_marginTop="12dp"
+                        android:indeterminateTint="@color/mp_color_primary"
                         android:visibility="gone"/>
 
                 </LinearLayout>

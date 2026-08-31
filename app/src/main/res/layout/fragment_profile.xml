@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F8F9FA"
+    android:background="@color/tri_force_bg"
     android:padding="20dp">
 
     <ScrollView
@@ -18,24 +18,25 @@
             android:orientation="vertical"
             android:gravity="center_horizontal">
 
-            <!-- Profile Avatar -->
+            <!-- Profile Avatar with Tri Force Ring -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardAvatar"
-                android:layout_width="88dp"
-                android:layout_height="88dp"
+                android:layout_width="92dp"
+                android:layout_height="92dp"
                 android:layout_marginTop="16dp"
-                app:cardCornerRadius="44dp"
-                app:cardBackgroundColor="#E0F2F1"
-                app:cardElevation="0dp">
+                app:cardCornerRadius="46dp"
+                app:cardBackgroundColor="@color/tri_force_navy"
+                app:cardElevation="2dp"
+                app:strokeColor="@color/mp_color_primary_variant"
+                app:strokeWidth="2.5dp">
 
                 <ImageView
                     android:id="@+id/ivAvatar"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:src="@android:drawable/ic_menu_myplaces"
-                    android:tint="#007F8B"
-                    android:padding="16dp"
-                    android:scaleType="centerInside"/>
+                    android:src="@drawable/tri_force_logo"
+                    android:scaleType="centerCrop"
+                    android:contentDescription="@string/app_name"/>
             </com.google.android.material.card.MaterialCardView>
 
             <TextView
@@ -45,7 +46,7 @@
                 android:text="Họ và Tên"
                 android:textSize="20sp"
                 android:textStyle="bold"
-                android:textColor="#212529"
+                android:textColor="@color/tri_force_text_primary"
                 android:layout_marginTop="12dp"/>
 
             <TextView
@@ -53,8 +54,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="email@example.com"
-                android:textSize="14sp"
-                android:textColor="#6C757D"
+                android:textSize="13sp"
+                android:textColor="@color/tri_force_text_secondary"
                 android:layout_marginTop="2dp"/>
 
             <!-- BMI Info Card -->
@@ -62,8 +63,11 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                app:cardCornerRadius="16dp"
+                app:cardCornerRadius="18dp"
                 app:cardElevation="2dp"
+                app:cardBackgroundColor="@color/tri_force_white"
+                app:strokeColor="#E2E8F0"
+                app:strokeWidth="1dp"
                 app:cardUseCompatPadding="true">
 
                 <LinearLayout
@@ -75,10 +79,10 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Chỉ số cơ thể (BMI)"
+                        android:text="Chỉ Số Cơ Thể &amp; Thể Trạng"
                         android:textSize="15sp"
                         android:textStyle="bold"
-                        android:textColor="#212529"
+                        android:textColor="@color/tri_force_text_primary"
                         android:layout_marginBottom="12dp"/>
 
                     <LinearLayout
@@ -100,7 +104,7 @@
                                 android:layout_height="wrap_content"
                                 android:text="Tuổi"
                                 android:textSize="12sp"
-                                android:textColor="#6C757D"/>
+                                android:textColor="@color/tri_force_slate"/>
 
                             <TextView
                                 android:id="@+id/tvProfileAge"
@@ -109,7 +113,7 @@
                                 android:text="--"
                                 android:textSize="16sp"
                                 android:textStyle="bold"
-                                android:textColor="#007F8B"
+                                android:textColor="@color/mp_color_primary"
                                 android:layout_marginTop="2dp"/>
                         </LinearLayout>
 
@@ -125,7 +129,7 @@
                                 android:layout_height="wrap_content"
                                 android:text="Chiều cao"
                                 android:textSize="12sp"
-                                android:textColor="#6C757D"/>
+                                android:textColor="@color/tri_force_slate"/>
 
                             <TextView
                                 android:id="@+id/tvProfileHeight"
@@ -134,7 +138,7 @@
                                 android:text="-- cm"
                                 android:textSize="16sp"
                                 android:textStyle="bold"
-                                android:textColor="#007F8B"
+                                android:textColor="@color/mp_color_primary"
                                 android:layout_marginTop="2dp"/>
                         </LinearLayout>
 
@@ -150,7 +154,7 @@
                                 android:layout_height="wrap_content"
                                 android:text="Cân nặng"
                                 android:textSize="12sp"
-                                android:textColor="#6C757D"/>
+                                android:textColor="@color/tri_force_slate"/>
 
                             <TextView
                                 android:id="@+id/tvProfileWeight"
@@ -159,7 +163,7 @@
                                 android:text="-- kg"
                                 android:textSize="16sp"
                                 android:textStyle="bold"
-                                android:textColor="#007F8B"
+                                android:textColor="@color/mp_color_primary"
                                 android:layout_marginTop="2dp"/>
                         </LinearLayout>
                     </LinearLayout>
@@ -167,7 +171,7 @@
                     <View
                         android:layout_width="match_parent"
                         android:layout_height="1dp"
-                        android:background="#E0E0E0"
+                        android:background="#E2E8F0"
                         android:layout_marginVertical="8dp"/>
 
                     <LinearLayout
@@ -188,7 +192,7 @@
                                 android:layout_height="wrap_content"
                                 android:text="Chỉ số BMI"
                                 android:textSize="12sp"
-                                android:textColor="#6C757D"/>
+                                android:textColor="@color/tri_force_slate"/>
 
                             <TextView
                                 android:id="@+id/tvProfileBmi"
@@ -197,7 +201,7 @@
                                 android:text="--"
                                 android:textSize="22sp"
                                 android:textStyle="bold"
-                                android:textColor="#007F8B"
+                                android:textColor="@color/mp_color_primary"
                                 android:layout_marginTop="2dp"/>
                         </LinearLayout>
 
@@ -211,19 +215,19 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Trạng thái"
+                                android:text="Thể trạng"
                                 android:textSize="12sp"
-                                android:textColor="#6C757D"/>
+                                android:textColor="@color/tri_force_slate"/>
 
                             <TextView
                                 android:id="@+id/tvProfileBmiType"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="--"
-                                android:textSize="14sp"
+                                android:textSize="13sp"
                                 android:textStyle="bold"
-                                android:textColor="#FFFFFF"
-                                android:background="#007F8B"
+                                android:textColor="@color/tri_force_white"
+                                android:background="@color/mp_color_primary"
                                 android:paddingHorizontal="10dp"
                                 android:paddingVertical="4dp"
                                 android:layout_marginTop="2dp"/>
@@ -238,10 +242,11 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="3dp"
-                app:strokeColor="#007F8B"
-                app:strokeWidth="1dp"
+                app:cardCornerRadius="18dp"
+                app:cardElevation="2dp"
+                app:cardBackgroundColor="@color/tri_force_white"
+                app:strokeColor="@color/mp_color_primary"
+                app:strokeWidth="1.5dp"
                 app:cardUseCompatPadding="true">
 
                 <LinearLayout
@@ -258,10 +263,10 @@
                         android:layout_marginBottom="12dp">
 
                         <ImageView
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
+                            android:layout_width="22dp"
+                            android:layout_height="22dp"
                             android:src="@android:drawable/ic_menu_directions"
-                            android:tint="#007F8B"
+                            app:tint="@color/mp_color_primary"
                             android:layout_marginEnd="8dp"/>
 
                         <TextView
@@ -271,7 +276,7 @@
                             android:text="Đếm Bước Chân &amp; Calo Hàng Ngày"
                             android:textSize="15sp"
                             android:textStyle="bold"
-                            android:textColor="#007F8B"/>
+                            android:textColor="@color/mp_color_primary"/>
                     </LinearLayout>
 
                     <LinearLayout
@@ -286,15 +291,15 @@
                             android:layout_weight="1"
                             android:orientation="vertical"
                             android:gravity="center"
-                            android:background="#E8F5E9"
+                            android:background="@color/tri_force_success_bg"
                             android:padding="12dp">
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Số bước đi hôm nay"
+                                android:text="Số bước hôm nay"
                                 android:textSize="12sp"
-                                android:textColor="#2E7D32"
+                                android:textColor="@color/tri_force_success"
                                 android:textStyle="bold"/>
 
                             <TextView
@@ -302,9 +307,9 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="0 bước"
-                                android:textSize="20sp"
+                                android:textSize="18sp"
                                 android:textStyle="bold"
-                                android:textColor="#1B5E20"
+                                android:textColor="#065F46"
                                 android:layout_marginTop="2dp"/>
                         </LinearLayout>
 
@@ -318,7 +323,7 @@
                             android:layout_weight="1"
                             android:orientation="vertical"
                             android:gravity="center"
-                            android:background="#FFF3E0"
+                            android:background="@color/tri_force_warning_bg"
                             android:padding="12dp">
 
                             <TextView
@@ -326,7 +331,7 @@
                                 android:layout_height="wrap_content"
                                 android:text="Calo tiêu thụ"
                                 android:textSize="12sp"
-                                android:textColor="#E65100"
+                                android:textColor="@color/tri_force_warning"
                                 android:textStyle="bold"/>
 
                             <TextView
@@ -334,9 +339,9 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="0.0 kcal"
-                                android:textSize="20sp"
+                                android:textSize="18sp"
                                 android:textStyle="bold"
-                                android:textColor="#BF360C"
+                                android:textColor="#92400E"
                                 android:layout_marginTop="2dp"/>
                         </LinearLayout>
                     </LinearLayout>
@@ -350,10 +355,10 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                app:cardCornerRadius="16dp"
+                app:cardCornerRadius="18dp"
                 app:cardElevation="2dp"
-                app:cardBackgroundColor="#FFF3E0"
-                app:strokeColor="#FF9800"
+                app:cardBackgroundColor="@color/tri_force_warning_bg"
+                app:strokeColor="@color/tri_force_warning"
                 app:strokeWidth="1.5dp"
                 app:cardUseCompatPadding="true">
 
@@ -367,10 +372,10 @@
                         android:id="@+id/tvBmiAdviceTitle"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="💡 ĐÁNH GIÁ &amp; LỜI KHUYÊN VẬN ĐỘNG AI"
-                        android:textSize="14sp"
+                        android:text="ĐÁNH GIÁ &amp; LỜI KHUYÊN VẬN ĐỘNG AI"
+                        android:textSize="13sp"
                         android:textStyle="bold"
-                        android:textColor="#E65100"
+                        android:textColor="#B45309"
                         android:layout_marginBottom="6dp"/>
 
                     <TextView
@@ -380,32 +385,32 @@
                         android:text="Đang phân tích dữ liệu vận động hôm nay..."
                         android:textSize="13sp"
                         android:lineSpacingExtra="3dp"
-                        android:textColor="#424242"/>
+                        android:textColor="#451A03"/>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
             <Button
                 android:id="@+id/btnEditProfile"
                 android:layout_width="match_parent"
-                android:layout_height="48dp"
+                android:layout_height="50dp"
                 android:text="CHỈNH SỬA HỒ SƠ"
                 android:textSize="15sp"
                 android:textStyle="bold"
-                android:textColor="#FFFFFF"
-                android:backgroundTint="#007F8B"
-                app:cornerRadius="8dp"
-                android:layout_marginTop="12dp"/>
+                android:textColor="@color/tri_force_white"
+                android:backgroundTint="@color/mp_color_primary"
+                app:cornerRadius="12dp"
+                android:layout_marginTop="14dp"/>
 
             <Button
                 android:id="@+id/btnLogout"
                 android:layout_width="match_parent"
-                android:layout_height="48dp"
+                android:layout_height="50dp"
                 android:text="ĐĂNG XUẤT"
                 android:textSize="15sp"
                 android:textStyle="bold"
-                android:textColor="#FFFFFF"
-                android:backgroundTint="#B00020"
-                app:cornerRadius="8dp"
+                android:textColor="@color/tri_force_white"
+                android:backgroundTint="@color/tri_force_error"
+                app:cornerRadius="12dp"
                 android:layout_marginTop="10dp"
                 android:layout_marginBottom="40dp"/>
 
