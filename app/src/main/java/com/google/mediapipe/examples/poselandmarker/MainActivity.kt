@@ -58,7 +58,8 @@ class MainActivity : AppCompatActivity() {
                 R.id.register_fragment,
                 R.id.user_info_fragment,
                 R.id.camera_fragment,
-                R.id.update_bmi_fragment -> {
+                R.id.update_bmi_fragment,
+                R.id.create_custom_plan_fragment -> {
                     activityMainBinding.ivHeaderWordmark.visibility = View.GONE
                     activityMainBinding.bottomNavCard.visibility = View.GONE
                 }

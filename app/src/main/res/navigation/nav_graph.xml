@@ -119,7 +119,11 @@
     <fragment
         android:id="@+id/home_fragment"
         android:name="com.google.mediapipe.examples.poselandmarker.fragment.HomeFragment"
-        android:label="HomeFragment" />
+        android:label="HomeFragment">
+        <action
+            android:id="@+id/action_home_to_camera"
+            app:destination="@id/camera_fragment" />
+    </fragment>
 
     <fragment
         android:id="@+id/workout_calendar_fragment"
@@ -147,7 +151,19 @@
         <action
             android:id="@+id/action_library_to_camera"
             app:destination="@id/camera_fragment" />
+        <action
+            android:id="@+id/action_library_to_create_custom_plan"
+            app:destination="@id/create_custom_plan_fragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
     </fragment>
+
+    <fragment
+        android:id="@+id/create_custom_plan_fragment"
+        android:name="com.google.mediapipe.examples.poselandmarker.fragment.CreateCustomPlanFragment"
+        android:label="CreateCustomPlanFragment" />
 
     <fragment
         android:id="@+id/profile_fragment"

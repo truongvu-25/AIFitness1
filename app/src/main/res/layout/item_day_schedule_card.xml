@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginVertical="5dp"
+    app:cardCornerRadius="18dp"
+    app:cardElevation="3dp"
+    app:cardBackgroundColor="#CC0A192F"
+    app:strokeColor="#1E3A8A"
+    app:strokeWidth="1.2dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="14dp">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true">
+
+                <TextView
+                    android:id="@+id/tvDayTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Thứ Hai"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/tri_force_white"/>
+
+                <TextView
+                    android:id="@+id/tvDayStatusBadge"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Nghỉ ngơi"
+                    android:textSize="10sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/tri_force_slate"
+                    android:background="#2664748B"
+                    android:paddingHorizontal="8dp"
+                    android:paddingVertical="3dp"
+                    android:layout_marginStart="10dp"/>
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/tvExerciseCount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0 bài tập"
+                android:textSize="12sp"
+                android:textColor="@color/tri_force_silver"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"/>
+        </RelativeLayout>
+
+        <!-- Dynamic Assigned Exercises Chips Container -->
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/chipGroupExercises"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            app:chipSpacingHorizontal="6dp"
+            app:chipSpacingVertical="4dp" />
+
+        <TextView
+            android:id="@+id/tvEmptyDayPrompt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Chưa có bài tập. Chọn bài tập từ hàng trên để gán vào ngày này."
+            android:textSize="11sp"
+            android:textColor="@color/tri_force_slate"
+            android:layout_marginTop="4dp"/>
+
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

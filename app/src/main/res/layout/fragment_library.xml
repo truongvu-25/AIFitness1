@@ -64,7 +64,7 @@
                     android:layout_height="36dp"
                     android:layout_alignParentEnd="true"
                     android:layout_centerVertical="true"
-                    android:text="+ TỰ TẠO"
+                    android:text="TỰ TẠO LỊCH TẬP"
                     android:textSize="11sp"
                     android:textStyle="bold"
                     android:textColor="@color/mp_color_primary_variant"

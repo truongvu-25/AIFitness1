@@ -174,7 +174,7 @@ class LibraryFragment : Fragment() {
 
     private fun setupCustomExerciseButton() {
         binding.btnCreateCustom.setOnClickListener {
-            showCreateCustomExerciseDialog()
+            findNavController().navigate(R.id.action_library_to_create_custom_plan)
         }
     }
 
