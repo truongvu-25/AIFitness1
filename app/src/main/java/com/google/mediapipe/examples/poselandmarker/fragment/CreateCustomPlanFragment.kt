@@ -15,6 +15,8 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.chip.Chip
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.mediapipe.examples.poselandmarker.R
 import com.google.mediapipe.examples.poselandmarker.databinding.FragmentCreateCustomPlanBinding
 import com.google.mediapipe.examples.poselandmarker.databinding.ItemDayScheduleCardBinding
@@ -50,6 +52,15 @@ class CreateCustomPlanFragment : Fragment() {
     private lateinit var weeklyAdapter: WeeklyScheduleAdapter
 
     private var currentCategory = "Không dụng cụ"
+
+    private lateinit var auth: FirebaseAuth
+    private lateinit var db: FirebaseFirestore
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        auth = FirebaseAuth.getInstance()
+        db = FirebaseFirestore.getInstance()
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -106,7 +117,6 @@ class CreateCustomPlanFragment : Fragment() {
 
     private fun setupWeeklyRecyclerView() {
         weeklyAdapter = WeeklyScheduleAdapter(weeklySchedule) { dayIndex, exerciseIndex ->
-            // Delete exercise from day
             weeklySchedule[dayIndex].exercises.removeAt(exerciseIndex)
             weeklyAdapter.notifyItemChanged(dayIndex)
         }
@@ -195,7 +205,9 @@ class CreateCustomPlanFragment : Fragment() {
 
         // Serialize to JSON and persist
         try {
+            val planId = "plan_${System.currentTimeMillis()}"
             val rootJson = JSONObject()
+            rootJson.put("planId", planId)
             rootJson.put("planName", planName)
             rootJson.put("createdAt", System.currentTimeMillis())
 
@@ -220,6 +232,9 @@ class CreateCustomPlanFragment : Fragment() {
                 dayObj.put("exercises", exercisesArray)
                 daysArray.put(dayObj)
             }
+            rootJson.put("days", daysArray)
+
+            // 1. Local persistence
             val prefs = requireContext().getSharedPreferences("tri_force_custom_weekly_plan", Context.MODE_PRIVATE)
             val existingPlansStr = prefs.getString("all_saved_plans_json", "[]") ?: "[]"
             val plansArray = JSONArray(existingPlansStr)
@@ -229,6 +244,29 @@ class CreateCustomPlanFragment : Fragment() {
                 .putString("all_saved_plans_json", plansArray.toString())
                 .putString("active_plan_json", rootJson.toString())
                 .apply()
+
+            // 2. Cloud persistence to Firebase Firestore per user
+            val uid = auth.currentUser?.uid
+            if (uid != null) {
+                val planMap = hashMapOf(
+                    "planId" to planId,
+                    "planName" to planName,
+                    "planJson" to rootJson.toString(),
+                    "createdAt" to System.currentTimeMillis()
+                )
+
+                db.collection("users").document(uid).collection("custom_plans").document(planId)
+                    .set(planMap)
+                    .addOnSuccessListener {
+                        // Synced successfully
+                    }
+                    .addOnFailureListener { e ->
+                        e.printStackTrace()
+                    }
+
+                // Update active custom plan on user root doc
+                db.collection("users").document(uid).update("activeCustomPlanJson", rootJson.toString())
+            }
 
             Toast.makeText(requireContext(), "Đã lưu lịch tập \"$planName\" thành công!", Toast.LENGTH_LONG).show()
 

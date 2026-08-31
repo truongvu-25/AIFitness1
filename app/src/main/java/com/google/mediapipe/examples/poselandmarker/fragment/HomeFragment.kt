@@ -11,6 +11,8 @@ import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.mediapipe.examples.poselandmarker.R
 import com.google.mediapipe.examples.poselandmarker.databinding.FragmentHomeBinding
 import com.google.mediapipe.examples.poselandmarker.databinding.ItemExerciseBinding
@@ -23,6 +25,15 @@ class HomeFragment : Fragment() {
 
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
+
+    private lateinit var auth: FirebaseAuth
+    private lateinit var db: FirebaseFirestore
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        auth = FirebaseAuth.getInstance()
+        db = FirebaseFirestore.getInstance()
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -43,12 +54,45 @@ class HomeFragment : Fragment() {
             findNavController().navigate(R.id.workout_calendar_fragment)
         }
 
-        loadActiveWeeklyPlan()
+        syncPlansFromCloudAndDisplay()
     }
 
     override fun onResume() {
         super.onResume()
+        syncPlansFromCloudAndDisplay()
+    }
+
+    private fun syncPlansFromCloudAndDisplay() {
+        // 1. First display local cache immediately
         loadActiveWeeklyPlan()
+
+        // 2. Fetch latest from Firebase Firestore if user is authenticated
+        val uid = auth.currentUser?.uid ?: return
+        db.collection("users").document(uid).collection("custom_plans").get()
+            .addOnSuccessListener { querySnapshot ->
+                if (!querySnapshot.isEmpty) {
+                    val plansArray = JSONArray()
+                    for (doc in querySnapshot.documents) {
+                        val planJsonStr = doc.getString("planJson")
+                        if (!planJsonStr.isNullOrEmpty()) {
+                            try {
+                                plansArray.put(JSONObject(planJsonStr))
+                            } catch (e: Exception) {
+                                e.printStackTrace()
+                            }
+                        }
+                    }
+
+                    if (plansArray.length() > 0) {
+                        val prefs = requireContext().getSharedPreferences("tri_force_custom_weekly_plan", Context.MODE_PRIVATE)
+                        prefs.edit().putString("all_saved_plans_json", plansArray.toString()).apply()
+                        loadActiveWeeklyPlan()
+                    }
+                }
+            }
+            .addOnFailureListener {
+                // Ignore or rely on local cache
+            }
     }
 
     private fun loadActiveWeeklyPlan() {
@@ -98,7 +142,8 @@ class HomeFragment : Fragment() {
         }
 
         // Render List of Saved Plans
-        renderSavedPlansList(plansArray, activeRootJson?.optString("planName", ""))
+        val activeName = activeRootJson?.optString("planName", "") ?: ""
+        renderSavedPlansList(plansArray, activeName)
     }
 
     private fun renderActivePlanSection(activeJson: JSONObject) {
@@ -272,6 +317,12 @@ class HomeFragment : Fragment() {
             .setPositiveButton("Bắt đầu ngay") { _, _ ->
                 val prefs = requireContext().getSharedPreferences("tri_force_custom_weekly_plan", Context.MODE_PRIVATE)
                 prefs.edit().putString("active_plan_json", newPlanObj.toString()).apply()
+
+                // Update active on Firestore as well
+                val uid = auth.currentUser?.uid
+                if (uid != null) {
+                    db.collection("users").document(uid).update("activeCustomPlanJson", newPlanObj.toString())
+                }
 
                 Toast.makeText(requireContext(), "Đã áp dụng tiến trình \"$planName\"!", Toast.LENGTH_SHORT).show()
                 loadActiveWeeklyPlan()
