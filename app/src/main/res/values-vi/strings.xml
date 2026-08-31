@@ -3,6 +3,12 @@
     <string name="app_name">Tri Force</string>
     <string name="media_pipe">Tri Force</string>
 
+    <!-- Navigation Tabs -->
+    <string name="nav_home">Trang chủ</string>
+    <string name="nav_calendar">Lịch tập</string>
+    <string name="nav_library">Thư viện</string>
+    <string name="nav_profile">Hồ sơ</string>
+
     <!-- Welcome / Start Screen -->
     <string name="welcome_app_name">TRI FORCE</string>
     <string name="welcome_tagline">Sức Mạnh • Kỷ Luật • Bứt Phá</string>
@@ -55,6 +61,14 @@
     <string name="exercise_reps_format">%1$d lần</string>
     <string name="exercise_secs_format">%1$d giây</string>
 
+    <!-- Exercise Library -->
+    <string name="library_title">Thư Viện Bài Tập</string>
+    <string name="library_subtitle">Khám phá và luyện tập theo từng nhóm dụng cụ</string>
+    <string name="tab_no_equipment">Không Dụng Cụ</string>
+    <string name="tab_with_equipment">Có Dụng Cụ</string>
+    <string name="subtab_home">Tại Nhà</string>
+    <string name="subtab_gym">Phòng Gym</string>
+
     <!-- Profile & Health Metrics -->
     <string name="profile_title">Hồ Sơ Cá Nhân</string>
     <string name="metric_height">Chiều cao</string>
@@ -76,9 +90,6 @@
     <string name="hud_form_correct">Tư thế chuẩn</string>
     <string name="btn_finish_workout">HOÀN THÀNH</string>
 
-    <!-- Bottom Navigation & Settings -->
-    <string name="nav_calendar">Lịch tập</string>
-    <string name="nav_profile">Hồ sơ</string>
     <string name="alt_bottom_sheet_chevron">Bottom sheet expandable indicator</string>
     <string name="alt_bottom_sheet_max_results_button_minus">Giảm số lượng kết quả</string>
     <string name="alt_bottom_sheet_max_results_button_plus">Tăng số lượng kết quả</string>

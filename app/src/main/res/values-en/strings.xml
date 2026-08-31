@@ -3,6 +3,12 @@
     <string name="app_name">Tri Force</string>
     <string name="media_pipe">Tri Force</string>
 
+    <!-- Navigation Tabs -->
+    <string name="nav_home">Home</string>
+    <string name="nav_calendar">Workouts</string>
+    <string name="nav_library">Library</string>
+    <string name="nav_profile">Profile</string>
+
     <!-- Welcome / Start Screen -->
     <string name="welcome_app_name">TRI FORCE</string>
     <string name="welcome_tagline">STRENGTH • DISCIPLINE • BREAKTHROUGH</string>
@@ -55,6 +61,14 @@
     <string name="exercise_reps_format">%1$d reps</string>
     <string name="exercise_secs_format">%1$d secs</string>
 
+    <!-- Exercise Library -->
+    <string name="library_title">Exercise Library</string>
+    <string name="library_subtitle">Explore workouts by equipment categories</string>
+    <string name="tab_no_equipment">Bodyweight</string>
+    <string name="tab_with_equipment">Equipment</string>
+    <string name="subtab_home">Home</string>
+    <string name="subtab_gym">Gym</string>
+
     <!-- Profile & Health Metrics -->
     <string name="profile_title">Personal Profile</string>
     <string name="metric_height">Height</string>
@@ -76,9 +90,6 @@
     <string name="hud_form_correct">Correct Form</string>
     <string name="btn_finish_workout">FINISH</string>
 
-    <!-- Bottom Navigation & Settings -->
-    <string name="nav_calendar">Workouts</string>
-    <string name="nav_profile">Profile</string>
     <string name="alt_bottom_sheet_chevron">Bottom sheet expandable indicator</string>
     <string name="alt_bottom_sheet_max_results_button_minus">Decrease max results</string>
     <string name="alt_bottom_sheet_max_results_button_plus">Increase max results</string>

@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginVertical="6dp"
+    app:cardCornerRadius="20dp"
+    app:cardElevation="4dp"
+    app:cardBackgroundColor="#CC0A192F"
+    app:strokeColor="#1E3A8A"
+    app:strokeWidth="1.2dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="16dp"
+        android:gravity="center_vertical">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_weight="1">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="4dp">
+
+                <TextView
+                    android:id="@+id/tvLibCategoryBadge"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Không dụng cụ"
+                    android:textSize="10sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/mp_color_primary_variant"
+                    android:background="#260066FF"
+                    android:paddingHorizontal="8dp"
+                    android:paddingVertical="3dp"/>
+
+                <TextView
+                    android:id="@+id/tvLibEquipmentTag"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Bodyweight"
+                    android:textSize="10sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/tri_force_silver"
+                    android:background="#1AFFFFFF"
+                    android:paddingHorizontal="8dp"
+                    android:paddingVertical="3dp"
+                    android:layout_marginStart="6dp"/>
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/tvLibExerciseName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Hít Đất (Push-up)"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="@color/tri_force_white"/>
+
+            <TextView
+                android:id="@+id/tvLibExerciseTarget"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Mục tiêu: 15 lần"
+                android:textSize="13sp"
+                android:textColor="@color/mp_color_primary_variant"
+                android:textStyle="bold"
+                android:layout_marginTop="3dp"/>
+
+            <TextView
+                android:id="@+id/tvLibExerciseDesc"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Phát triển cơ ngực, vai và tay sau."
+                android:textSize="12sp"
+                android:textColor="@color/tri_force_silver"
+                android:layout_marginTop="4dp"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="end"
+            android:layout_marginStart="12dp">
+
+            <Button
+                android:id="@+id/btnLibWatchVideo"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:text="@string/btn_watch_video"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:textColor="@color/mp_color_primary_variant"
+                android:backgroundTint="#260066FF"
+                app:strokeColor="@color/mp_color_primary_variant"
+                app:strokeWidth="1dp"
+                app:cornerRadius="18dp"
+                android:paddingHorizontal="12dp"
+                android:layout_marginBottom="6dp"
+                style="@style/Widget.MaterialComponents.Button"/>
+
+            <Button
+                android:id="@+id/btnLibStartExercise"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:text="@string/btn_start_exercise"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:textColor="@color/tri_force_white"
+                android:backgroundTint="@color/mp_color_primary"
+                app:cornerRadius="18dp"
+                android:paddingHorizontal="14dp"
+                style="@style/Widget.MaterialComponents.Button"/>
+        </LinearLayout>
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>
