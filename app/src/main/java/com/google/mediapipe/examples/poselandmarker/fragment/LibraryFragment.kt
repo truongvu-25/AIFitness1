@@ -1,20 +1,29 @@
 package com.google.mediapipe.examples.poselandmarker.fragment
 
+import android.app.Dialog
+import android.content.Context
 import android.content.res.ColorStateList
 import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.Window
+import android.widget.Button
+import android.widget.RadioButton
+import android.widget.RadioGroup
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.textfield.TextInputEditText
 import com.google.mediapipe.examples.poselandmarker.R
 import com.google.mediapipe.examples.poselandmarker.databinding.FragmentLibraryBinding
 import com.google.mediapipe.examples.poselandmarker.databinding.ItemLibraryExerciseBinding
+import org.json.JSONArray
+import org.json.JSONObject
 
 data class LibraryExercise(
     val id: String,
@@ -23,7 +32,8 @@ data class LibraryExercise(
     val desc: String,
     val category: String, // "Không dụng cụ", "Tại nhà", "Phòng gym"
     val equipment: String,
-    val targetCount: Int
+    val targetCount: Int,
+    val isCustom: Boolean = false
 )
 
 class LibraryFragment : Fragment() {
@@ -36,6 +46,8 @@ class LibraryFragment : Fragment() {
 
     private lateinit var adapter: LibraryExerciseAdapter
     private val allExercises = mutableListOf<LibraryExercise>()
+
+    private val PREF_CUSTOM_EXERCISES = "tri_force_custom_exercises"
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -51,6 +63,7 @@ class LibraryFragment : Fragment() {
         initExerciseDatabase()
         setupRecyclerView()
         setupSegmentedControls()
+        setupCustomExerciseButton()
         updateFilter()
     }
 
@@ -80,19 +93,59 @@ class LibraryFragment : Fragment() {
         allExercises.add(LibraryExercise("cable_tricep_pushdown", "Kéo Cáp Tay Sau (Pushdown)", "Mục tiêu: 12 lần", "Cô lập và siết nét cơ tay sau sắc cạnh.", "Phòng gym", "Dây thừng kéo cáp", 12))
         allExercises.add(LibraryExercise("leg_press", "Đạp Đùi Máy Nghiêng (Leg Press)", "Mục tiêu: 12 lần", "Đẩy tạ nặng an toàn cho khớp lưng và tối ưu đùi.", "Phòng gym", "Máy đạp đùi (Leg Press)", 12))
         allExercises.add(LibraryExercise("seated_cable_row", "Kéo Cáp Ngồi (Seated Row)", "Mục tiêu: 12 lần", "Làm dày cơ lưng giữa và cải thiện tư thế đứng thẳng.", "Phòng gym", "Máy chèo cáp (Row)", 12))
+
+        // 4. Load Saved Custom Exercises
+        loadCustomExercises()
+    }
+
+    private fun loadCustomExercises() {
+        val prefs = requireContext().getSharedPreferences(PREF_CUSTOM_EXERCISES, Context.MODE_PRIVATE)
+        val jsonString = prefs.getString("custom_list", null) ?: return
+        try {
+            val jsonArray = JSONArray(jsonString)
+            for (i in 0 until jsonArray.length()) {
+                val obj = jsonArray.getJSONObject(i)
+                allExercises.add(
+                    LibraryExercise(
+                        id = obj.optString("id", "custom_${System.currentTimeMillis()}"),
+                        name = obj.optString("name", "Bài tập tự tạo"),
+                        target = obj.optString("target", "Mục tiêu: 15 lần"),
+                        desc = obj.optString("desc", "Bài tập tự tùy chỉnh theo ý muốn."),
+                        category = obj.optString("category", "Không dụng cụ"),
+                        equipment = obj.optString("equipment", "Bodyweight"),
+                        targetCount = obj.optInt("targetCount", 15),
+                        isCustom = true
+                    )
+                )
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    private fun saveCustomExercise(exercise: LibraryExercise) {
+        val prefs = requireContext().getSharedPreferences(PREF_CUSTOM_EXERCISES, Context.MODE_PRIVATE)
+        val existingJson = prefs.getString("custom_list", "[]") ?: "[]"
+        try {
+            val jsonArray = JSONArray(existingJson)
+            val newObj = JSONObject().apply {
+                put("id", exercise.id)
+                put("name", exercise.name)
+                put("target", exercise.target)
+                put("desc", exercise.desc)
+                put("category", exercise.category)
+                put("equipment", exercise.equipment)
+                put("targetCount", exercise.targetCount)
+            }
+            jsonArray.put(newObj)
+            prefs.edit().putString("custom_list", jsonArray.toString()).apply()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
     private fun setupRecyclerView() {
-        adapter = LibraryExerciseAdapter { exercise ->
-            // Launch Camera Workout AI HUD with bundle arguments
-            val bundle = Bundle().apply {
-                putString("exerciseId", exercise.id)
-                putString("exerciseName", exercise.name)
-                putInt("targetCount", exercise.targetCount)
-                putInt("dayIndex", 1)
-            }
-            findNavController().navigate(R.id.action_library_to_camera, bundle)
-        }
+        adapter = LibraryExerciseAdapter()
         binding.rvLibraryExercises.layoutManager = LinearLayoutManager(requireContext())
         binding.rvLibraryExercises.adapter = adapter
     }
@@ -117,6 +170,100 @@ class LibraryFragment : Fragment() {
             isGymMode = true
             updateFilter()
         }
+    }
+
+    private fun setupCustomExerciseButton() {
+        binding.btnCreateCustom.setOnClickListener {
+            showCreateCustomExerciseDialog()
+        }
+    }
+
+    private fun showCreateCustomExerciseDialog() {
+        val dialog = Dialog(requireContext())
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
+        dialog.setContentView(R.layout.dialog_create_custom_exercise)
+        dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+        dialog.window?.setLayout(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT
+        )
+
+        val etName = dialog.findViewById<TextInputEditText>(R.id.etCustomName)
+        val rgCategory = dialog.findViewById<RadioGroup>(R.id.rgCategory)
+        val rbNoEquipment = dialog.findViewById<RadioButton>(R.id.rbNoEquipment)
+        val rbHome = dialog.findViewById<RadioButton>(R.id.rbHome)
+        val rbGym = dialog.findViewById<RadioButton>(R.id.rbGym)
+        val etEquipment = dialog.findViewById<TextInputEditText>(R.id.etCustomEquipment)
+        val etTarget = dialog.findViewById<TextInputEditText>(R.id.etCustomTarget)
+        val etDesc = dialog.findViewById<TextInputEditText>(R.id.etCustomDesc)
+        val btnCancel = dialog.findViewById<Button>(R.id.btnCancelCustom)
+        val btnSave = dialog.findViewById<Button>(R.id.btnSaveCustom)
+
+        rgCategory.setOnCheckedChangeListener { _, checkedId ->
+            when (checkedId) {
+                R.id.rbNoEquipment -> etEquipment.setText("Bodyweight")
+                R.id.rbHome -> etEquipment.setText("Tạ đơn / Dây kháng lực")
+                R.id.rbGym -> etEquipment.setText("Tạ đòn / Máy tập Gym")
+            }
+        }
+
+        btnCancel.setOnClickListener {
+            dialog.dismiss()
+        }
+
+        btnSave.setOnClickListener {
+            val name = etName.text?.toString()?.trim() ?: ""
+            if (name.isEmpty()) {
+                etName.error = "Vui lòng nhập tên bài tập"
+                return@setOnClickListener
+            }
+
+            val category = when {
+                rbHome.isChecked -> "Tại nhà"
+                rbGym.isChecked -> "Phòng gym"
+                else -> "Không dụng cụ"
+            }
+
+            val equipment = etEquipment.text?.toString()?.trim().let {
+                if (it.isNullOrEmpty()) "Tự chọn" else it
+            }
+
+            val target = etTarget.text?.toString()?.trim().let {
+                if (it.isNullOrEmpty()) "Mục tiêu: 15 lần" else it
+            }
+
+            val desc = etDesc.text?.toString()?.trim().let {
+                if (it.isNullOrEmpty()) "Bài tập cá nhân hóa theo ý muốn." else it
+            }
+
+            val newExercise = LibraryExercise(
+                id = "custom_${System.currentTimeMillis()}",
+                name = name,
+                target = target,
+                desc = desc,
+                category = category,
+                equipment = equipment,
+                targetCount = 15,
+                isCustom = true
+            )
+
+            allExercises.add(0, newExercise)
+            saveCustomExercise(newExercise)
+
+            Toast.makeText(requireContext(), "Đã thêm bài tập \"$name\" vào thư viện!", Toast.LENGTH_SHORT).show()
+            dialog.dismiss()
+
+            // Navigate tab to match the category created
+            if (category == "Không dụng cụ") {
+                isEquipmentMode = false
+            } else {
+                isEquipmentMode = true
+                isGymMode = (category == "Phòng gym")
+            }
+            updateFilter()
+        }
+
+        dialog.show()
     }
 
     private fun updateFilter() {
@@ -182,9 +329,7 @@ class LibraryFragment : Fragment() {
     }
 
     // Inner Adapter
-    class LibraryExerciseAdapter(
-        private val onStartClick: (LibraryExercise) -> Unit
-    ) : RecyclerView.Adapter<LibraryExerciseAdapter.ViewHolder>() {
+    class LibraryExerciseAdapter : RecyclerView.Adapter<LibraryExerciseAdapter.ViewHolder>() {
 
         private val items = mutableListOf<LibraryExercise>()
 
@@ -211,7 +356,16 @@ class LibraryFragment : Fragment() {
             RecyclerView.ViewHolder(binding.root) {
 
             fun bind(item: LibraryExercise) {
-                binding.tvLibCategoryBadge.text = item.category
+                if (item.isCustom) {
+                    binding.tvLibCategoryBadge.text = "⭐ Tự tạo"
+                    binding.tvLibCategoryBadge.setTextColor(Color.parseColor("#F59E0B"))
+                    binding.tvLibCategoryBadge.setBackgroundColor(Color.parseColor("#26F59E0B"))
+                } else {
+                    binding.tvLibCategoryBadge.text = item.category
+                    binding.tvLibCategoryBadge.setTextColor(ContextCompat.getColor(binding.root.context, R.color.mp_color_primary_variant))
+                    binding.tvLibCategoryBadge.setBackgroundColor(Color.parseColor("#260066FF"))
+                }
+
                 binding.tvLibEquipmentTag.text = item.equipment
                 binding.tvLibExerciseName.text = item.name
                 binding.tvLibExerciseTarget.text = item.target
@@ -220,13 +374,9 @@ class LibraryFragment : Fragment() {
                 binding.btnLibWatchVideo.setOnClickListener {
                     Toast.makeText(
                         binding.root.context,
-                        "Hướng dẫn bài tập: ${item.name}",
+                        "Đang mở video hướng dẫn: ${item.name}",
                         Toast.LENGTH_SHORT
                     ).show()
-                }
-
-                binding.btnLibStartExercise.setOnClickListener {
-                    onStartClick(item)
                 }
             }
         }

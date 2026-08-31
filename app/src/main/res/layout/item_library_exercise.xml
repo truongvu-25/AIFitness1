@@ -85,41 +85,22 @@
                 android:layout_marginTop="4dp"/>
         </LinearLayout>
 
-        <LinearLayout
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnLibWatchVideo"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:gravity="end"
-            android:layout_marginStart="12dp">
+            android:layout_height="38dp"
+            android:text="@string/btn_watch_video"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            android:textColor="@color/tri_force_white"
+            app:backgroundTint="@color/mp_color_primary"
+            app:strokeColor="@color/mp_color_primary_variant"
+            app:strokeWidth="1dp"
+            app:cornerRadius="19dp"
+            app:elevation="0dp"
+            android:paddingHorizontal="14dp"
+            android:layout_marginStart="12dp"
+            style="@style/Widget.MaterialComponents.Button"/>
 
-            <Button
-                android:id="@+id/btnLibWatchVideo"
-                android:layout_width="wrap_content"
-                android:layout_height="36dp"
-                android:text="@string/btn_watch_video"
-                android:textSize="11sp"
-                android:textStyle="bold"
-                android:textColor="@color/mp_color_primary_variant"
-                android:backgroundTint="#260066FF"
-                app:strokeColor="@color/mp_color_primary_variant"
-                app:strokeWidth="1dp"
-                app:cornerRadius="18dp"
-                android:paddingHorizontal="12dp"
-                android:layout_marginBottom="6dp"
-                style="@style/Widget.MaterialComponents.Button"/>
-
-            <Button
-                android:id="@+id/btnLibStartExercise"
-                android:layout_width="wrap_content"
-                android:layout_height="36dp"
-                android:text="@string/btn_start_exercise"
-                android:textSize="11sp"
-                android:textStyle="bold"
-                android:textColor="@color/tri_force_white"
-                android:backgroundTint="@color/mp_color_primary"
-                app:cornerRadius="18dp"
-                android:paddingHorizontal="14dp"
-                style="@style/Widget.MaterialComponents.Button"/>
-        </LinearLayout>
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

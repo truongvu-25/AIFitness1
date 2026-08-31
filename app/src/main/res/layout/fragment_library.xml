@@ -26,23 +26,56 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <TextView
-                android:layout_width="wrap_content"
+            <RelativeLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/library_title"
-                android:textSize="17sp"
-                android:textStyle="bold"
-                android:textColor="@color/tri_force_white"
-                android:letterSpacing="0.04"/>
+                android:layout_marginBottom="12dp">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/library_subtitle"
-                android:textSize="12sp"
-                android:textColor="@color/tri_force_silver"
-                android:layout_marginTop="2dp"
-                android:layout_marginBottom="12dp"/>
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_alignParentStart="true"
+                    android:layout_toStartOf="@id/btnCreateCustom"
+                    android:layout_marginEnd="10dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/library_title"
+                        android:textSize="17sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/tri_force_white"
+                        android:letterSpacing="0.04"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/library_subtitle"
+                        android:textSize="12sp"
+                        android:textColor="@color/tri_force_silver"
+                        android:layout_marginTop="2dp"/>
+                </LinearLayout>
+
+                <!-- Custom Workout Creation Button -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnCreateCustom"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:text="+ TỰ TẠO"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/mp_color_primary_variant"
+                    app:backgroundTint="#260066FF"
+                    app:strokeColor="@color/mp_color_primary_variant"
+                    app:strokeWidth="1dp"
+                    app:cornerRadius="18dp"
+                    app:elevation="0dp"
+                    android:paddingHorizontal="12dp"
+                    style="@style/Widget.MaterialComponents.Button"/>
+            </RelativeLayout>
 
             <!-- Primary 2-Mode Segmented Bar (Không Dụng Cụ vs Có Dụng Cụ) -->
             <LinearLayout
