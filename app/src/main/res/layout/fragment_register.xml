@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/tri_force_bg"
+    android:background="@color/tri_force_navy"
     android:padding="24dp">
 
     <ScrollView
@@ -18,21 +18,23 @@
             android:orientation="vertical"
             android:gravity="center_horizontal">
 
+            <!-- Header Branding Section -->
             <LinearLayout
                 android:id="@+id/headerLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:gravity="center"
-                android:layout_marginTop="30dp">
+                android:layout_marginTop="28dp">
 
                 <com.google.android.material.card.MaterialCardView
-                    android:layout_width="72dp"
-                    android:layout_height="72dp"
-                    app:cardCornerRadius="36dp"
-                    app:cardElevation="2dp"
+                    android:layout_width="76dp"
+                    android:layout_height="76dp"
+                    app:cardCornerRadius="38dp"
+                    app:cardElevation="4dp"
+                    app:cardBackgroundColor="@color/tri_force_navy"
                     app:strokeColor="@color/mp_color_primary_variant"
-                    app:strokeWidth="2dp">
+                    app:strokeWidth="2.5dp">
 
                     <ImageView
                         android:layout_width="match_parent"
@@ -49,7 +51,7 @@
                     android:src="@drawable/tri_force_text_logo"
                     android:scaleType="fitCenter"
                     android:adjustViewBounds="true"
-                    android:layout_marginTop="14dp"
+                    android:layout_marginTop="12dp"
                     android:contentDescription="@string/app_name" />
 
                 <TextView
@@ -57,20 +59,21 @@
                     android:layout_height="wrap_content"
                     android:text="Tạo tài khoản để thiết lập lộ trình tập cá nhân"
                     android:textSize="13sp"
-                    android:textColor="@color/tri_force_text_secondary"
+                    android:textColor="@color/tri_force_silver"
                     android:layout_marginTop="4dp"/>
             </LinearLayout>
 
+            <!-- Dark Themed Register Form Card -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardRegister"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
+                android:layout_marginTop="20dp"
                 app:cardCornerRadius="20dp"
-                app:cardElevation="3dp"
-                app:cardBackgroundColor="@color/tri_force_white"
-                app:strokeColor="#E2E8F0"
-                app:strokeWidth="1dp"
+                app:cardElevation="6dp"
+                app:cardBackgroundColor="@color/tri_force_dark_card"
+                app:strokeColor="#1E3A8A"
+                app:strokeWidth="1.5dp"
                 app:cardUseCompatPadding="true">
 
                 <LinearLayout
@@ -85,83 +88,108 @@
                         android:text="ĐĂNG KÝ TÀI KHOẢN"
                         android:textSize="18sp"
                         android:textStyle="bold"
-                        android:textColor="@color/tri_force_text_primary"
-                        android:letterSpacing="0.05"
+                        android:textColor="@color/tri_force_white"
+                        android:letterSpacing="0.08"
                         android:layout_marginBottom="20dp"
                         android:layout_gravity="center_horizontal"/>
 
+                    <!-- Email Input Field -->
                     <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="Email"
+                        android:hint="Địa chỉ Email đăng ký"
+                        android:textColorHint="#94A3B8"
+                        app:hintTextColor="@color/mp_color_primary_variant"
+                        app:placeholderText="vidu: athlete@gmail.com"
+                        app:placeholderTextColor="#64748B"
                         android:layout_marginBottom="16dp"
-                        app:boxStrokeColor="@color/mp_color_primary"
-                        app:boxCornerRadiusTopStart="12dp"
-                        app:boxCornerRadiusTopEnd="12dp"
-                        app:boxCornerRadiusBottomStart="12dp"
-                        app:boxCornerRadiusBottomEnd="12dp"
+                        app:boxStrokeColor="@color/mp_color_primary_variant"
+                        app:boxStrokeWidthFocused="2dp"
+                        app:boxCornerRadiusTopStart="14dp"
+                        app:boxCornerRadiusTopEnd="14dp"
+                        app:boxCornerRadiusBottomStart="14dp"
+                        app:boxCornerRadiusBottomEnd="14dp"
                         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/etRegisterEmail"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:textColor="@color/tri_force_text_primary"
+                            android:textColor="@color/tri_force_white"
+                            android:textColorHighlight="#330066FF"
                             android:inputType="textEmailAddress"/>
                     </com.google.android.material.textfield.TextInputLayout>
 
+                    <!-- Password Input Field -->
                     <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="Mật khẩu"
+                        android:hint="Mật khẩu bảo mật"
+                        android:textColorHint="#94A3B8"
+                        app:hintTextColor="@color/mp_color_primary_variant"
+                        app:placeholderText="Nhập tối thiểu 6 ký tự"
+                        app:placeholderTextColor="#64748B"
                         android:layout_marginBottom="16dp"
                         app:passwordToggleEnabled="true"
-                        app:boxStrokeColor="@color/mp_color_primary"
-                        app:boxCornerRadiusTopStart="12dp"
-                        app:boxCornerRadiusTopEnd="12dp"
-                        app:boxCornerRadiusBottomStart="12dp"
-                        app:boxCornerRadiusBottomEnd="12dp"
+                        app:passwordToggleTint="@color/mp_color_primary_variant"
+                        app:boxStrokeColor="@color/mp_color_primary_variant"
+                        app:boxStrokeWidthFocused="2dp"
+                        app:boxCornerRadiusTopStart="14dp"
+                        app:boxCornerRadiusTopEnd="14dp"
+                        app:boxCornerRadiusBottomStart="14dp"
+                        app:boxCornerRadiusBottomEnd="14dp"
                         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/etRegisterPassword"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:textColor="@color/tri_force_text_primary"
+                            android:textColor="@color/tri_force_white"
+                            android:textColorHighlight="#330066FF"
                             android:inputType="textPassword"/>
                     </com.google.android.material.textfield.TextInputLayout>
 
+                    <!-- Confirm Password Input Field -->
                     <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="Xác nhận mật khẩu"
+                        android:hint="Xác nhận lại mật khẩu"
+                        android:textColorHint="#94A3B8"
+                        app:hintTextColor="@color/mp_color_primary_variant"
+                        app:placeholderText="Nhập lại chính xác mật khẩu"
+                        app:placeholderTextColor="#64748B"
                         android:layout_marginBottom="24dp"
                         app:passwordToggleEnabled="true"
-                        app:boxStrokeColor="@color/mp_color_primary"
-                        app:boxCornerRadiusTopStart="12dp"
-                        app:boxCornerRadiusTopEnd="12dp"
-                        app:boxCornerRadiusBottomStart="12dp"
-                        app:boxCornerRadiusBottomEnd="12dp"
+                        app:passwordToggleTint="@color/mp_color_primary_variant"
+                        app:boxStrokeColor="@color/mp_color_primary_variant"
+                        app:boxStrokeWidthFocused="2dp"
+                        app:boxCornerRadiusTopStart="14dp"
+                        app:boxCornerRadiusTopEnd="14dp"
+                        app:boxCornerRadiusBottomStart="14dp"
+                        app:boxCornerRadiusBottomEnd="14dp"
                         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/etConfirmPassword"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:textColor="@color/tri_force_text_primary"
+                            android:textColor="@color/tri_force_white"
+                            android:textColorHighlight="#330066FF"
                             android:inputType="textPassword"/>
                     </com.google.android.material.textfield.TextInputLayout>
 
                     <Button
                         android:id="@+id/btnRegister"
                         android:layout_width="match_parent"
-                        android:layout_height="52dp"
+                        android:layout_height="54dp"
                         android:text="TẠO TÀI KHOẢN"
-                        android:textSize="15sp"
+                        android:textSize="16sp"
                         android:textStyle="bold"
                         android:textColor="@color/tri_force_white"
+                        android:letterSpacing="0.08"
                         android:backgroundTint="@color/mp_color_primary"
-                        app:cornerRadius="12dp"/>
+                        app:cornerRadius="14dp"
+                        app:elevation="6dp"/>
 
                     <ProgressBar
                         android:id="@+id/registerProgress"
@@ -169,12 +197,13 @@
                         android:layout_height="36dp"
                         android:layout_gravity="center"
                         android:layout_marginTop="12dp"
-                        android:indeterminateTint="@color/mp_color_primary"
+                        android:indeterminateTint="@color/mp_color_primary_variant"
                         android:visibility="gone"/>
 
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
+            <!-- Bottom Redirect to Login -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -187,7 +216,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Đã có tài khoản?"
-                    android:textColor="@color/tri_force_text_secondary"
+                    android:textColor="@color/tri_force_silver"
                     android:textSize="14sp"/>
 
                 <TextView
@@ -195,7 +224,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text=" Đăng nhập"
-                    android:textColor="@color/mp_color_primary"
+                    android:textColor="@color/mp_color_primary_variant"
                     android:textStyle="bold"
                     android:textSize="14sp"
                     android:padding="8dp"/>
