@@ -19,73 +19,19 @@
     <View
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#73030E20" />
+        android:background="#66030E20" />
 
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <!-- iOS Style Translucent Frosted Glass Header Toolbar -->
-        <androidx.appcompat.widget.Toolbar
-            android:id="@+id/toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="54dp"
-            android:layout_alignParentTop="true"
-            android:background="#D9030E20"
-            android:elevation="4dp"
-            app:contentInsetStart="0dp"
-            app:contentInsetLeft="0dp">
-
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:gravity="center_vertical"
-                android:orientation="horizontal">
-
-                <com.google.android.material.card.MaterialCardView
-                    android:layout_width="28dp"
-                    android:layout_height="28dp"
-                    app:cardCornerRadius="14dp"
-                    app:cardElevation="0dp"
-                    app:cardBackgroundColor="#00000000"
-                    app:strokeColor="@color/mp_color_primary_variant"
-                    app:strokeWidth="1.2dp"
-                    android:layout_marginEnd="8dp">
-
-                    <ImageView
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:src="@drawable/tri_force_logo"
-                        android:scaleType="centerCrop"
-                        android:contentDescription="@string/app_name"/>
-                </com.google.android.material.card.MaterialCardView>
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="TRI FORCE"
-                    android:textSize="17sp"
-                    android:textStyle="bold"
-                    android:textColor="@color/tri_force_white"
-                    android:letterSpacing="0.14"/>
-            </LinearLayout>
-        </androidx.appcompat.widget.Toolbar>
-
-        <View
-            android:id="@+id/toolbarDivider"
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_below="@id/toolbar"
-            android:background="#1E3A8A" />
-
-        <!-- Fragment Navigation Host Container -->
+        <!-- Full-Screen Fragment Navigation Host Container -->
         <androidx.fragment.app.FragmentContainerView
             android:id="@+id/fragment_container"
             android:name="androidx.navigation.fragment.NavHostFragment"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_below="@id/toolbarDivider"
+            android:layout_alignParentTop="true"
             android:layout_above="@id/bottomNavCard"
             android:background="@android:color/transparent"
             android:keepScreenOn="true"
@@ -118,13 +64,6 @@
                 app:itemRippleColor="#330066FF"
                 app:menu="@menu/menu_bottom_nav" />
         </com.google.android.material.card.MaterialCardView>
-
-        <!-- Dummy anchor view for navigation destination listener compatibility -->
-        <View
-            android:id="@+id/view"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:visibility="gone" />
 
     </RelativeLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

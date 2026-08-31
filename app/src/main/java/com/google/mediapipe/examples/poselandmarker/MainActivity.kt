@@ -50,7 +50,7 @@ class MainActivity : AppCompatActivity() {
             // ignore the reselection
         }
 
-        // Manage visibility of ToolBar and Floating Bottom Nav dynamically
+        // Manage visibility of Floating Bottom Nav dynamically
         navController.addOnDestinationChangedListener { _, destination, _ ->
             when (destination.id) {
                 R.id.welcome_fragment,
@@ -58,13 +58,9 @@ class MainActivity : AppCompatActivity() {
                 R.id.register_fragment,
                 R.id.user_info_fragment,
                 R.id.camera_fragment -> {
-                    activityMainBinding.toolbar.visibility = View.GONE
-                    activityMainBinding.toolbarDivider.visibility = View.GONE
                     activityMainBinding.bottomNavCard.visibility = View.GONE
                 }
                 else -> {
-                    activityMainBinding.toolbar.visibility = View.VISIBLE
-                    activityMainBinding.toolbarDivider.visibility = View.VISIBLE
                     activityMainBinding.bottomNavCard.visibility = View.VISIBLE
                 }
             }
