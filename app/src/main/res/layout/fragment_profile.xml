@@ -3,8 +3,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/tri_force_bg"
-    android:padding="20dp">
+    android:background="@android:color/transparent"
+    android:padding="16dp">
 
     <ScrollView
         android:layout_width="match_parent"
@@ -23,10 +23,10 @@
                 android:id="@+id/cardAvatar"
                 android:layout_width="92dp"
                 android:layout_height="92dp"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="12dp"
                 app:cardCornerRadius="46dp"
                 app:cardBackgroundColor="@color/tri_force_navy"
-                app:cardElevation="2dp"
+                app:cardElevation="6dp"
                 app:strokeColor="@color/mp_color_primary_variant"
                 app:strokeWidth="2.5dp">
 
@@ -46,8 +46,8 @@
                 android:text="Họ và Tên"
                 android:textSize="20sp"
                 android:textStyle="bold"
-                android:textColor="@color/tri_force_text_primary"
-                android:layout_marginTop="12dp"/>
+                android:textColor="@color/tri_force_white"
+                android:layout_marginTop="10dp"/>
 
             <TextView
                 android:id="@+id/tvProfileEmail"
@@ -55,26 +55,26 @@
                 android:layout_height="wrap_content"
                 android:text="email@example.com"
                 android:textSize="13sp"
-                android:textColor="@color/tri_force_text_secondary"
+                android:textColor="@color/tri_force_silver"
                 android:layout_marginTop="2dp"/>
 
-            <!-- BMI Info Card -->
+            <!-- BMI Info Card (iOS Dark Glass) -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                app:cardCornerRadius="18dp"
-                app:cardElevation="2dp"
-                app:cardBackgroundColor="@color/tri_force_white"
-                app:strokeColor="#E2E8F0"
-                app:strokeWidth="1dp"
+                app:cardCornerRadius="22dp"
+                app:cardElevation="4dp"
+                app:cardBackgroundColor="#CC0A192F"
+                app:strokeColor="#1E3A8A"
+                app:strokeWidth="1.2dp"
                 app:cardUseCompatPadding="true">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="16dp">
+                    android:padding="18dp">
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -82,8 +82,8 @@
                         android:text="Chỉ Số Cơ Thể &amp; Thể Trạng"
                         android:textSize="15sp"
                         android:textStyle="bold"
-                        android:textColor="@color/tri_force_text_primary"
-                        android:layout_marginBottom="12dp"/>
+                        android:textColor="@color/tri_force_white"
+                        android:layout_marginBottom="14dp"/>
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -102,7 +102,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Tuổi"
+                                android:text="@string/metric_age"
                                 android:textSize="12sp"
                                 android:textColor="@color/tri_force_slate"/>
 
@@ -111,9 +111,9 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="--"
-                                android:textSize="16sp"
+                                android:textSize="17sp"
                                 android:textStyle="bold"
-                                android:textColor="@color/mp_color_primary"
+                                android:textColor="@color/tri_force_white"
                                 android:layout_marginTop="2dp"/>
                         </LinearLayout>
 
@@ -127,7 +127,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Chiều cao"
+                                android:text="@string/metric_height"
                                 android:textSize="12sp"
                                 android:textColor="@color/tri_force_slate"/>
 
@@ -136,9 +136,9 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="-- cm"
-                                android:textSize="16sp"
+                                android:textSize="17sp"
                                 android:textStyle="bold"
-                                android:textColor="@color/mp_color_primary"
+                                android:textColor="@color/mp_color_primary_variant"
                                 android:layout_marginTop="2dp"/>
                         </LinearLayout>
 
@@ -152,7 +152,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Cân nặng"
+                                android:text="@string/metric_weight"
                                 android:textSize="12sp"
                                 android:textColor="@color/tri_force_slate"/>
 
@@ -161,9 +161,9 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="-- kg"
-                                android:textSize="16sp"
+                                android:textSize="17sp"
                                 android:textStyle="bold"
-                                android:textColor="@color/mp_color_primary"
+                                android:textColor="@color/mp_color_primary_variant"
                                 android:layout_marginTop="2dp"/>
                         </LinearLayout>
                     </LinearLayout>
@@ -171,7 +171,7 @@
                     <View
                         android:layout_width="match_parent"
                         android:layout_height="1dp"
-                        android:background="#E2E8F0"
+                        android:background="#1E3A8A"
                         android:layout_marginVertical="8dp"/>
 
                     <LinearLayout
@@ -190,7 +190,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Chỉ số BMI"
+                                android:text="@string/metric_bmi"
                                 android:textSize="12sp"
                                 android:textColor="@color/tri_force_slate"/>
 
@@ -201,7 +201,7 @@
                                 android:text="--"
                                 android:textSize="22sp"
                                 android:textStyle="bold"
-                                android:textColor="@color/mp_color_primary"
+                                android:textColor="@color/mp_color_primary_variant"
                                 android:layout_marginTop="2dp"/>
                         </LinearLayout>
 
@@ -224,36 +224,37 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="--"
-                                android:textSize="13sp"
+                                android:textSize="12sp"
                                 android:textStyle="bold"
                                 android:textColor="@color/tri_force_white"
-                                android:background="@color/mp_color_primary"
-                                android:paddingHorizontal="10dp"
-                                android:paddingVertical="4dp"
+                                android:background="@drawable/ic_launcher_background"
+                                android:backgroundTint="@color/mp_color_primary"
+                                android:paddingHorizontal="12dp"
+                                android:paddingVertical="5dp"
                                 android:layout_marginTop="2dp"/>
                         </LinearLayout>
                     </LinearLayout>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Production Daily Step Counter & Calorie Card -->
+            <!-- Daily Step Counter & Calorie Card (iOS Glass 2-Column) -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardStepCounter"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                app:cardCornerRadius="18dp"
-                app:cardElevation="2dp"
-                app:cardBackgroundColor="@color/tri_force_white"
-                app:strokeColor="@color/mp_color_primary"
-                app:strokeWidth="1.5dp"
+                app:cardCornerRadius="22dp"
+                app:cardElevation="4dp"
+                app:cardBackgroundColor="#CC0A192F"
+                app:strokeColor="#1E3A8A"
+                app:strokeWidth="1.2dp"
                 app:cardUseCompatPadding="true">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="16dp">
+                    android:padding="18dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -263,20 +264,20 @@
                         android:layout_marginBottom="12dp">
 
                         <ImageView
-                            android:layout_width="22dp"
-                            android:layout_height="22dp"
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
                             android:src="@android:drawable/ic_menu_directions"
-                            app:tint="@color/mp_color_primary"
+                            app:tint="@color/mp_color_primary_variant"
                             android:layout_marginEnd="8dp"/>
 
                         <TextView
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="Đếm Bước Chân &amp; Calo Hàng Ngày"
+                            android:text="@string/step_counter_title"
                             android:textSize="15sp"
                             android:textStyle="bold"
-                            android:textColor="@color/mp_color_primary"/>
+                            android:textColor="@color/tri_force_white"/>
                     </LinearLayout>
 
                     <LinearLayout
@@ -291,13 +292,13 @@
                             android:layout_weight="1"
                             android:orientation="vertical"
                             android:gravity="center"
-                            android:background="@color/tri_force_success_bg"
-                            android:padding="12dp">
+                            android:background="#2610B981"
+                            android:padding="14dp">
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Số bước hôm nay"
+                                android:text="Số bước"
                                 android:textSize="12sp"
                                 android:textColor="@color/tri_force_success"
                                 android:textStyle="bold"/>
@@ -309,7 +310,7 @@
                                 android:text="0 bước"
                                 android:textSize="18sp"
                                 android:textStyle="bold"
-                                android:textColor="#065F46"
+                                android:textColor="@color/tri_force_white"
                                 android:layout_marginTop="2dp"/>
                         </LinearLayout>
 
@@ -323,13 +324,13 @@
                             android:layout_weight="1"
                             android:orientation="vertical"
                             android:gravity="center"
-                            android:background="@color/tri_force_warning_bg"
-                            android:padding="12dp">
+                            android:background="#26F59E0B"
+                            android:padding="14dp">
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Calo tiêu thụ"
+                                android:text="@string/calorie_burned_title"
                                 android:textSize="12sp"
                                 android:textColor="@color/tri_force_warning"
                                 android:textStyle="bold"/>
@@ -341,7 +342,7 @@
                                 android:text="0.0 kcal"
                                 android:textSize="18sp"
                                 android:textStyle="bold"
-                                android:textColor="#92400E"
+                                android:textColor="@color/tri_force_white"
                                 android:layout_marginTop="2dp"/>
                         </LinearLayout>
                     </LinearLayout>
@@ -349,33 +350,33 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Personalized Health Advice Card Based on BMI & Calorie Burn -->
+            <!-- Personalized AI Coach Advice Card -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardBmiAdvice"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                app:cardCornerRadius="18dp"
-                app:cardElevation="2dp"
-                app:cardBackgroundColor="@color/tri_force_warning_bg"
+                android:layout_marginTop="6dp"
+                app:cardCornerRadius="22dp"
+                app:cardElevation="4dp"
+                app:cardBackgroundColor="#CC0A192F"
                 app:strokeColor="@color/tri_force_warning"
-                app:strokeWidth="1.5dp"
+                app:strokeWidth="1.2dp"
                 app:cardUseCompatPadding="true">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="16dp">
+                    android:padding="18dp">
 
                     <TextView
                         android:id="@+id/tvBmiAdviceTitle"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="ĐÁNH GIÁ &amp; LỜI KHUYÊN VẬN ĐỘNG AI"
+                        android:text="@string/ai_advice_title"
                         android:textSize="13sp"
                         android:textStyle="bold"
-                        android:textColor="#B45309"
+                        android:textColor="@color/tri_force_warning"
                         android:layout_marginBottom="6dp"/>
 
                     <TextView
@@ -385,32 +386,33 @@
                         android:text="Đang phân tích dữ liệu vận động hôm nay..."
                         android:textSize="13sp"
                         android:lineSpacingExtra="3dp"
-                        android:textColor="#451A03"/>
+                        android:textColor="@color/tri_force_silver"/>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
+            <!-- Pill Action Buttons -->
             <Button
                 android:id="@+id/btnEditProfile"
                 android:layout_width="match_parent"
-                android:layout_height="50dp"
+                android:layout_height="52dp"
                 android:text="CHỈNH SỬA HỒ SƠ"
                 android:textSize="15sp"
                 android:textStyle="bold"
                 android:textColor="@color/tri_force_white"
                 android:backgroundTint="@color/mp_color_primary"
-                app:cornerRadius="12dp"
+                app:cornerRadius="16dp"
                 android:layout_marginTop="14dp"/>
 
             <Button
                 android:id="@+id/btnLogout"
                 android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:text="ĐĂNG XUẤT"
+                android:layout_height="52dp"
+                android:text="@string/btn_logout"
                 android:textSize="15sp"
                 android:textStyle="bold"
                 android:textColor="@color/tri_force_white"
-                android:backgroundTint="@color/tri_force_error"
-                app:cornerRadius="12dp"
+                android:backgroundTint="#B3EF4444"
+                app:cornerRadius="16dp"
                 android:layout_marginTop="10dp"
                 android:layout_marginBottom="40dp"/>
 

@@ -3,12 +3,13 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/cardDay"
     android:layout_width="66dp"
-    android:layout_height="66dp"
+    android:layout_height="68dp"
     android:layout_margin="5dp"
-    app:cardCornerRadius="14dp"
-    app:cardElevation="2dp"
-    app:strokeColor="@color/mp_color_primary"
-    app:strokeWidth="1.5dp">
+    app:cardCornerRadius="16dp"
+    app:cardElevation="4dp"
+    app:cardBackgroundColor="#CC0A192F"
+    app:strokeColor="#1E3A8A"
+    app:strokeWidth="1.2dp">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -24,23 +25,23 @@
             android:text="19/07"
             android:textSize="11sp"
             android:textStyle="bold"
-            android:textColor="@color/mp_color_primary"/>
+            android:textColor="@color/mp_color_primary_variant"/>
 
         <TextView
             android:id="@+id/tvDayNum"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="01"
-            android:textSize="15sp"
+            android:textSize="16sp"
             android:textStyle="bold"
-            android:textColor="@color/mp_color_primary"
+            android:textColor="@color/tri_force_white"
             android:layout_marginVertical="1dp"/>
 
         <TextView
             android:id="@+id/tvDayLabel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Ngày"
+            android:text="@string/day_prefix"
             android:textSize="9sp"
             android:textColor="@color/tri_force_slate"/>
     </LinearLayout>

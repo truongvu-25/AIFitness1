@@ -6,16 +6,32 @@
     android:layout_height="match_parent"
     android:background="@color/tri_force_navy">
 
+    <!-- Global Full-Screen Gym Interior Background -->
+    <ImageView
+        android:id="@+id/ivGlobalBackground"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:src="@drawable/app_main_bg"
+        android:scaleType="centerCrop"
+        android:contentDescription="@string/app_name" />
+
+    <!-- Subtle Dark Layer for High Contrast Depth -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#73030E20" />
+
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
+        <!-- iOS Style Translucent Frosted Glass Header Toolbar -->
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
+            android:layout_height="54dp"
             android:layout_alignParentTop="true"
-            android:background="@color/tri_force_navy"
+            android:background="#D9030E20"
             android:elevation="4dp"
             app:contentInsetStart="0dp"
             app:contentInsetLeft="0dp">
@@ -28,14 +44,14 @@
                 android:orientation="horizontal">
 
                 <com.google.android.material.card.MaterialCardView
-                    android:layout_width="32dp"
-                    android:layout_height="32dp"
-                    app:cardCornerRadius="16dp"
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
+                    app:cardCornerRadius="14dp"
                     app:cardElevation="0dp"
                     app:cardBackgroundColor="#00000000"
                     app:strokeColor="@color/mp_color_primary_variant"
-                    app:strokeWidth="1.5dp"
-                    android:layout_marginEnd="10dp">
+                    app:strokeWidth="1.2dp"
+                    android:layout_marginEnd="8dp">
 
                     <ImageView
                         android:layout_width="match_parent"
@@ -49,44 +65,66 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="TRI FORCE"
-                    android:textSize="18sp"
+                    android:textSize="17sp"
                     android:textStyle="bold"
                     android:textColor="@color/tri_force_white"
-                    android:letterSpacing="0.12"/>
+                    android:letterSpacing="0.14"/>
             </LinearLayout>
         </androidx.appcompat.widget.Toolbar>
 
-        <com.google.android.material.bottomnavigation.BottomNavigationView
-            android:id="@+id/navigation"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:background="@color/tri_force_navy"
-            android:elevation="8dp"
-            app:itemIconTint="@color/bg_nav_item"
-            app:itemTextColor="@color/bg_nav_item"
-            app:itemRippleColor="#330066FF"
-            app:menu="@menu/menu_bottom_nav" />
-
         <View
-            android:id="@+id/view"
+            android:id="@+id/toolbarDivider"
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            android:layout_above="@id/navigation"
-            android:background="#1E2A3A" />
+            android:layout_below="@id/toolbar"
+            android:background="#1E3A8A" />
 
+        <!-- Fragment Navigation Host Container -->
         <androidx.fragment.app.FragmentContainerView
             android:id="@+id/fragment_container"
             android:name="androidx.navigation.fragment.NavHostFragment"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_below="@id/toolbar"
-            android:layout_above="@id/view"
+            android:layout_below="@id/toolbarDivider"
+            android:layout_above="@id/bottomNavCard"
             android:background="@android:color/transparent"
             android:keepScreenOn="true"
             app:defaultNavHost="true"
             app:navGraph="@navigation/nav_graph"
             tools:context=".MainActivity" />
+
+        <!-- iOS-Style Floating Glassmorphic Bottom Navigation Bar -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/bottomNavCard"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_marginHorizontal="20dp"
+            android:layout_marginBottom="16dp"
+            app:cardCornerRadius="24dp"
+            app:cardElevation="10dp"
+            app:cardBackgroundColor="#E60A192F"
+            app:strokeColor="#1E3A8A"
+            app:strokeWidth="1.2dp">
+
+            <com.google.android.material.bottomnavigation.BottomNavigationView
+                android:id="@+id/navigation"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:background="@android:color/transparent"
+                android:elevation="0dp"
+                app:itemIconTint="@color/bg_nav_item"
+                app:itemTextColor="@color/bg_nav_item"
+                app:itemRippleColor="#330066FF"
+                app:menu="@menu/menu_bottom_nav" />
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Dummy anchor view for navigation destination listener compatibility -->
+        <View
+            android:id="@+id/view"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:visibility="gone" />
 
     </RelativeLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

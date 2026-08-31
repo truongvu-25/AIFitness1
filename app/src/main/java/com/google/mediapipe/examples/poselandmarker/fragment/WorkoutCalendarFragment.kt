@@ -578,64 +578,64 @@ class WorkoutCalendarFragment : Fragment() {
                 when {
                     item.isCurrentDay -> { // 1. CURRENT DAY -> TRI FORCE ELECTRIC BLUE (#0066FF)
                         cardDay.setCardBackgroundColor(Color.parseColor("#0066FF"))
-                        cardDay.strokeColor = Color.parseColor("#0047BA")
-                        tvCalendarDate.setTextColor(Color.parseColor("#93C5FD"))
+                        cardDay.strokeColor = Color.parseColor("#00D2FF")
+                        tvCalendarDate.setTextColor(Color.parseColor("#E0F2FE"))
                         tvDayNum.text = String.format("%02d", item.dayIndex)
                         tvDayNum.setTextColor(Color.WHITE)
                         tvDayLabel.text = "Hôm nay"
-                        tvDayLabel.setTextColor(Color.parseColor("#DBEAFE"))
+                        tvDayLabel.setTextColor(Color.parseColor("#BAE6FD"))
                     }
-                    item.isRestDay -> { // 5. REST DAY -> GRAY (#F5F5F5)
-                        cardDay.setCardBackgroundColor(Color.parseColor("#F5F5F5"))
-                        cardDay.strokeColor = Color.parseColor("#E0E0E0")
-                        tvCalendarDate.setTextColor(Color.parseColor("#757575"))
+                    item.isRestDay -> { // REST DAY -> Amber Glass
+                        cardDay.setCardBackgroundColor(Color.parseColor("#331E293B"))
+                        cardDay.strokeColor = Color.parseColor("#F59E0B")
+                        tvCalendarDate.setTextColor(Color.parseColor("#FBBF24"))
                         tvDayNum.text = "NGHỈ"
-                        tvDayNum.setTextColor(Color.parseColor("#616161"))
+                        tvDayNum.setTextColor(Color.parseColor("#F59E0B"))
                         tvDayLabel.text = "Thư giãn"
-                        tvDayLabel.setTextColor(Color.parseColor("#9E9E9E"))
+                        tvDayLabel.setTextColor(Color.parseColor("#94A3B8"))
                     }
                     item.isPastDay -> { // PAST WORKOUT DAYS
                         when {
                             item.completedExercises > 0 && item.completedExercises == item.totalExercises -> {
-                                // 2. PAST ALL COMPLETED -> LIGHT GREEN (#E8F5E9)
-                                cardDay.setCardBackgroundColor(Color.parseColor("#E8F5E9"))
-                                cardDay.strokeColor = Color.parseColor("#4CAF50")
-                                tvCalendarDate.setTextColor(Color.parseColor("#2E7D32"))
+                                // ALL COMPLETED -> Emerald Glass
+                                cardDay.setCardBackgroundColor(Color.parseColor("#33064E3B"))
+                                cardDay.strokeColor = Color.parseColor("#10B981")
+                                tvCalendarDate.setTextColor(Color.parseColor("#6EE7B7"))
                                 tvDayNum.text = String.format("%02d", item.dayIndex)
-                                tvDayNum.setTextColor(Color.parseColor("#1B5E20"))
-                                tvDayLabel.text = "Hoàn thành"
-                                tvDayLabel.setTextColor(Color.parseColor("#388E3C"))
+                                tvDayNum.setTextColor(Color.parseColor("#34D399"))
+                                tvDayLabel.text = "Xong"
+                                tvDayLabel.setTextColor(Color.parseColor("#A7F3D0"))
                             }
                             item.completedExercises > 0 -> {
-                                // 3. PAST PARTIALLY COMPLETED -> LIGHT YELLOW (#FFF9C4)
-                                cardDay.setCardBackgroundColor(Color.parseColor("#FFF9C4"))
-                                cardDay.strokeColor = Color.parseColor("#FBC02D")
-                                tvCalendarDate.setTextColor(Color.parseColor("#F57F17"))
+                                // PARTIALLY COMPLETED -> Amber Glass
+                                cardDay.setCardBackgroundColor(Color.parseColor("#3378350F"))
+                                cardDay.strokeColor = Color.parseColor("#F59E0B")
+                                tvCalendarDate.setTextColor(Color.parseColor("#FCD34D"))
                                 tvDayNum.text = String.format("%02d", item.dayIndex)
-                                tvDayNum.setTextColor(Color.parseColor("#E65100"))
+                                tvDayNum.setTextColor(Color.parseColor("#FBBF24"))
                                 tvDayLabel.text = "Dở dang"
-                                tvDayLabel.setTextColor(Color.parseColor("#F57F17"))
+                                tvDayLabel.setTextColor(Color.parseColor("#FDE68A"))
                             }
                             else -> {
-                                // 4. PAST MISSED COMPLETELY -> LIGHT RED (#FFEBEE)
-                                cardDay.setCardBackgroundColor(Color.parseColor("#FFEBEE"))
-                                cardDay.strokeColor = Color.parseColor("#EF5350")
-                                tvCalendarDate.setTextColor(Color.parseColor("#C62828"))
+                                // MISSED -> Red Glass
+                                cardDay.setCardBackgroundColor(Color.parseColor("#337F1D1D"))
+                                cardDay.strokeColor = Color.parseColor("#EF4444")
+                                tvCalendarDate.setTextColor(Color.parseColor("#FCA5A5"))
                                 tvDayNum.text = String.format("%02d", item.dayIndex)
-                                tvDayNum.setTextColor(Color.parseColor("#B71C1C"))
+                                tvDayNum.setTextColor(Color.parseColor("#F87171"))
                                 tvDayLabel.text = "Bỏ qua"
-                                tvDayLabel.setTextColor(Color.parseColor("#D32F2F"))
+                                tvDayLabel.setTextColor(Color.parseColor("#FECACA"))
                             }
                         }
                     }
-                    else -> { // 6. FUTURE WORKOUT DAYS -> WHITE (#FFFFFF)
-                        cardDay.setCardBackgroundColor(Color.WHITE)
-                        cardDay.strokeColor = Color.parseColor("#E0E0E0")
-                        tvCalendarDate.setTextColor(Color.parseColor("#757575"))
+                    else -> { // FUTURE WORKOUT DAYS -> Dark Glass
+                        cardDay.setCardBackgroundColor(Color.parseColor("#CC0A192F"))
+                        cardDay.strokeColor = Color.parseColor("#1E3A8A")
+                        tvCalendarDate.setTextColor(Color.parseColor("#94A3B8"))
                         tvDayNum.text = String.format("%02d", item.dayIndex)
-                        tvDayNum.setTextColor(Color.parseColor("#212529"))
+                        tvDayNum.setTextColor(Color.WHITE)
                         tvDayLabel.text = "Ngày"
-                        tvDayLabel.setTextColor(Color.parseColor("#9E9E9E"))
+                        tvDayLabel.setTextColor(Color.parseColor("#64748B"))
                     }
                 }
 

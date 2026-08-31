@@ -4,24 +4,28 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/tri_force_bg">
+    android:background="@android:color/transparent">
 
-    <!-- Header Plan Card with Gradient / Deep Navy -->
+    <!-- Header Plan Card (iOS Frosted Dark Glass) -->
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/headerPlanCard"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:cardCornerRadius="0dp"
-        app:cardElevation="4dp"
-        app:cardBackgroundColor="@color/tri_force_navy"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginTop="12dp"
+        app:cardCornerRadius="20dp"
+        app:cardElevation="6dp"
+        app:cardBackgroundColor="#CC0A192F"
+        app:strokeColor="#1E3A8A"
+        app:strokeWidth="1.2dp"
         app:layout_constraintTop_toTopOf="parent">
 
         <RelativeLayout
             android:id="@+id/headerPlan"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingHorizontal="20dp"
-            android:paddingVertical="16dp">
+            android:paddingHorizontal="18dp"
+            android:paddingVertical="14dp">
 
             <LinearLayout
                 android:layout_width="wrap_content"
@@ -29,12 +33,12 @@
                 android:orientation="vertical"
                 android:layout_alignParentStart="true"
                 android:layout_toStartOf="@id/btnResetPlan"
-                android:layout_marginEnd="16dp">
+                android:layout_marginEnd="14dp">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="TRI FORCE • LỘ TRÌNH 30 NGÀY"
+                    android:text="@string/workout_plan_title"
                     android:textSize="11sp"
                     android:textStyle="bold"
                     android:textColor="@color/mp_color_primary_variant"
@@ -45,30 +49,31 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Đang tải lộ trình..."
-                    android:textSize="18sp"
+                    android:textSize="17sp"
                     android:textStyle="bold"
                     android:textColor="@color/tri_force_white"
-                    android:layout_marginTop="4dp"/>
+                    android:layout_marginTop="2dp"/>
             </LinearLayout>
 
             <Button
                 android:id="@+id/btnResetPlan"
                 android:layout_width="wrap_content"
-                android:layout_height="38dp"
-                android:text="TẠO MỚI"
+                android:layout_height="36dp"
+                android:text="@string/btn_create_new_plan"
                 android:textSize="11sp"
                 android:textStyle="bold"
                 android:layout_alignParentEnd="true"
                 android:layout_centerVertical="true"
-                android:backgroundTint="@color/tri_force_dark_card"
-                android:textColor="@color/tri_force_silver"
-                app:strokeColor="#334155"
+                android:backgroundTint="#260066FF"
+                android:textColor="@color/mp_color_primary_variant"
+                app:strokeColor="@color/mp_color_primary_variant"
                 app:strokeWidth="1dp"
-                app:cornerRadius="8dp"
+                app:cornerRadius="18dp"
                 android:paddingHorizontal="14dp"/>
         </RelativeLayout>
     </com.google.android.material.card.MaterialCardView>
 
+    <!-- 30-Day Segmented Scroll Strip -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvDays"
         android:layout_width="match_parent"
@@ -76,31 +81,24 @@
         android:paddingHorizontal="12dp"
         android:clipToPadding="false"
         android:orientation="horizontal"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="10dp"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         app:layout_constraintTop_toBottomOf="@id/headerPlanCard"
         tools:listitem="@layout/item_workout_day"/>
-
-    <View
-        android:id="@+id/divider"
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="#E2E8F0"
-        android:layout_marginTop="8dp"
-        app:layout_constraintTop_toBottomOf="@id/rvDays"/>
 
     <TextView
         android:id="@+id/tvSelectedDay"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Danh sách bài tập"
-        android:textSize="17sp"
+        android:text="@string/today_workout_title"
+        android:textSize="16sp"
         android:textStyle="bold"
-        android:textColor="@color/tri_force_text_primary"
+        android:textColor="@color/tri_force_white"
+        android:letterSpacing="0.04"
         android:layout_marginStart="20dp"
-        android:layout_marginTop="12dp"
+        android:layout_marginTop="10dp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/divider"/>
+        app:layout_constraintTop_toBottomOf="@id/rvDays"/>
 
     <!-- Dynamic Status Banner for Missed Days or Rest Days -->
     <com.google.android.material.card.MaterialCardView
@@ -110,8 +108,9 @@
         android:layout_marginHorizontal="16dp"
         android:layout_marginTop="8dp"
         android:visibility="gone"
-        app:cardCornerRadius="14dp"
-        app:cardElevation="0dp"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="2dp"
+        app:cardBackgroundColor="#CC0D1524"
         app:strokeWidth="1dp"
         app:layout_constraintTop_toBottomOf="@id/tvSelectedDay">
 
@@ -124,8 +123,8 @@
 
             <ImageView
                 android:id="@+id/ivNoticeIcon"
-                android:layout_width="22dp"
-                android:layout_height="22dp"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
                 android:src="@android:drawable/ic_dialog_alert"
                 android:layout_marginEnd="10dp"/>
 
@@ -135,19 +134,21 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="Thông báo trạng thái ngày tập"
+                android:textColor="@color/tri_force_white"
                 android:textSize="13sp"
                 android:textStyle="bold"/>
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 
+    <!-- Daily Exercises List -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvExercises"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:paddingHorizontal="16dp"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="6dp"
         android:clipToPadding="false"
-        android:paddingBottom="24dp"
+        android:paddingBottom="20dp"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toBottomOf="@id/cardStatusNotice"
@@ -155,10 +156,10 @@
 
     <ProgressBar
         android:id="@+id/calendarProgress"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
+        android:layout_width="44dp"
+        android:layout_height="44dp"
         android:visibility="gone"
-        android:indeterminateTint="@color/mp_color_primary"
+        android:indeterminateTint="@color/mp_color_primary_variant"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
