@@ -345,7 +345,8 @@ class HomeFragment : Fragment() {
                 val obj = plansArray.getJSONObject(i)
                 val id = obj.optString("planId", "")
                 val name = obj.optString("planName", "")
-                if (id != planId && name != planName) {
+                val isTarget = if (planId.isNotEmpty()) id == planId else (name == planName && i == position)
+                if (!isTarget) {
                     updatedArray.put(obj)
                 }
             }
@@ -355,7 +356,9 @@ class HomeFragment : Fragment() {
             var clearActive = false
             if (activeStr != null) {
                 val activeObj = JSONObject(activeStr)
-                if (activeObj.optString("planId", "") == planId || activeObj.optString("planName", "") == planName) {
+                val activeId = activeObj.optString("planId", "")
+                val activeName = activeObj.optString("planName", "")
+                if ((planId.isNotEmpty() && activeId == planId) || (planId.isEmpty() && activeName == planName)) {
                     clearActive = true
                 }
             }
@@ -385,9 +388,9 @@ class HomeFragment : Fragment() {
 
     private fun showApplyPlanConfirmationDialog(newPlanObj: JSONObject, planName: String) {
         AlertDialog.Builder(requireContext(), android.R.style.Theme_DeviceDefault_Dialog_Alert)
-            .setTitle("Áp dụng tiến trình vào lịch tập 30 ngày?")
-            .setMessage("Bạn có chắc chắn muốn thay lịch tập 30 ngày hiện tại thành tiến trình \"$planName\" không? Toàn bộ lộ trình 30 ngày sẽ được thiết lập lại từ hôm nay đúng theo các thứ bạn đã chọn.")
-            .setPositiveButton("Đồng ý") { _, _ ->
+            .setTitle("Xác nhận thay đổi lịch tập")
+            .setMessage("Bạn có chắc chắn muốn hủy tiến trình hiện tại để bắt đầu tiến trình \"$planName\" này vào lịch tập 30 ngày không?")
+            .setPositiveButton("Đồng ý đổi") { _, _ ->
                 applyPlanTo30DaySchedule(newPlanObj, planName)
             }
             .setNegativeButton("Hủy", null)
