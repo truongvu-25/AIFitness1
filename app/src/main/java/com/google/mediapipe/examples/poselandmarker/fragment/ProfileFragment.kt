@@ -108,10 +108,6 @@ class ProfileFragment : Fragment() {
     private fun displayStepData(steps: Int, calories: Float) {
         binding.tvProfileSteps.text = "$steps bước"
         binding.tvProfileCalories.text = String.format(Locale.US, "%.1f kcal", calories)
-
-        currentUserProfile?.let { profile ->
-            updateBmiAdvice(profile.bmiType, calories, steps)
-        }
     }
 
     private fun loadUserProfile() {
@@ -149,74 +145,6 @@ class ProfileFragment : Fragment() {
 
         binding.tvProfileBmiType.text = bmiLabel
         binding.tvProfileBmiType.setBackgroundColor(Color.parseColor(bmiColor))
-
-        val currentSteps = StepCounterService.getSavedSteps(requireContext())
-        val currentCalories = StepCounterService.getSavedCalories(requireContext())
-        updateBmiAdvice(profile.bmiType, currentCalories, currentSteps)
-    }
-
-    private fun updateBmiAdvice(bmiType: String, calories: Float, steps: Int) {
-        val title: String
-        val message: String
-        val bgColor: String
-        val strokeColor: String
-        val titleColor: String
-
-        val caloStr = String.format(Locale.US, "%.1f", calories)
-
-        when (bmiType) {
-            "GAY" -> {
-                if (calories > 180f) {
-                    title = "⚠️ CẢNH BÁO TIÊU THỤ CALO NĂNG LƯỢNG CAO"
-                    message = "Hôm nay bạn đã đi $steps bước (~$caloStr kcal). Với thể trạng GẦY, việc tiêu thụ calo nhiều có thể làm giảm cân thêm. Hãy nạp bổ sung 300-500 kcal từ thực phẩm giàu Protein (thịt, trứng, sữa) và Tinh bột để bù lại năng lượng tiêu hao và hỗ trợ tăng cân an toàn!"
-                    bgColor = "#FFF3E0"     // Light Orange
-                    strokeColor = "#FF9800" // Orange
-                    titleColor = "#E65100"  // Dark Orange
-                } else {
-                    title = "💡 LỜI KHUYÊN DUY TRÌ THỂ TRẠNG GẦY"
-                    message = "Mức vận động hôm nay của bạn ($steps bước, ~$caloStr kcal) rất vừa phải và tốt cho sức khỏe tim mạch. Hãy duy trì lối sống này kết hợp chế độ ăn dinh dưỡng đa lượng để cải thiện thể trạng tốt nhất nhé!"
-                    bgColor = "#E8F5E9"     // Light Green
-                    strokeColor = "#4CAF50" // Green
-                    titleColor = "#1B5E20"  // Dark Green
-                }
-            }
-            "CAN DOI" -> {
-                if (calories >= 240f) {
-                    title = "🎉 PHONG ĐỘ VẬN ĐỘNG TÍCH CỰC"
-                    message = "Rất xuất sắc! Bạn đã đi được $steps bước và tiêu thụ ~$caloStr kcal hôm nay. Hãy tiếp tục giữ vững phong độ vận động tuyệt vời này để duy trì vóc dáng cân đối và độ dẻo dai dài lâu!"
-                    bgColor = "#E8F5E9"     // Light Green
-                    strokeColor = "#4CAF50" // Green
-                    titleColor = "#1B5E20"  // Dark Green
-                } else {
-                    title = "🏃 LỜI KHUYÊN TĂNG CƯỜNG VẬN ĐỘNG"
-                    message = "Mức vận động hôm nay của bạn ($steps bước, ~$caloStr kcal) còn hơi khiêm tốn. Bạn nên dành 15-20 phút đi bộ nhẹ nhàng hoặc hoàn thành bài tập trong ứng dụng để giữ dáng và tăng sức bền cơ thể!"
-                    bgColor = "#E1F5FE"     // Light Blue
-                    strokeColor = "#0288D1" // Blue
-                    titleColor = "#01579B"  // Dark Blue
-                }
-            }
-            else -> { // "THUA CAN"
-                if (calories >= 240f) {
-                    title = "🔥 KẾT QUẢ ĐỐT MỠ THỪA XUẤT SẮC"
-                    message = "Tuyệt vời! Bạn đã đi $steps bước và tiêu thụ thành công ~$caloStr kcal mỡ thừa hôm nay. Sự kiên trì đi bộ và luyện tập này sẽ giúp bạn mau chóng đạt được chỉ số cân nặng lý tưởng!"
-                    bgColor = "#E8F5E9"     // Light Green
-                    strokeColor = "#4CAF50" // Green
-                    titleColor = "#1B5E20"  // Dark Green
-                } else {
-                    title = "⚠️ KHUYẾN KHÍCH ĐỐT CHÁY CALO MỠ THỪA"
-                    message = "Hôm nay bạn mới tiêu thụ ~$caloStr kcal ($steps bước), mức vận động này còn thấp với người THỪA CÂN. Hãy đứng dậy đi dạo hoặc thực hiện bài tập Squat/Jumping Jack để kích hoạt quá trình đốt mỡ ngay nhé!"
-                    bgColor = "#FFEBEE"     // Light Red
-                    strokeColor = "#E53935" // Red
-                    titleColor = "#B71C1C"  // Dark Red
-                }
-            }
-        }
-
-        binding.cardBmiAdvice.setCardBackgroundColor(Color.parseColor(bgColor))
-        binding.cardBmiAdvice.strokeColor = Color.parseColor(strokeColor)
-        binding.tvBmiAdviceTitle.text = title
-        binding.tvBmiAdviceTitle.setTextColor(Color.parseColor(titleColor))
-        binding.tvBmiAdviceMessage.text = message
     }
 
     private fun performLogout() {
