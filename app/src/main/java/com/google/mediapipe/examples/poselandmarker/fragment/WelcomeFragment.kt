@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.google.firebase.auth.FirebaseAuth
@@ -11,6 +12,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.mediapipe.examples.poselandmarker.R
 import com.google.mediapipe.examples.poselandmarker.UserProfile
 import com.google.mediapipe.examples.poselandmarker.databinding.FragmentWelcomeBinding
+import com.google.mediapipe.examples.poselandmarker.utils.LocaleHelper
 
 class WelcomeFragment : Fragment() {
 
@@ -35,6 +37,16 @@ class WelcomeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // Setup Language Toggle UI
+        updateLanguageToggleUI()
+
+        binding.cardLanguageToggle.setOnClickListener {
+            val currentLang = LocaleHelper.getLanguage(requireContext())
+            val newLang = if (currentLang == LocaleHelper.LANG_VI) LocaleHelper.LANG_EN else LocaleHelper.LANG_VI
+            LocaleHelper.setLocale(requireContext(), newLang)
+            activity?.recreate()
+        }
+
         // Check if user is already logged in (persistence session check)
         val currentUser = auth.currentUser
         if (currentUser != null) {
@@ -44,6 +56,20 @@ class WelcomeFragment : Fragment() {
         // Tap "BẮT ĐẦU NGAY" to go directly to Login
         binding.btnWelcomeStart.setOnClickListener {
             findNavController().navigate(R.id.action_welcome_to_login)
+        }
+    }
+
+    private fun updateLanguageToggleUI() {
+        val currentLang = LocaleHelper.getLanguage(requireContext())
+        val activeColor = ContextCompat.getColor(requireContext(), R.color.mp_color_primary_variant)
+        val inactiveColor = ContextCompat.getColor(requireContext(), R.color.tri_force_slate)
+
+        if (currentLang == LocaleHelper.LANG_VI) {
+            binding.tvLangVi.setTextColor(activeColor)
+            binding.tvLangEn.setTextColor(inactiveColor)
+        } else {
+            binding.tvLangVi.setTextColor(inactiveColor)
+            binding.tvLangEn.setTextColor(activeColor)
         }
     }
 

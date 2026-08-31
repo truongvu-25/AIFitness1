@@ -19,6 +19,61 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
+    <!-- Language Mode Switcher (VI / EN) in Top Right Corner -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardLanguageToggle"
+        android:layout_width="wrap_content"
+        android:layout_height="38dp"
+        android:layout_marginTop="40dp"
+        android:layout_marginEnd="20dp"
+        app:cardCornerRadius="19dp"
+        app:cardBackgroundColor="#D9030E20"
+        app:cardElevation="8dp"
+        app:strokeColor="@color/mp_color_primary_variant"
+        app:strokeWidth="1.5dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:foreground="?attr/selectableItemBackgroundBorderless"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:paddingHorizontal="14dp">
+
+            <TextView
+                android:id="@+id/tvLangVi"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="VI"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:textColor="@color/mp_color_primary_variant"
+                android:letterSpacing="0.08"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=" | "
+                android:textSize="13sp"
+                android:textColor="@color/tri_force_slate"/>
+
+            <TextView
+                android:id="@+id/tvLangEn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="EN"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:textColor="@color/tri_force_slate"
+                android:letterSpacing="0.08"/>
+
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
     <!-- Guideline at 1/2 of the lower 1/3 section (83.3% from top) -->
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guidelineButton"
@@ -33,7 +88,7 @@
         android:layout_width="match_parent"
         android:layout_height="58dp"
         android:layout_marginHorizontal="32dp"
-        android:text="BẮT ĐẦU NGAY"
+        android:text="@string/welcome_btn_start"
         android:textSize="17sp"
         android:textStyle="bold"
         android:textColor="@color/tri_force_white"

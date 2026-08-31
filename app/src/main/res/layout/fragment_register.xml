@@ -57,7 +57,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Tạo tài khoản để thiết lập lộ trình tập cá nhân"
+                    android:text="@string/register_header_subtitle"
                     android:textSize="13sp"
                     android:textColor="@color/tri_force_silver"
                     android:layout_marginTop="4dp"/>
@@ -85,7 +85,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="ĐĂNG KÝ TÀI KHOẢN"
+                        android:text="@string/register_title"
                         android:textSize="18sp"
                         android:textStyle="bold"
                         android:textColor="@color/tri_force_white"
@@ -97,10 +97,10 @@
                     <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="Địa chỉ Email đăng ký"
+                        android:hint="@string/register_email_hint"
                         android:textColorHint="#94A3B8"
                         app:hintTextColor="@color/mp_color_primary_variant"
-                        app:placeholderText="vidu: athlete@gmail.com"
+                        app:placeholderText="@string/register_email_placeholder"
                         app:placeholderTextColor="#64748B"
                         android:layout_marginBottom="16dp"
                         app:boxStrokeColor="@color/mp_color_primary_variant"
@@ -124,10 +124,10 @@
                     <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="Mật khẩu bảo mật"
+                        android:hint="@string/register_password_hint"
                         android:textColorHint="#94A3B8"
                         app:hintTextColor="@color/mp_color_primary_variant"
-                        app:placeholderText="Nhập tối thiểu 6 ký tự"
+                        app:placeholderText="@string/register_password_placeholder"
                         app:placeholderTextColor="#64748B"
                         android:layout_marginBottom="16dp"
                         app:passwordToggleEnabled="true"
@@ -153,10 +153,10 @@
                     <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="Xác nhận lại mật khẩu"
+                        android:hint="@string/register_confirm_password_hint"
                         android:textColorHint="#94A3B8"
                         app:hintTextColor="@color/mp_color_primary_variant"
-                        app:placeholderText="Nhập lại chính xác mật khẩu"
+                        app:placeholderText="@string/register_confirm_password_placeholder"
                         app:placeholderTextColor="#64748B"
                         android:layout_marginBottom="24dp"
                         app:passwordToggleEnabled="true"
@@ -182,7 +182,7 @@
                         android:id="@+id/btnRegister"
                         android:layout_width="match_parent"
                         android:layout_height="54dp"
-                        android:text="TẠO TÀI KHOẢN"
+                        android:text="@string/register_btn"
                         android:textSize="16sp"
                         android:textStyle="bold"
                         android:textColor="@color/tri_force_white"
@@ -216,7 +216,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Đã có tài khoản?"
+                    android:text="@string/register_have_account"
                     android:textColor="@color/tri_force_silver"
                     android:textSize="14sp"/>
 
@@ -224,7 +224,7 @@
                     android:id="@+id/tvGoToLogin"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text=" Đăng nhập"
+                    android:text="@string/register_login_now"
                     android:textColor="@color/mp_color_primary_variant"
                     android:textStyle="bold"
                     android:textSize="14sp"

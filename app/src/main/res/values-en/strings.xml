@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Tri Force</string>
+    <string name="media_pipe">Tri Force</string>
+
+    <!-- Welcome / Start Screen -->
+    <string name="welcome_app_name">TRI FORCE</string>
+    <string name="welcome_tagline">STRENGTH • DISCIPLINE • BREAKTHROUGH</string>
+    <string name="welcome_subtitle">Smart AI Fitness Coach &amp; Personalized Plan</string>
+    <string name="welcome_btn_start">GET STARTED</string>
+    <string name="welcome_btn_login">ALREADY HAVE AN ACCOUNT? SIGN IN</string>
+
+    <!-- Login Screen -->
+    <string name="login_header_subtitle">Sign in to continue your fitness journey</string>
+    <string name="login_title">SIGN IN</string>
+    <string name="login_email_hint">Sign-in Email Address</string>
+    <string name="login_email_placeholder">e.g. athlete@gmail.com</string>
+    <string name="login_password_hint">Password</string>
+    <string name="login_password_placeholder">Enter your password</string>
+    <string name="login_btn">SIGN IN</string>
+    <string name="login_no_account">Don\'t have an account?</string>
+    <string name="login_register_now"> Sign up now</string>
+    <string name="err_empty_email">Please enter your email</string>
+    <string name="err_empty_password">Please enter your password</string>
+    <string name="login_failed">Sign-in failed</string>
+
+    <!-- Register Screen -->
+    <string name="register_header_subtitle">Create an account to set up your personal plan</string>
+    <string name="register_title">CREATE ACCOUNT</string>
+    <string name="register_email_hint">Registration Email Address</string>
+    <string name="register_email_placeholder">e.g. athlete@gmail.com</string>
+    <string name="register_password_hint">Password</string>
+    <string name="register_password_placeholder">At least 6 characters</string>
+    <string name="register_confirm_password_hint">Confirm Password</string>
+    <string name="register_confirm_password_placeholder">Re-enter password</string>
+    <string name="register_btn">CREATE ACCOUNT</string>
+    <string name="register_have_account">Already have an account?</string>
+    <string name="register_login_now"> Sign in</string>
+    <string name="err_short_password">Password must be at least 6 characters</string>
+    <string name="err_password_mismatch">Passwords do not match</string>
+    <string name="register_success">Account registered successfully!</string>
+    <string name="register_failed">Registration failed</string>
+
+    <!-- Workout Calendar & Day -->
+    <string name="workout_plan_title">30-Day Workout Plan</string>
+    <string name="btn_create_new_plan">RESET</string>
+    <string name="today_workout_title">Today\'s Workout</string>
+    <string name="day_prefix">Day</string>
+    <string name="day_status_rest">Rest Day</string>
+    <string name="day_status_completed">Completed</string>
+    <string name="day_status_skipped">Skipped</string>
+    <string name="day_status_upcoming">Upcoming</string>
+    <string name="btn_watch_video">WATCH VIDEO</string>
+    <string name="btn_start_exercise">START</string>
+    <string name="exercise_reps_format">%1$d reps</string>
+    <string name="exercise_secs_format">%1$d secs</string>
+
+    <!-- Profile & Health Metrics -->
+    <string name="profile_title">Personal Profile</string>
+    <string name="metric_height">Height</string>
+    <string name="metric_weight">Weight</string>
+    <string name="metric_bmi">BMI Index</string>
+    <string name="metric_age">Age</string>
+    <string name="bmi_status_normal">Normal</string>
+    <string name="bmi_status_underweight">Underweight</string>
+    <string name="bmi_status_overweight">Overweight</string>
+    <string name="bmi_status_obese">Obese</string>
+    <string name="step_counter_title">Today\'s Step Counter</string>
+    <string name="calorie_burned_title">Calories Burned</string>
+    <string name="ai_advice_title">AI Coach Advice</string>
+    <string name="btn_logout">SIGN OUT</string>
+
+    <!-- Camera HUD Workout -->
+    <string name="hud_reps">REPS</string>
+    <string name="hud_seconds">SECS</string>
+    <string name="hud_form_correct">Correct Form</string>
+    <string name="btn_finish_workout">FINISH</string>
+
+    <!-- Bottom Navigation & Settings -->
+    <string name="nav_calendar">Workouts</string>
+    <string name="nav_profile">Profile</string>
+    <string name="alt_bottom_sheet_chevron">Bottom sheet expandable indicator</string>
+    <string name="alt_bottom_sheet_max_results_button_minus">Decrease max results</string>
+    <string name="alt_bottom_sheet_max_results_button_plus">Increase max results</string>
+    <string name="alt_bottom_sheet_threshold_button_minus">Decrease threshold</string>
+    <string name="alt_bottom_sheet_threshold_button_plus">Increase threshold</string>
+    <string name="menu_camera">Camera</string>
+    <string name="menu_gallery">Gallery</string>
+    <string name="tv_gallery_placeholder">Tap + to add an image or video to analyze pose.</string>
+
+    <string name="label_inference_time">Inference Time</string>
+    <string name="label_fps">FPS</string>
+    <string name="label_pose_detection_confidence_threshold">Detection Confidence</string>
+    <string name="label_pose_tracking_confidence_threshold">Tracking Confidence</string>
+    <string name="label_pose_presence_confidence_threshold">Presence Confidence</string>
+    <string name="label_num_poses">Number of Poses</string>
+    <string name="label_delegate">Delegate</string>
+    <string name="label_models">AI Models</string>
+
+    <string-array name="delegate_spinner_titles">
+        <item>CPU</item>
+        <item>GPU</item>
+    </string-array>
+
+    <string-array name="models_spinner_titles">
+        <item>Pose Landmarker Full (Standard)</item>
+        <item>Pose Landmarker Lite (Fast)</item>
+        <item>Pose Landmarker Heavy (High Accuracy)</item>
+    </string-array>
+</resources>
