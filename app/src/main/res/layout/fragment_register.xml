@@ -42,16 +42,15 @@
                         android:contentDescription="@string/app_name"/>
                 </com.google.android.material.card.MaterialCardView>
 
-                <TextView
-                    android:id="@+id/appTitle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="TRI FORCE"
-                    android:textSize="28sp"
-                    android:textStyle="bold"
-                    android:textColor="@color/tri_force_text_primary"
-                    android:letterSpacing="0.08"
-                    android:layout_marginTop="10dp"/>
+                <ImageView
+                    android:id="@+id/ivTitleLogo"
+                    android:layout_width="220dp"
+                    android:layout_height="56dp"
+                    android:src="@drawable/tri_force_text_logo"
+                    android:scaleType="fitCenter"
+                    android:adjustViewBounds="true"
+                    android:layout_marginTop="14dp"
+                    android:contentDescription="@string/app_name" />
 
                 <TextView
                     android:layout_width="wrap_content"
