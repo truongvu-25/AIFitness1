@@ -62,7 +62,7 @@ class FitnessApplication : Application() {
                     id = "squat",
                     name = "Ngồi Xổm (Squat)",
                     description = "Gập gối hạ hông xuống sâu, giữ lưng thẳng.",
-                    videoUrl = "asset:///videos/squat.mp4",
+                    videoUrl = "asset:///videos/SquatTriForce.mp4",
                     isTimed = false,
                     unit = "lần"
                 ),
@@ -86,7 +86,7 @@ class FitnessApplication : Application() {
                     id = "plank",
                     name = "Giữ Thân (Plank)",
                     description = "Tì khuỷu tay xuống sàn, giữ thẳng toàn thân song song với sàn.",
-                    videoUrl = "asset:///videos/plank.mp4",
+                    videoUrl = "asset:///videos/PlankTriForce.mp4",
                     isTimed = true,
                     unit = "giây"
                 ),

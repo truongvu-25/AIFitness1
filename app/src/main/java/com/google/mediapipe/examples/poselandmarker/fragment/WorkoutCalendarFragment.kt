@@ -525,6 +525,8 @@ class WorkoutCalendarFragment : Fragment() {
                         val rawName = when (exercise.id) {
                             "pushup" -> "hit_dat_tri_force"
                             "situp" -> "gap_bung_tri_force"
+                            "squat" -> "squat_tri_force"
+                            "plank" -> "plank_tri_force"
                             else -> ""
                         }
                         if (rawName.isNotEmpty()) {
