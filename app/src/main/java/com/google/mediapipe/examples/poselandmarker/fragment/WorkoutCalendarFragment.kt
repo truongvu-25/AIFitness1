@@ -504,12 +504,42 @@ class WorkoutCalendarFragment : Fragment() {
                 mediaPlayer?.reset()
                 mediaPlayer?.setSurface(surface)
 
-                if (url.startsWith("asset:///")) {
-                    val assetPath = url.substringAfter("asset:///")
-                    val afd = requireContext().assets.openFd(assetPath)
-                    mediaPlayer?.setDataSource(afd.fileDescriptor, afd.startOffset, afd.length)
-                    afd.close()
-                } else {
+                var sourceSet = false
+                if (url.startsWith("raw/")) {
+                    val rawName = url.substringAfter("raw/")
+                    val resId = requireContext().resources.getIdentifier(rawName, "raw", requireContext().packageName)
+                    if (resId != 0) {
+                        val afd = requireContext().resources.openRawResourceFd(resId)
+                        mediaPlayer?.setDataSource(afd.fileDescriptor, afd.startOffset, afd.length)
+                        afd.close()
+                        sourceSet = true
+                    }
+                } else if (url.startsWith("asset:///")) {
+                    try {
+                        val assetPath = url.substringAfter("asset:///")
+                        val afd = requireContext().assets.openFd(assetPath)
+                        mediaPlayer?.setDataSource(afd.fileDescriptor, afd.startOffset, afd.length)
+                        afd.close()
+                        sourceSet = true
+                    } catch (e: Exception) {
+                        val rawName = when (exercise.id) {
+                            "pushup" -> "hit_dat_tri_force"
+                            "situp" -> "gap_bung_tri_force"
+                            else -> ""
+                        }
+                        if (rawName.isNotEmpty()) {
+                            val resId = requireContext().resources.getIdentifier(rawName, "raw", requireContext().packageName)
+                            if (resId != 0) {
+                                val afd = requireContext().resources.openRawResourceFd(resId)
+                                mediaPlayer?.setDataSource(afd.fileDescriptor, afd.startOffset, afd.length)
+                                afd.close()
+                                sourceSet = true
+                            }
+                        }
+                    }
+                }
+
+                if (!sourceSet) {
                     mediaPlayer?.setDataSource(requireContext(), Uri.parse(url))
                 }
 
