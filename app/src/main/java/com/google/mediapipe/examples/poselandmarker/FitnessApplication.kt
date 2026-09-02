@@ -54,7 +54,7 @@ class FitnessApplication : Application() {
                     id = "pushup",
                     name = "Hít Đất (Push-up)",
                     description = "Giữ thẳng lưng, hạ ngực sát sàn rồi đẩy lên.",
-                    videoUrl = "asset:///videos/HitDatTriForce.mp4",
+                    videoUrl = "asset:///videos/push_up.mp4",
                     isTimed = false,
                     unit = "lần"
                 ),
@@ -78,7 +78,7 @@ class FitnessApplication : Application() {
                     id = "situp",
                     name = "Gập Bụng (Sit-up)",
                     description = "Nằm ngửa gối co, dùng cơ bụng kéo thân trên ngồi dậy hoàn toàn.",
-                    videoUrl = "asset:///videos/GapBungTriForce.mp4",
+                    videoUrl = "asset:///videos/sit_up.mp4",
                     isTimed = false,
                     unit = "lần"
                 ),

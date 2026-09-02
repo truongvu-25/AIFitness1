@@ -70,7 +70,7 @@ class LibraryFragment : Fragment() {
 
     private fun initExerciseDatabase() {
         allExercises.clear()
-        // 1. Không Dụng Cụ (Bodyweight) - With Custom Video Assets for Push-up & Sit-up
+        // 1. Không Dụng Cụ (Bodyweight) - Linked to original video assets
         allExercises.add(
             LibraryExercise(
                 "pushup",
@@ -80,7 +80,7 @@ class LibraryFragment : Fragment() {
                 "Không dụng cụ",
                 "Bodyweight",
                 15,
-                videoUrl = "asset:///videos/HitDatTriForce.mp4"
+                videoUrl = "asset:///videos/push_up.mp4"
             )
         )
         allExercises.add(
@@ -92,7 +92,7 @@ class LibraryFragment : Fragment() {
                 "Không dụng cụ",
                 "Bodyweight",
                 20,
-                videoUrl = "asset:///videos/GapBungTriForce.mp4"
+                videoUrl = "asset:///videos/sit_up.mp4"
             )
         )
         allExercises.add(
@@ -152,25 +152,25 @@ class LibraryFragment : Fragment() {
                 "Không dụng cụ",
                 "Bodyweight",
                 30,
-                videoUrl = "asset:///videos/plank.mp4"
+                videoUrl = ""
             )
         )
 
-        // 2. Có Dụng Cụ - Tại Nhà (Home Equipment)
-        allExercises.add(LibraryExercise("db_curl", "Cuốn Tạ Tay (Dumbbell Curl)", "Mục tiêu: 12 lần", "Phát triển khối cơ bắp tay trước căng tròn.", "Tại nhà", "Tạ đơn (Dumbbell)", 12))
-        allExercises.add(LibraryExercise("db_shoulder_press", "Đẩy Vai Tạ Đơn (Shoulder Press)", "Mục tiêu: 12 lần", "Tạo cầu vai rộng, dày và khỏe mạnh.", "Tại nhà", "Tạ đơn (Dumbbell)", 12))
-        allExercises.add(LibraryExercise("goblet_squat", "Goblet Squat (Squat Ôm Tạ)", "Mục tiêu: 15 lần", "Squat có tải trọng kích thích đùi và mông tối đa.", "Tại nhà", "Tạ đơn (Dumbbell)", 15, videoUrl = "asset:///videos/squat.mp4"))
-        allExercises.add(LibraryExercise("tricep_dips", "Tricep Dips (Ghế Tựa)", "Mục tiêu: 15 lần", "Dùng ghế chắc chắn để ép sâu cơ tay sau.", "Tại nhà", "Ghế tập / Bậc thang", 15))
-        allExercises.add(LibraryExercise("band_lateral_walk", "Bước Ngang Dây Kháng Lực", "Mục tiêu: 20 bước", "Kích hoạt cơ mông nhỡ và cải thiện hông cân đối.", "Tại nhà", "Dây Miniband", 20))
-        allExercises.add(LibraryExercise("db_rdl", "Dumbbell Romanian Deadlift", "Mục tiêu: 12 lần", "Tác động sâu vào cơ đùi sau và chuỗi cơ lưng dưới.", "Tại nhà", "Tạ đơn (Dumbbell)", 12))
+        // 2. Có Dụng Cụ - Tại Nhà (Home Equipment) - Chưa có video thì để trống
+        allExercises.add(LibraryExercise("db_curl", "Cuốn Tạ Tay (Dumbbell Curl)", "Mục tiêu: 12 lần", "Phát triển khối cơ bắp tay trước căng tròn.", "Tại nhà", "Tạ đơn (Dumbbell)", 12, videoUrl = ""))
+        allExercises.add(LibraryExercise("db_shoulder_press", "Đẩy Vai Tạ Đơn (Shoulder Press)", "Mục tiêu: 12 lần", "Tạo cầu vai rộng, dày và khỏe mạnh.", "Tại nhà", "Tạ đơn (Dumbbell)", 12, videoUrl = ""))
+        allExercises.add(LibraryExercise("goblet_squat", "Goblet Squat (Squat Ôm Tạ)", "Mục tiêu: 15 lần", "Squat có tải trọng kích thích đùi và mông tối đa.", "Tại nhà", "Tạ đơn (Dumbbell)", 15, videoUrl = ""))
+        allExercises.add(LibraryExercise("tricep_dips", "Tricep Dips (Ghế Tựa)", "Mục tiêu: 15 lần", "Dùng ghế chắc chắn để ép sâu cơ tay sau.", "Tại nhà", "Ghế tập / Bậc thang", 15, videoUrl = ""))
+        allExercises.add(LibraryExercise("band_lateral_walk", "Bước Ngang Dây Kháng Lực", "Mục tiêu: 20 bước", "Kích hoạt cơ mông nhỡ và cải thiện hông cân đối.", "Tại nhà", "Dây Miniband", 20, videoUrl = ""))
+        allExercises.add(LibraryExercise("db_rdl", "Dumbbell Romanian Deadlift", "Mục tiêu: 12 lần", "Tác động sâu vào cơ đùi sau và chuỗi cơ lưng dưới.", "Tại nhà", "Tạ đơn (Dumbbell)", 12, videoUrl = ""))
 
-        // 3. Có Dụng Cụ - Phòng Gym (Gym Equipment)
-        allExercises.add(LibraryExercise("barbell_bench_press", "Nằm Đẩy Tạ Đòn (Bench Press)", "Mục tiêu: 10 lần", "Bài tập vua xây dựng độ dày và sức mạnh cơ ngực.", "Phòng gym", "Tạ đòn & Ghế phẳng", 10, videoUrl = "asset:///videos/HitDatTriForce.mp4"))
-        allExercises.add(LibraryExercise("lat_pulldown", "Kéo Cáp Xô Lưng (Lat Pulldown)", "Mục tiêu: 12 lần", "Mở rộng lưng xô chữ V cuốn hút.", "Phòng gym", "Máy kéo cáp (Cable)", 12))
-        allExercises.add(LibraryExercise("barbell_squat", "Gánh Tạ Đòn Squat (Barbell Squat)", "Mục tiêu: 10 lần", "Tăng khối lượng cơ bắp toàn bộ phần thân dưới.", "Phòng gym", "Khung gánh tạ đòn", 10, videoUrl = "asset:///videos/squat.mp4"))
-        allExercises.add(LibraryExercise("cable_tricep_pushdown", "Kéo Cáp Tay Sau (Pushdown)", "Mục tiêu: 12 lần", "Cô lập và siết nét cơ tay sau sắc cạnh.", "Phòng gym", "Dây thừng kéo cáp", 12))
-        allExercises.add(LibraryExercise("leg_press", "Đạp Đùi Máy Nghiêng (Leg Press)", "Mục tiêu: 12 lần", "Đẩy tạ nặng an toàn cho khớp lưng và tối ưu đùi.", "Phòng gym", "Máy đạp đùi (Leg Press)", 12))
-        allExercises.add(LibraryExercise("seated_cable_row", "Kéo Cáp Ngồi (Seated Row)", "Mục tiêu: 12 lần", "Làm dày cơ lưng giữa và cải thiện tư thế đứng thẳng.", "Phòng gym", "Máy chèo cáp (Row)", 12))
+        // 3. Có Dụng Cụ - Phòng Gym (Gym Equipment) - Chưa có video thì để trống
+        allExercises.add(LibraryExercise("barbell_bench_press", "Nằm Đẩy Tạ Đòn (Bench Press)", "Mục tiêu: 10 lần", "Bài tập vua xây dựng độ dày và sức mạnh cơ ngực.", "Phòng gym", "Tạ đòn & Ghế phẳng", 10, videoUrl = ""))
+        allExercises.add(LibraryExercise("lat_pulldown", "Kéo Cáp Xô Lưng (Lat Pulldown)", "Mục tiêu: 12 lần", "Mở rộng lưng xô chữ V cuốn hút.", "Phòng gym", "Máy kéo cáp (Cable)", 12, videoUrl = ""))
+        allExercises.add(LibraryExercise("barbell_squat", "Gánh Tạ Đòn Squat (Barbell Squat)", "Mục tiêu: 10 lần", "Tăng khối lượng cơ bắp toàn bộ phần thân dưới.", "Phòng gym", "Khung gánh tạ đòn", 10, videoUrl = ""))
+        allExercises.add(LibraryExercise("cable_tricep_pushdown", "Kéo Cáp Tay Sau (Pushdown)", "Mục tiêu: 12 lần", "Cô lập và siết nét cơ tay sau sắc cạnh.", "Phòng gym", "Dây thừng kéo cáp", 12, videoUrl = ""))
+        allExercises.add(LibraryExercise("leg_press", "Đạp Đùi Máy Nghiêng (Leg Press)", "Mục tiêu: 12 lần", "Đẩy tạ nặng an toàn cho khớp lưng và tối ưu đùi.", "Phòng gym", "Máy đạp đùi (Leg Press)", 12, videoUrl = ""))
+        allExercises.add(LibraryExercise("seated_cable_row", "Kéo Cáp Ngồi (Seated Row)", "Mục tiêu: 12 lần", "Làm dày cơ lưng giữa và cải thiện tư thế đứng thẳng.", "Phòng gym", "Máy chèo cáp (Row)", 12, videoUrl = ""))
     }
 
     private fun setupRecyclerView() {
