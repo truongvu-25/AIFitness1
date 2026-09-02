@@ -418,14 +418,6 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
                 fragmentCameraBinding.bottomSheetLayout.inferenceTimeVal.text =
                     String.format("%d ms", resultBundle.inferenceTime)
 
-                fragmentCameraBinding.overlay.setResults(
-                    resultBundle.results.first(),
-                    resultBundle.inputImageHeight,
-                    resultBundle.inputImageWidth,
-                    RunningMode.LIVE_STREAM
-                )
-                fragmentCameraBinding.overlay.invalidate()
-
                 // Pose Analysis and Exercise Specific Logic
                 val hasLandmarks = resultBundle.results.first().landmarks().isNotEmpty()
                 if (hasLandmarks) {
@@ -438,14 +430,31 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
                         fragmentCameraBinding.tvFormFeedback.text = result.feedback
                         fragmentCameraBinding.tvFormFeedback.setTextColor(result.feedbackColor)
 
+                        // Update overlay with landmarks and custom lines from analysis
+                        fragmentCameraBinding.overlay.setResults(
+                            resultBundle.results.first(),
+                            resultBundle.inputImageHeight,
+                            resultBundle.inputImageWidth,
+                            RunningMode.LIVE_STREAM,
+                            result.customLines
+                        )
+
                         if (result.isComplete) {
                             completeWorkout()
                         }
                     }
                 } else {
+                    fragmentCameraBinding.overlay.setResults(
+                        resultBundle.results.first(),
+                        resultBundle.inputImageHeight,
+                        resultBundle.inputImageWidth,
+                        RunningMode.LIVE_STREAM,
+                        emptyList()
+                    )
                     fragmentCameraBinding.tvFormFeedback.text = "Hãy đứng lùi lại để camera quét được toàn thân"
                     fragmentCameraBinding.tvFormFeedback.setTextColor(Color.parseColor("#FFCA28"))
                 }
+                fragmentCameraBinding.overlay.invalidate()
             }
         }
     }

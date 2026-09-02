@@ -1,8 +1,18 @@
 package com.google.mediapipe.examples.poselandmarker
 
 import android.graphics.Color
+import android.util.Log
 import com.google.mediapipe.tasks.components.containers.Landmark
 import com.google.mediapipe.tasks.components.containers.NormalizedLandmark
+
+/**
+ * Custom line to draw on overlay
+ */
+data class CustomLine(
+    val startLandmarkIndex: Int,
+    val endLandmarkIndex: Int,
+    val color: Int
+)
 
 /**
  * The result return to UI
@@ -11,7 +21,8 @@ data class AnalysisResult(
     val currentProgress: Int,
     val feedback: String,
     val feedbackColor: Int,
-    val isComplete: Boolean
+    val isComplete: Boolean,
+    val customLines: List<CustomLine> = emptyList()
 )
 /*
 * the result orientation
@@ -188,15 +199,23 @@ class PushupAnalyzer(id: String, name: String, target: Int, timed: Boolean, u: S
     override fun isReadyState(landmarks: List<NormalizedLandmark>): Boolean {
         val orientation = detectBodyOrientation(landmarks)
         if (orientation == BodyOrientation.FRONT) return false
-        
-        val (s, e, w) = if (orientation == BodyOrientation.LEFT) {
-            Triple(landmarks[11], landmarks[13], landmarks[15])
+
+        val (shoulder, elbow, wrist, hip, ankle) = if (orientation == BodyOrientation.LEFT) {
+            listOf(landmarks[11], landmarks[13], landmarks[15], landmarks[23], landmarks[27])
         } else {
-            Triple(landmarks[12], landmarks[14], landmarks[16])
+            listOf(landmarks[12], landmarks[14], landmarks[16], landmarks[24], landmarks[28])
         }
-        
-        val angle = calculateAngle(s, e, w)
-        return angle > 160
+
+        val armAngle = calculateAngle(shoulder, elbow, wrist)
+        if (armAngle <= 160) return false
+
+        val bodyAngle = calculateAngle(shoulder, hip, ankle)
+        if (bodyAngle <= 160) return false
+
+        val leftKneeAngle = calculateAngle(landmarks[23], landmarks[25], landmarks[27])
+        val rightKneeAngle = calculateAngle(landmarks[24], landmarks[26], landmarks[28])
+
+        return leftKneeAngle > 160 && rightKneeAngle > 160
     }
 
     override fun analyze(landmarks: List<NormalizedLandmark>): AnalysisResult {
@@ -506,61 +525,119 @@ class PlankAnalyzer(id: String, name: String, target: Int, timed: Boolean, u: St
     override fun isReadyState(landmarks: List<NormalizedLandmark>): Boolean {
         val orientation = detectBodyOrientation(landmarks)
         if (orientation == BodyOrientation.FRONT) return false
-        
-        val (s, h, a) = if (orientation == BodyOrientation.LEFT) {
-            Triple(landmarks[11], landmarks[23], landmarks[27])
+
+        val (shoulder, elbow, hip, ankle) = if (orientation == BodyOrientation.LEFT) {
+            listOf(landmarks[11], landmarks[13], landmarks[23], landmarks[27])
         } else {
-            Triple(landmarks[12], landmarks[24], landmarks[28])
+            listOf(landmarks[12], landmarks[14], landmarks[24], landmarks[28])
         }
-        
-        val bodyAngle = calculateAngle(s, h, a)
-        return bodyAngle > 165
+
+        // Vai - hông - gót thẳng
+        if (calculateAngle(shoulder, hip, ankle) <= 165) return false
+
+        // Vai - khuỷu - hông
+        val elbowHipAngle = calculateAngle(shoulder, elbow, hip)
+        Log.d("PlankAnalyzer", "Shoulder-Elbow-Hip Angle: $elbowHipAngle")
+        if (calculateAngle(shoulder, elbow, hip) <= 55) return false
+
+
+        return true
     }
 
     override fun analyze(landmarks: List<NormalizedLandmark>): AnalysisResult {
         if (!isFullBodyVisible(landmarks)) {
-            return AnalysisResult(currentProgressCount, "Hãy nằm lùi lại để camera quét được toàn thân", Color.parseColor("#FFCA28"), false)
+            return AnalysisResult(
+                currentProgressCount,
+                "Hãy nằm lùi lại để camera quét được toàn thân",
+                Color.parseColor("#FFCA28"),
+                false
+            )
         }
 
         val orientation = detectBodyOrientation(landmarks)
         if (orientation == BodyOrientation.FRONT) {
-            return AnalysisResult(currentProgressCount, "Hãy nằm ngang so với camera để tập Plank", Color.parseColor("#FFCA28"), false)
+            return AnalysisResult(
+                currentProgressCount,
+                "Hãy nằm ngang so với camera để tập Plank",
+                Color.parseColor("#FFCA28"),
+                false
+            )
         }
 
         if (!hasStarted) {
             if (isReadyState(landmarks)) {
                 hasStarted = true
             } else {
-                return AnalysisResult(currentProgressCount, "Hãy giữ thẳng người để bắt đầu tính giờ", Color.parseColor("#FFCA28"), false)
+                return AnalysisResult(
+                    currentProgressCount,
+                    "Hãy giữ thẳng người để bắt đầu tính giờ",
+                    Color.parseColor("#FFCA28"),
+                    false
+                )
             }
         }
 
-        val (shoulder, hip, ankle) = if (orientation == BodyOrientation.LEFT) {
-            Triple(landmarks[11], landmarks[23], landmarks[27])
+        val (shoulderIdx, hipIdx, ankleIdx) = if (orientation == BodyOrientation.LEFT) {
+            Triple(11, 23, 27)
         } else {
-            Triple(landmarks[12], landmarks[24], landmarks[28])
+            Triple(12, 24, 28)
         }
-        
-        // Check body alignment (Hip should be roughly in line with shoulder and ankle)
+
+        val shoulder = landmarks[shoulderIdx]
+        val hip = landmarks[hipIdx]
+        val ankle = landmarks[ankleIdx]
+
+        // Kiểm tra vai - hông - gót
         val bodyAngle = calculateAngle(shoulder, hip, ankle)
-        val isValid = bodyAngle > 165 // Straight line
-        
+
+        // Kiểm tra hông - gối - gót hai bên
+        val leftKneeAngle = calculateAngle(
+            landmarks[23],
+            landmarks[25],
+            landmarks[27]
+        )
+
+        val rightKneeAngle = calculateAngle(
+            landmarks[24],
+            landmarks[26],
+            landmarks[28]
+        )
+        println("Left Knee Angle: $leftKneeAngle")
+        println("Right Knee Angle: $rightKneeAngle")
+        // Chỉ tính giờ khi thân và cả hai chân đều thẳng
+        val isValid =
+            bodyAngle > 165 &&
+                    leftKneeAngle >= 160 &&
+                    rightKneeAngle >= 160
+
+        val customLines = mutableListOf<CustomLine>()
         if (isValid) {
             val now = System.currentTimeMillis()
+
             if (now - lastTimeIncrementMs >= 1000L) {
-                if (lastTimeIncrementMs != 0L) { // Avoid first jump
+                if (lastTimeIncrementMs != 0L) {
                     currentProgressCount++
                 }
+
                 lastTimeIncrementMs = now
             }
+
             feedback = "Đang giữ chuẩn tư thế!"
         } else {
-            feedback = "Hãy giữ lưng và hông thẳng hàng!"
+            feedback = "Hãy giữ thẳng thân và hai chân!"
+            // Add green reference line
+            customLines.add(CustomLine(shoulderIdx, ankleIdx, Color.GREEN))
         }
 
         feedbackColor = getFeedbackColor(isValid)
 
-        return AnalysisResult(currentProgressCount, feedback, feedbackColor, currentProgressCount >= targetCount)
+        return AnalysisResult(
+            currentProgressCount,
+            feedback,
+            feedbackColor,
+            currentProgressCount >= targetCount,
+            customLines
+        )
     }
 }
 
@@ -603,15 +680,20 @@ class SidePlankAnalyzer(id: String, name: String, target: Int, timed: Boolean, u
             }
         }
 
-        val (shoulder, hip, ankle) = if (orientation == BodyOrientation.LEFT) {
-            Triple(landmarks[11], landmarks[23], landmarks[27])
+        val (shoulderIdx, hipIdx, ankleIdx) = if (orientation == BodyOrientation.LEFT) {
+            Triple(11, 23, 27)
         } else {
-            Triple(landmarks[12], landmarks[24], landmarks[28])
+            Triple(12, 24, 28)
         }
+        
+        val shoulder = landmarks[shoulderIdx]
+        val hip = landmarks[hipIdx]
+        val ankle = landmarks[ankleIdx]
         
         val bodyAngle = calculateAngle(shoulder, hip, ankle)
         val isValid = bodyAngle > 160
         
+        val customLines = mutableListOf<CustomLine>()
         if (isValid) {
             val now = System.currentTimeMillis()
             if (now - lastTimeIncrementMs >= 1000L) {
@@ -621,11 +703,12 @@ class SidePlankAnalyzer(id: String, name: String, target: Int, timed: Boolean, u
             feedback = "Tuyệt vời, giữ vững nhé!"
         } else {
             feedback = "Đẩy hông cao lên một chút!"
+            customLines.add(CustomLine(shoulderIdx, ankleIdx, Color.GREEN))
         }
 
         feedbackColor = getFeedbackColor(isValid)
 
-        return AnalysisResult(currentProgressCount, feedback, feedbackColor, currentProgressCount >= targetCount)
+        return AnalysisResult(currentProgressCount, feedback, feedbackColor, currentProgressCount >= targetCount, customLines)
     }
 }
 

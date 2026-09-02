@@ -32,8 +32,10 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
     View(context, attrs) {
 
     private var results: PoseLandmarkerResult? = null
+    private var customLines: List<CustomLine> = emptyList()
     private var pointPaint = Paint()
     private var linePaint = Paint()
+    private var customLinePaint = Paint()
 
     private var scaleFactor: Float = 1f
     private var imageWidth: Int = 1
@@ -45,8 +47,10 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
 
     fun clear() {
         results = null
+        customLines = emptyList()
         pointPaint.reset()
         linePaint.reset()
+        customLinePaint.reset()
         invalidate()
         initPaints()
     }
@@ -60,6 +64,9 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
         pointPaint.color = Color.YELLOW
         pointPaint.strokeWidth = LANDMARK_STROKE_WIDTH
         pointPaint.style = Paint.Style.FILL
+
+        customLinePaint.strokeWidth = LANDMARK_STROKE_WIDTH
+        customLinePaint.style = Paint.Style.STROKE
     }
 
     override fun draw(canvas: Canvas) {
@@ -82,6 +89,20 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
                         poseLandmarkerResult.landmarks().get(0).get(it.end()).y() * imageHeight * scaleFactor,
                         linePaint)
                 }
+
+                // Draw custom lines
+                customLines.forEach { customLine ->
+                    customLinePaint.color = customLine.color
+                    val start = poseLandmarkerResult.landmarks().get(0).get(customLine.startLandmarkIndex)
+                    val end = poseLandmarkerResult.landmarks().get(0).get(customLine.endLandmarkIndex)
+                    canvas.drawLine(
+                        start.x() * imageWidth * scaleFactor,
+                        start.y() * imageHeight * scaleFactor,
+                        end.x() * imageWidth * scaleFactor,
+                        end.y() * imageHeight * scaleFactor,
+                        customLinePaint
+                    )
+                }
             }
         }
     }
@@ -90,9 +111,11 @@ class OverlayView(context: Context?, attrs: AttributeSet?) :
         poseLandmarkerResults: PoseLandmarkerResult,
         imageHeight: Int,
         imageWidth: Int,
-        runningMode: RunningMode = RunningMode.IMAGE
+        runningMode: RunningMode = RunningMode.IMAGE,
+        customLines: List<CustomLine> = emptyList()
     ) {
         results = poseLandmarkerResults
+        this.customLines = customLines
 
         this.imageHeight = imageHeight
         this.imageWidth = imageWidth
