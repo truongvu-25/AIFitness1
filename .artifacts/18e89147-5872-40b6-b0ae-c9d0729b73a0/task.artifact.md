@@ -1,0 +1,4 @@
+- [ ] Update `ExerciseAnalyzer.kt` with `CustomLine` and `PlankAnalyzer` logic
+- [ ] Update `OverlayView.kt` to draw custom lines
+- [ ] Update `CameraFragment.kt` to pass custom lines to overlay
+- [ ] Verify changes
