@@ -121,6 +121,18 @@ class LibraryFragment : Fragment() {
         )
         allExercises.add(
             LibraryExercise(
+                "sideplank",
+                "Plank Nghiêng (Side Plank)",
+                "Mục tiêu: 30 giây",
+                "Nằm nghiêng nâng hông giữ thẳng thân để siết cơ liên sườn và eo.",
+                "Không dụng cụ",
+                "Bodyweight",
+                30,
+                videoUrl = "asset:///videos/side_plank.mp4"
+            )
+        )
+        allExercises.add(
+            LibraryExercise(
                 "jumping_jacks",
                 "Jumping Jacks",
                 "Mục tiêu: 30 lần",
