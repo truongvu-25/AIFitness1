@@ -1,5 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:color="@color/mp_color_primary" android:state_checked="true" />
-    <item android:color="@color/tri_force_slate" />
+
+    <!-- Disabled -->
+    <item
+        android:state_enabled="false"
+        android:color="@color/tri_force_text_disabled" />
+
+    <!-- Active tab -->
+    <item
+        android:state_checked="true"
+        android:color="@color/nav_active" />
+
+    <!-- Default / inactive -->
+    <item
+        android:color="@color/nav_inactive" />
+
 </selector>

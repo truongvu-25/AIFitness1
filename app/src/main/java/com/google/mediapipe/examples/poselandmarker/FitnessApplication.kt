@@ -7,6 +7,8 @@ import android.content.Context
 import android.os.Build
 import android.util.Log
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.mediapipe.examples.poselandmarker.config.FirebaseConfig
+import com.google.mediapipe.examples.poselandmarker.model.ExerciseDetails
 
 class FitnessApplication : Application() {
 

@@ -17,65 +17,172 @@
 package com.google.mediapipe.examples.poselandmarker
 
 import android.content.Context
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
 import androidx.activity.viewModels
+import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
 import com.google.mediapipe.examples.poselandmarker.databinding.ActivityMainBinding
+import com.google.mediapipe.examples.poselandmarker.notification.NotificationHelper
 import com.google.mediapipe.examples.poselandmarker.utils.LocaleHelper
+import com.google.mediapipe.examples.poselandmarker.viewmodel.MainViewModel
+
 
 class MainActivity : AppCompatActivity() {
+
     private lateinit var activityMainBinding: ActivityMainBinding
-    private val viewModel : MainViewModel by viewModels()
+
+    private val viewModel: MainViewModel by viewModels()
+
 
     override fun attachBaseContext(newBase: Context) {
-        super.attachBaseContext(LocaleHelper.onAttach(newBase))
+        super.attachBaseContext(
+            LocaleHelper.onAttach(newBase)
+        )
     }
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        activityMainBinding = ActivityMainBinding.inflate(layoutInflater)
+
+        activityMainBinding =
+            ActivityMainBinding.inflate(layoutInflater)
+
         setContentView(activityMainBinding.root)
 
-        // Schedule / update test alarm reminder
+
+        // =========================================================
+        // NOTIFICATION
+        // =========================================================
+
         NotificationHelper.scheduleDailyReminder(this)
 
-        val navHostFragment =
-            supportFragmentManager.findFragmentById(R.id.fragment_container) as NavHostFragment
-        val navController = navHostFragment.navController
-        activityMainBinding.navigation.setupWithNavController(navController)
-        activityMainBinding.navigation.setOnNavigationItemReselectedListener {
-            // ignore the reselection
-        }
 
-        // Manage visibility of Top Wordmark and Floating Bottom Nav dynamically
-        navController.addOnDestinationChangedListener { _, destination, _ ->
-            when (destination.id) {
-                R.id.welcome_fragment,
-                R.id.login_fragment,
-                R.id.register_fragment,
-                R.id.user_info_fragment,
-                R.id.camera_fragment,
-                R.id.update_bmi_fragment,
-                R.id.create_custom_plan_fragment -> {
-                    activityMainBinding.ivHeaderWordmark.visibility = View.GONE
-                    activityMainBinding.bottomNavCard.visibility = View.GONE
+        // =========================================================
+        // NAVIGATION CONTROLLER
+        // =========================================================
+
+        val navHostFragment =
+            supportFragmentManager.findFragmentById(
+                R.id.fragment_container
+            ) as NavHostFragment
+
+        val navController =
+            navHostFragment.navController
+
+
+        // =========================================================
+        // BOTTOM NAVIGATION
+        // =========================================================
+
+        activityMainBinding.navigation
+            .setupWithNavController(navController)
+
+
+        // Ignore re-selecting the current BottomNavigation item.
+        activityMainBinding.navigation
+            .setOnNavigationItemReselectedListener {
+                // Intentionally empty.
+            }
+
+
+        // =========================================================
+        // APP CHROME VISIBILITY
+        //
+        // Header + BottomNavigation chỉ xuất hiện
+        // ở các màn chính:
+        //
+        // Home
+        // Workout Calendar
+        // Library
+        // Profile
+        //
+        // Các flow fullscreen/onboarding phải ẩn.
+        // =========================================================
+
+        navController.addOnDestinationChangedListener {
+                _,
+                destination,
+                _ ->
+
+
+            val hideMainChrome =
+                when (destination.id) {
+
+                    // ---------------------------------------------
+                    // ONBOARDING / AUTH
+                    // ---------------------------------------------
+
+                    R.id.welcome_fragment,
+                    R.id.login_fragment,
+                    R.id.register_fragment,
+                    R.id.user_info_fragment,
+
+
+                        // ---------------------------------------------
+                        // CAMERA / MEDIA
+                        // ---------------------------------------------
+
+                    R.id.camera_fragment,
+                    R.id.permissions_fragment,
+                    R.id.gallery_fragment,
+
+
+                        // ---------------------------------------------
+                        // FULLSCREEN UTILITY
+                        // ---------------------------------------------
+
+                    R.id.update_bmi_fragment,
+                    R.id.create_custom_plan_fragment -> true
+
+
+                    // ---------------------------------------------
+                    // MAIN APP DESTINATIONS
+                    // ---------------------------------------------
+
+                    else -> false
                 }
-                else -> {
-                    activityMainBinding.ivHeaderWordmark.visibility = View.VISIBLE
-                    activityMainBinding.bottomNavCard.visibility = View.VISIBLE
-                }
+
+
+            if (hideMainChrome) {
+
+                activityMainBinding
+                    .headerBrandBar
+                    .visibility = View.GONE
+
+                activityMainBinding
+                    .bottomNavCard
+                    .visibility = View.GONE
+
+            } else {
+
+                activityMainBinding
+                    .headerBrandBar
+                    .visibility = View.VISIBLE
+
+                activityMainBinding
+                    .bottomNavCard
+                    .visibility = View.VISIBLE
             }
         }
     }
 
+
+    @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
+
         val navHostFragment =
-            supportFragmentManager.findFragmentById(R.id.fragment_container) as NavHostFragment
-        val navController = navHostFragment.navController
+            supportFragmentManager.findFragmentById(
+                R.id.fragment_container
+            ) as NavHostFragment
+
+        val navController =
+            navHostFragment.navController
+
+
         if (!navController.navigateUp()) {
+
             super.onBackPressed()
         }
     }
