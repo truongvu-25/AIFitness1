@@ -63,11 +63,11 @@
 
     <!-- Exercise Library -->
     <string name="library_title">Thư Viện Bài Tập</string>
-    <string name="library_subtitle">Khám phá và luyện tập theo từng nhóm dụng cụ</string>
-    <string name="tab_no_equipment">Không Dụng Cụ</string>
-    <string name="tab_with_equipment">Có Dụng Cụ</string>
-    <string name="subtab_home">Tại Nhà</string>
-    <string name="subtab_gym">Phòng Gym</string>
+    <string name="library_subtitle">Khám phá và luyện tập với hướng dẫn video trực quan</string>
+    <string name="tab_no_equipment">Tất Cả (7)</string>
+    <string name="tab_with_equipment">Theo Nhóm Cơ</string>
+    <string name="subtab_home">Thân Trên &amp; Core</string>
+    <string name="subtab_gym">Thân Dưới &amp; Cardio</string>
 
     <!-- Profile & Health Metrics -->
     <string name="profile_title">Hồ Sơ Cá Nhân</string>

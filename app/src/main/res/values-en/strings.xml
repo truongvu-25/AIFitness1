@@ -63,11 +63,11 @@
 
     <!-- Exercise Library -->
     <string name="library_title">Exercise Library</string>
-    <string name="library_subtitle">Explore workouts by equipment categories</string>
-    <string name="tab_no_equipment">Bodyweight</string>
-    <string name="tab_with_equipment">Equipment</string>
-    <string name="subtab_home">Home</string>
-    <string name="subtab_gym">Gym</string>
+    <string name="library_subtitle">Explore workouts with guided video tutorials</string>
+    <string name="tab_no_equipment">All (7)</string>
+    <string name="tab_with_equipment">By Muscle Group</string>
+    <string name="subtab_home">Upper &amp; Core</string>
+    <string name="subtab_gym">Lower &amp; Cardio</string>
 
     <!-- Profile & Health Metrics -->
     <string name="profile_title">Personal Profile</string>

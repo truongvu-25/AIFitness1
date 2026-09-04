@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:paddingHorizontal="16dp"
+    android:paddingVertical="6dp"
+    android:gravity="bottom">
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardBotAvatar"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        app:cardCornerRadius="18dp"
+        app:cardElevation="0dp"
+        app:cardBackgroundColor="@color/tri_force_navy"
+        app:strokeWidth="0dp">
+
+        <ImageView
+            android:id="@+id/ivBotAvatar"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:src="@drawable/tri_force_logo"
+            android:scaleType="centerCrop"
+            android:contentDescription="@string/app_name"/>
+    </com.google.android.material.card.MaterialCardView>
+
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:layout_marginStart="8dp"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="0dp"
+        app:cardBackgroundColor="@color/tri_force_dark_card"
+        app:strokeColor="@color/tri_force_silver"
+        app:strokeWidth="1dp">
+
+        <TextView
+            android:id="@+id/tvBotMessage"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="14dp"
+            android:textSize="14sp"
+            android:textColor="@color/tri_force_text_primary"
+            android:lineSpacingExtra="2dp"
+            tools:text="Chào bạn, mình là XEVRAN. Cho mình hỏi bạn tên gì nhé?"
+            xmlns:tools="http://schemas.android.com/tools"/>
+    </com.google.android.material.card.MaterialCardView>
+
+</LinearLayout>

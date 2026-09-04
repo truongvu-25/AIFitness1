@@ -1,315 +1,1317 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/transparent">
+
+    android:background="@color/tri_force_bg">
+
 
     <ScrollView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+
         android:fillViewport="true"
         android:scrollbars="none"
-        android:paddingBottom="90dp"
-        android:clipToPadding="false">
+
+        android:clipToPadding="false"
+
+        android:paddingBottom="@dimen/space_24"
+
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:paddingHorizontal="16dp"
-            android:layout_marginTop="96dp">
 
-            <!-- Active Weekly Plan Glass Card -->
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/cardActivePlan"
+            android:orientation="vertical"
+
+            android:layout_marginTop="@dimen/main_content_top_offset"
+
+            android:paddingStart="@dimen/screen_horizontal_padding"
+            android:paddingEnd="@dimen/screen_horizontal_padding">
+
+
+            <!-- =================================================
+                 PERFORMANCE HERO
+                 ================================================= -->
+
+            <FrameLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:cardCornerRadius="22dp"
-                app:cardElevation="6dp"
-                app:cardBackgroundColor="#CC0A192F"
-                app:strokeColor="#1E3A8A"
-                app:strokeWidth="1.2dp">
+                android:layout_height="218dp"
+
+                android:background="@drawable/bg_ai_home_hero">
+
+
+                <!-- Subtle TRI FORCE watermark -->
+
+                <ImageView
+                    android:layout_width="170dp"
+                    android:layout_height="170dp"
+
+                    android:layout_gravity="end|center_vertical"
+
+                    android:layout_marginEnd="-38dp"
+
+                    android:alpha="0.065"
+
+                    android:src="@drawable/tri_force_logo"
+
+                    android:scaleType="centerCrop"
+
+                    android:contentDescription="@null" />
+
+
+                <!-- Decorative performance accents -->
+
+                <View
+                    android:layout_width="48dp"
+                    android:layout_height="3dp"
+
+                    android:layout_gravity="top|end"
+
+                    android:layout_marginTop="20dp"
+                    android:layout_marginEnd="20dp"
+
+                    android:background="@color/tri_force_blue" />
+
+
+                <View
+                    android:layout_width="24dp"
+                    android:layout_height="2dp"
+
+                    android:layout_gravity="top|end"
+
+                    android:layout_marginTop="29dp"
+                    android:layout_marginEnd="20dp"
+
+                    android:background="@color/white_16" />
+
 
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
+
                     android:orientation="vertical"
-                    android:padding="18dp">
+
+                    android:padding="@dimen/card_padding_large">
+
+
+                    <!-- Top hero meta -->
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+
                         android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        android:layout_marginBottom="6dp">
+
+                        android:gravity="center_vertical">
+
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+
+                            android:orientation="horizontal"
+
+                            android:gravity="center_vertical">
+
+
+                            <View
+                                android:layout_width="6dp"
+                                android:layout_height="6dp"
+
+                                android:background="@color/tri_force_blue" />
+
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+
+                                android:layout_marginStart="@dimen/space_8"
+
+                                android:text="HÔM NAY"
+
+                                android:textColor="@color/tri_force_blue"
+
+                                android:textSize="9sp"
+                                android:textStyle="bold"
+
+                                android:letterSpacing="0.12"
+
+                                android:includeFontPadding="false" />
+
+
+                        </LinearLayout>
+
+
+                        <Space
+                            android:layout_width="0dp"
+                            android:layout_height="1dp"
+
+                            android:layout_weight="1" />
+
 
                         <TextView
-                            android:layout_width="0dp"
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="TIẾN TRÌNH ĐANG ÁP DỤNG"
-                            android:textSize="11sp"
+
+                            android:text="CALISTHENICS"
+
+                            android:textColor="@color/tri_force_text_on_dark_secondary"
+
+                            android:textSize="8sp"
                             android:textStyle="bold"
-                            android:textColor="@color/mp_color_primary_variant"
-                            android:letterSpacing="0.1"/>
+
+                            android:letterSpacing="0.10"
+
+                            android:includeFontPadding="false" />
+
+
+                    </LinearLayout>
+
+
+                    <!-- User -->
+
+                    <TextView
+                        android:id="@+id/tvHomeGreetingName"
+
+                        android:layout_width="270dp"
+                        android:layout_height="wrap_content"
+
+                        android:layout_marginTop="@dimen/space_16"
+
+                        android:text="Bạn"
+
+                        android:textColor="@color/tri_force_white"
+
+                        android:textSize="27sp"
+                        android:textStyle="bold"
+
+                        android:maxLines="1"
+                        android:ellipsize="end"
+
+                        android:includeFontPadding="false"
+
+                        tools:text="Pham Gia Huy" />
+
+
+                    <TextView
+                        android:layout_width="270dp"
+                        android:layout_height="wrap_content"
+
+                        android:layout_marginTop="@dimen/space_4"
+
+                        android:text="Sẵn sàng cho buổi tập hôm nay. Giữ nhịp, tập chuẩn và tiến bộ từng ngày."
+
+                        android:textColor="@color/tri_force_text_on_dark_secondary"
+
+                        android:textSize="11sp"
+
+                        android:lineSpacingExtra="2dp"
+
+                        android:maxLines="2"
+
+                        android:includeFontPadding="false" />
+
+
+                    <Space
+                        android:layout_width="1dp"
+                        android:layout_height="0dp"
+
+                        android:layout_weight="1" />
+
+
+                    <!-- =================================================
+                         TODAY METRICS
+                         ================================================= -->
+
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="match_parent"
+                        android:layout_height="70dp"
+
+                        app:cardBackgroundColor="@color/tri_force_surface_dark_alt"
+
+                        app:cardCornerRadius="11dp"
+
+                        app:cardElevation="0dp"
+
+                        app:strokeColor="@color/white_12"
+                        app:strokeWidth="@dimen/stroke_thin">
+
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+
+                            android:orientation="horizontal"
+
+                            android:weightSum="3">
+
+
+                            <!-- Exercise -->
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="match_parent"
+
+                                android:layout_weight="1"
+
+                                android:orientation="vertical"
+
+                                android:gravity="center">
+
+
+                                <TextView
+                                    android:id="@+id/tvHomeTodayExercises"
+
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+
+                                    android:text="0/0"
+
+                                    android:textColor="@color/tri_force_white"
+
+                                    android:textSize="19sp"
+                                    android:textStyle="bold"
+
+                                    android:includeFontPadding="false" />
+
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+
+                                    android:layout_marginTop="3dp"
+
+                                    android:text="Bài tập"
+
+                                    android:textColor="@color/tri_force_text_on_dark_secondary"
+
+                                    android:textSize="9sp"
+
+                                    android:includeFontPadding="false" />
+
+
+                            </LinearLayout>
+
+
+                            <View
+                                android:layout_width="1dp"
+                                android:layout_height="32dp"
+
+                                android:layout_gravity="center_vertical"
+
+                                android:background="@color/white_12" />
+
+
+                            <!-- Steps -->
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="match_parent"
+
+                                android:layout_weight="1"
+
+                                android:orientation="vertical"
+
+                                android:gravity="center">
+
+
+                                <TextView
+                                    android:id="@+id/tvHomeSteps"
+
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+
+                                    android:text="0"
+
+                                    android:textColor="@color/tri_force_white"
+
+                                    android:textSize="19sp"
+                                    android:textStyle="bold"
+
+                                    android:includeFontPadding="false" />
+
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+
+                                    android:layout_marginTop="3dp"
+
+                                    android:text="Bước chân"
+
+                                    android:textColor="@color/tri_force_text_on_dark_secondary"
+
+                                    android:textSize="9sp"
+
+                                    android:includeFontPadding="false" />
+
+
+                            </LinearLayout>
+
+
+                            <View
+                                android:layout_width="1dp"
+                                android:layout_height="32dp"
+
+                                android:layout_gravity="center_vertical"
+
+                                android:background="@color/white_12" />
+
+
+                            <!-- Calories -->
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="match_parent"
+
+                                android:layout_weight="1"
+
+                                android:orientation="vertical"
+
+                                android:gravity="center">
+
+
+                                <TextView
+                                    android:id="@+id/tvHomeCalories"
+
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+
+                                    android:text="0"
+
+                                    android:textColor="@color/tri_force_blue"
+
+                                    android:textSize="19sp"
+                                    android:textStyle="bold"
+
+                                    android:includeFontPadding="false" />
+
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+
+                                    android:layout_marginTop="3dp"
+
+                                    android:text="Calo"
+
+                                    android:textColor="@color/tri_force_text_on_dark_secondary"
+
+                                    android:textSize="9sp"
+
+                                    android:includeFontPadding="false" />
+
+
+                            </LinearLayout>
+
+
+                        </LinearLayout>
+
+                    </com.google.android.material.card.MaterialCardView>
+
+
+                </LinearLayout>
+
+
+            </FrameLayout>
+
+
+            <!-- =================================================
+                 CURRENT PLAN SECTION
+                 ================================================= -->
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+
+                android:layout_marginTop="@dimen/space_20"
+
+                android:orientation="horizontal"
+
+                android:gravity="center_vertical">
+
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+
+                    android:layout_weight="1"
+
+                    android:text="Kế hoạch hiện tại"
+
+                    android:textColor="@color/tri_force_text_primary"
+
+                    android:textSize="17sp"
+                    android:textStyle="bold"
+
+                    android:includeFontPadding="false" />
+
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+
+                    android:text="30-DAY PROGRAM"
+
+                    android:textColor="@color/tri_force_blue"
+
+                    android:textSize="8sp"
+                    android:textStyle="bold"
+
+                    android:letterSpacing="0.09"
+
+                    android:includeFontPadding="false" />
+
+
+            </LinearLayout>
+
+
+            <!-- =================================================
+                 ACTIVE PLAN
+                 ================================================= -->
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardActivePlan"
+
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+
+                android:layout_marginTop="@dimen/space_8"
+
+                android:visibility="gone"
+
+                android:clickable="true"
+                android:focusable="true"
+
+                android:foreground="?attr/selectableItemBackground"
+
+                app:cardBackgroundColor="@color/tri_force_white"
+
+                app:cardCornerRadius="@dimen/card_corner_radius_small"
+
+                app:cardElevation="0dp"
+
+                app:strokeColor="@color/tri_force_stroke"
+                app:strokeWidth="@dimen/stroke_thin">
+
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+
+                    android:orientation="horizontal">
+
+
+                    <!-- Strong performance accent -->
+
+                    <View
+                        android:layout_width="4dp"
+                        android:layout_height="match_parent"
+
+                        android:background="@color/tri_force_blue" />
+
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+
+                        android:layout_weight="1"
+
+                        android:orientation="vertical"
+
+                        android:padding="@dimen/card_padding">
+
 
                         <TextView
                             android:id="@+id/tvPlanBadge"
+
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Lặp lại tuần"
-                            android:textSize="10sp"
+
+                            android:text="LỘ TRÌNH 30 NGÀY"
+
+                            android:textColor="@color/tri_force_blue"
+
+                            android:textSize="9sp"
                             android:textStyle="bold"
-                            android:textColor="@color/tri_force_success"
-                            android:background="#2610B981"
-                            android:paddingHorizontal="8dp"
-                            android:paddingVertical="3dp"/>
+
+                            android:letterSpacing="0.09"
+
+                            android:includeFontPadding="false" />
+
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+
+                            android:layout_marginTop="@dimen/space_8"
+
+                            android:orientation="horizontal"
+
+                            android:gravity="center_vertical">
+
+
+                            <TextView
+                                android:id="@+id/tvHomePlanName"
+
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+
+                                android:layout_weight="1"
+
+                                android:text="Săn Chắc Thể Hình"
+
+                                android:textColor="@color/tri_force_text_primary"
+
+                                android:textSize="18sp"
+                                android:textStyle="bold"
+
+                                android:maxLines="2"
+
+                                android:includeFontPadding="false"
+
+                                tools:text="Săn Chắc Thể Hình" />
+
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/btnGoToCurrentWorkout"
+
+                                android:layout_width="42dp"
+                                android:layout_height="42dp"
+
+                                android:layout_marginStart="@dimen/space_12"
+
+                                android:minWidth="0dp"
+                                android:minHeight="0dp"
+
+                                android:padding="0dp"
+
+                                android:text="›"
+
+                                android:textColor="@color/tri_force_white"
+
+                                android:textSize="25sp"
+
+                                app:backgroundTint="@color/tri_force_blue"
+
+                                app:cornerRadius="10dp"
+
+                                app:elevation="0dp" />
+
+
+                        </LinearLayout>
+
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+
+                            android:layout_marginTop="@dimen/space_16"
+
+                            android:orientation="horizontal"
+
+                            android:gravity="center_vertical">
+
+
+                            <TextView
+                                android:id="@+id/tvHomePlanDay"
+
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+
+                                android:text="Ngày 1/30"
+
+                                android:textColor="@color/tri_force_blue"
+
+                                android:textSize="11sp"
+                                android:textStyle="bold"
+
+                                android:includeFontPadding="false" />
+
+
+                            <Space
+                                android:layout_width="0dp"
+                                android:layout_height="1dp"
+
+                                android:layout_weight="1" />
+
+
+                            <TextView
+                                android:id="@+id/tvHomePlanProgress"
+
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+
+                                android:text="3%"
+
+                                android:textColor="@color/tri_force_text_secondary"
+
+                                android:textSize="10sp"
+                                android:textStyle="bold"
+
+                                android:includeFontPadding="false" />
+
+
+                        </LinearLayout>
+
+
+                        <ProgressBar
+                            android:id="@+id/progressHomePlan"
+
+                            style="?android:attr/progressBarStyleHorizontal"
+
+                            android:layout_width="match_parent"
+                            android:layout_height="5dp"
+
+                            android:layout_marginTop="@dimen/space_8"
+
+                            android:max="100"
+                            android:progress="3"
+
+                            android:progressTint="@color/tri_force_blue"
+
+                            android:progressBackgroundTint="@color/progress_track" />
+
+
+                        <!-- Legacy weekly IDs -->
+
+                        <LinearLayout
+                            android:id="@+id/layoutWeekBubbles"
+
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+
+                            android:visibility="gone"
+
+                            android:orientation="horizontal">
+
+
+                            <TextView
+                                android:id="@+id/bubbleMon"
+                                android:layout_width="0dp"
+                                android:layout_height="36dp"
+                                android:layout_weight="1"
+                                android:text="T2" />
+
+                            <TextView
+                                android:id="@+id/bubbleTue"
+                                android:layout_width="0dp"
+                                android:layout_height="36dp"
+                                android:layout_weight="1"
+                                android:text="T3" />
+
+                            <TextView
+                                android:id="@+id/bubbleWed"
+                                android:layout_width="0dp"
+                                android:layout_height="36dp"
+                                android:layout_weight="1"
+                                android:text="T4" />
+
+                            <TextView
+                                android:id="@+id/bubbleThu"
+                                android:layout_width="0dp"
+                                android:layout_height="36dp"
+                                android:layout_weight="1"
+                                android:text="T5" />
+
+                            <TextView
+                                android:id="@+id/bubbleFri"
+                                android:layout_width="0dp"
+                                android:layout_height="36dp"
+                                android:layout_weight="1"
+                                android:text="T6" />
+
+                            <TextView
+                                android:id="@+id/bubbleSat"
+                                android:layout_width="0dp"
+                                android:layout_height="36dp"
+                                android:layout_weight="1"
+                                android:text="T7" />
+
+                            <TextView
+                                android:id="@+id/bubbleSun"
+                                android:layout_width="0dp"
+                                android:layout_height="36dp"
+                                android:layout_weight="1"
+                                android:text="CN" />
+
+
+                        </LinearLayout>
+
+
                     </LinearLayout>
 
-                    <TextView
-                        android:id="@+id/tvHomePlanName"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Lịch tập cá nhân của tôi"
-                        android:textSize="18sp"
-                        android:textStyle="bold"
-                        android:textColor="@color/tri_force_white"/>
 
-                    <!-- 7-Day Mini Indicator Strip -->
-                    <LinearLayout
-                        android:id="@+id/layoutWeekBubbles"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:weightSum="7"
-                        android:layout_marginTop="14dp">
-
-                        <!-- T2 -->
-                        <TextView
-                            android:id="@+id/bubbleMon"
-                            android:layout_width="0dp"
-                            android:layout_height="36dp"
-                            android:layout_weight="1"
-                            android:layout_margin="2dp"
-                            android:gravity="center"
-                            android:text="T2"
-                            android:textSize="12sp"
-                            android:textStyle="bold"
-                            android:textColor="@color/tri_force_white"
-                            android:background="@drawable/bg_bmi_badge"/>
-
-                        <!-- T3 -->
-                        <TextView
-                            android:id="@+id/bubbleTue"
-                            android:layout_width="0dp"
-                            android:layout_height="36dp"
-                            android:layout_weight="1"
-                            android:layout_margin="2dp"
-                            android:gravity="center"
-                            android:text="T3"
-                            android:textSize="12sp"
-                            android:textStyle="bold"
-                            android:textColor="@color/tri_force_white"
-                            android:background="@drawable/bg_bmi_badge"/>
-
-                        <!-- T4 -->
-                        <TextView
-                            android:id="@+id/bubbleWed"
-                            android:layout_width="0dp"
-                            android:layout_height="36dp"
-                            android:layout_weight="1"
-                            android:layout_margin="2dp"
-                            android:gravity="center"
-                            android:text="T4"
-                            android:textSize="12sp"
-                            android:textStyle="bold"
-                            android:textColor="@color/tri_force_white"
-                            android:background="@drawable/bg_bmi_badge"/>
-
-                        <!-- T5 -->
-                        <TextView
-                            android:id="@+id/bubbleThu"
-                            android:layout_width="0dp"
-                            android:layout_height="36dp"
-                            android:layout_weight="1"
-                            android:layout_margin="2dp"
-                            android:gravity="center"
-                            android:text="T5"
-                            android:textSize="12sp"
-                            android:textStyle="bold"
-                            android:textColor="@color/tri_force_white"
-                            android:background="@drawable/bg_bmi_badge"/>
-
-                        <!-- T6 -->
-                        <TextView
-                            android:id="@+id/bubbleFri"
-                            android:layout_width="0dp"
-                            android:layout_height="36dp"
-                            android:layout_weight="1"
-                            android:layout_margin="2dp"
-                            android:gravity="center"
-                            android:text="T6"
-                            android:textSize="12sp"
-                            android:textStyle="bold"
-                            android:textColor="@color/tri_force_white"
-                            android:background="@drawable/bg_bmi_badge"/>
-
-                        <!-- T7 -->
-                        <TextView
-                            android:id="@+id/bubbleSat"
-                            android:layout_width="0dp"
-                            android:layout_height="36dp"
-                            android:layout_weight="1"
-                            android:layout_margin="2dp"
-                            android:gravity="center"
-                            android:text="T7"
-                            android:textSize="12sp"
-                            android:textStyle="bold"
-                            android:textColor="@color/tri_force_white"
-                            android:background="@drawable/bg_bmi_badge"/>
-
-                        <!-- CN -->
-                        <TextView
-                            android:id="@+id/bubbleSun"
-                            android:layout_width="0dp"
-                            android:layout_height="36dp"
-                            android:layout_weight="1"
-                            android:layout_margin="2dp"
-                            android:gravity="center"
-                            android:text="CN"
-                            android:textSize="12sp"
-                            android:textStyle="bold"
-                            android:textColor="@color/tri_force_white"
-                            android:background="@drawable/bg_bmi_badge"/>
-                    </LinearLayout>
                 </LinearLayout>
+
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Empty Plan Prompt Card (Chưa có tiến trình nào được lưu) -->
+
+            <!-- =================================================
+                 EMPTY PLAN
+                 ================================================= -->
+
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardHomeEmptyPrompt"
+
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardCornerRadius="22dp"
-                app:cardElevation="4dp"
-                app:cardBackgroundColor="#CC0A192F"
-                app:strokeColor="#1E3A8A"
-                app:strokeWidth="1.2dp">
+
+                android:layout_marginTop="@dimen/space_8"
+
+                app:cardBackgroundColor="@color/tri_force_surface_dark"
+
+                app:cardCornerRadius="@dimen/card_corner_radius_small"
+
+                app:cardElevation="0dp"
+
+                app:strokeColor="@color/white_12"
+                app:strokeWidth="@dimen/stroke_thin">
+
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:gravity="center"
-                    android:padding="24dp">
+
+                    android:orientation="horizontal"
+
+                    android:gravity="center_vertical"
+
+                    android:padding="@dimen/card_padding">
+
 
                     <ImageView
                         android:id="@+id/ivEmptyIcon"
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
+
+                        android:layout_width="42dp"
+                        android:layout_height="42dp"
+
                         android:src="@drawable/tri_force_logo"
-                        android:scaleType="fitCenter"
-                        android:contentDescription="@string/app_name"/>
 
-                    <TextView
-                        android:id="@+id/tvEmptyTitle"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Chưa có tiến trình nào được lưu"
-                        android:textSize="16sp"
-                        android:textStyle="bold"
-                        android:textColor="@color/tri_force_white"
-                        android:layout_marginTop="12dp"/>
+                        android:scaleType="centerCrop"
 
-                    <TextView
-                        android:id="@+id/tvEmptySubtitle"
-                        android:layout_width="wrap_content"
+                        android:contentDescription="@string/app_name" />
+
+
+                    <LinearLayout
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:text="Hãy vào Thư viện và bấm 'Tự tạo lịch tập' để thiết lập tiến trình tập luyện riêng cho bạn."
-                        android:textSize="12sp"
-                        android:textColor="@color/tri_force_silver"
-                        android:gravity="center"
-                        android:layout_marginTop="4dp"
-                        android:layout_marginBottom="16dp"/>
+
+                        android:layout_weight="1"
+
+                        android:layout_marginStart="@dimen/space_12"
+                        android:layout_marginEnd="@dimen/space_12"
+
+                        android:orientation="vertical">
+
+
+                        <TextView
+                            android:id="@+id/tvEmptyTitle"
+
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+
+                            android:text="Tạo lộ trình tập luyện"
+
+                            android:textColor="@color/tri_force_white"
+
+                            android:textSize="13sp"
+                            android:textStyle="bold"
+
+                            android:includeFontPadding="false" />
+
+
+                        <TextView
+                            android:id="@+id/tvEmptySubtitle"
+
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+
+                            android:layout_marginTop="3dp"
+
+                            android:text="Xây dựng kế hoạch calisthenics phù hợp với mục tiêu của bạn."
+
+                            android:textColor="@color/tri_force_text_on_dark_secondary"
+
+                            android:textSize="9sp"
+
+                            android:maxLines="2"
+
+                            android:includeFontPadding="false" />
+
+
+                    </LinearLayout>
+
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnHomeCreatePlan"
+
                         android:layout_width="wrap_content"
-                        android:layout_height="44dp"
-                        android:text="TỰ TẠO LỊCH TẬP NGAY"
-                        android:textSize="12sp"
-                        android:textStyle="bold"
+                        android:layout_height="38dp"
+
+                        android:minWidth="0dp"
+
+                        android:text="TẠO"
+
                         android:textColor="@color/tri_force_white"
-                        app:backgroundTint="@color/mp_color_primary"
-                        app:cornerRadius="18dp"
-                        app:elevation="0dp"
-                        android:paddingHorizontal="18dp"
-                        style="@style/Widget.MaterialComponents.Button"/>
+
+                        android:textSize="10sp"
+                        android:textStyle="bold"
+
+                        android:paddingStart="@dimen/space_12"
+                        android:paddingEnd="@dimen/space_12"
+
+                        app:backgroundTint="@color/tri_force_blue"
+
+                        app:cornerRadius="9dp"
+
+                        app:elevation="0dp" />
+
+
                 </LinearLayout>
+
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Saved Plans List Section -->
+
+            <!-- =================================================
+                 QUICK ACTIONS
+                 ================================================= -->
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+
+                android:layout_marginTop="@dimen/space_20"
+
+                android:orientation="horizontal"
+
+                android:gravity="bottom">
+
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+
+                    android:layout_weight="1"
+
+                    android:orientation="vertical">
+
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+
+                        android:text="Hành động nhanh"
+
+                        android:textColor="@color/tri_force_text_primary"
+
+                        android:textSize="17sp"
+                        android:textStyle="bold"
+
+                        android:includeFontPadding="false" />
+
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+
+                        android:layout_marginTop="@dimen/space_4"
+
+                        android:text="TRAIN • TRACK • PROGRESS"
+
+                        android:textColor="@color/tri_force_blue"
+
+                        android:textSize="8sp"
+                        android:textStyle="bold"
+
+                        android:letterSpacing="0.08"
+
+                        android:includeFontPadding="false" />
+
+
+                </LinearLayout>
+
+
+                <View
+                    android:layout_width="32dp"
+                    android:layout_height="2dp"
+
+                    android:layout_marginBottom="3dp"
+
+                    android:background="@color/tri_force_blue" />
+
+
+            </LinearLayout>
+
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+
+                android:layout_marginTop="@dimen/space_12"
+
+                android:orientation="horizontal"
+
+                android:weightSum="4">
+
+
+                <!-- Primary quick action -->
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/btnQuickCalendar"
+
+                    android:layout_width="0dp"
+                    android:layout_height="84dp"
+
+                    android:layout_weight="1"
+
+                    android:layout_marginEnd="4dp"
+
+                    android:clickable="true"
+                    android:focusable="true"
+
+                    android:foreground="?attr/selectableItemBackground"
+
+                    app:cardBackgroundColor="@color/tri_force_surface_dark"
+
+                    app:cardCornerRadius="@dimen/card_corner_radius_small"
+
+                    app:cardElevation="0dp"
+
+                    app:strokeColor="@color/tri_force_blue"
+                    app:strokeWidth="@dimen/stroke_medium">
+
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+
+                        android:orientation="vertical"
+
+                        android:gravity="center">
+
+
+                        <ImageView
+                            android:layout_width="23dp"
+                            android:layout_height="23dp"
+
+                            android:src="@drawable/ic_nav_calendar"
+
+                            app:tint="@color/tri_force_blue"
+
+                            android:contentDescription="@null" />
+
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+
+                            android:layout_marginTop="@dimen/space_8"
+
+                            android:text="Lịch tập"
+
+                            android:textColor="@color/tri_force_white"
+
+                            android:textSize="9sp"
+                            android:textStyle="bold"
+
+                            android:includeFontPadding="false" />
+
+
+                    </LinearLayout>
+
+                </com.google.android.material.card.MaterialCardView>
+
+
+                <!-- Library -->
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/btnQuickLibrary"
+
+                    android:layout_width="0dp"
+                    android:layout_height="84dp"
+
+                    android:layout_weight="1"
+
+                    android:layout_marginStart="4dp"
+                    android:layout_marginEnd="4dp"
+
+                    android:clickable="true"
+                    android:focusable="true"
+
+                    android:foreground="?attr/selectableItemBackground"
+
+                    app:cardBackgroundColor="@color/tri_force_white"
+
+                    app:cardCornerRadius="@dimen/card_corner_radius_small"
+
+                    app:cardElevation="0dp"
+
+                    app:strokeColor="@color/tri_force_stroke"
+                    app:strokeWidth="@dimen/stroke_thin">
+
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+
+                        android:orientation="vertical"
+
+                        android:gravity="center">
+
+
+                        <ImageView
+                            android:layout_width="23dp"
+                            android:layout_height="23dp"
+
+                            android:src="@drawable/ic_nav_library"
+
+                            app:tint="@color/tri_force_blue"
+
+                            android:contentDescription="@null" />
+
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+
+                            android:layout_marginTop="@dimen/space_8"
+
+                            android:text="Thư viện"
+
+                            android:textColor="@color/tri_force_text_primary"
+
+                            android:textSize="9sp"
+                            android:textStyle="bold"
+
+                            android:includeFontPadding="false" />
+
+
+                    </LinearLayout>
+
+                </com.google.android.material.card.MaterialCardView>
+
+
+                <!-- Create -->
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/btnQuickCreatePlan"
+
+                    android:layout_width="0dp"
+                    android:layout_height="84dp"
+
+                    android:layout_weight="1"
+
+                    android:layout_marginStart="4dp"
+                    android:layout_marginEnd="4dp"
+
+                    android:clickable="true"
+                    android:focusable="true"
+
+                    android:foreground="?attr/selectableItemBackground"
+
+                    app:cardBackgroundColor="@color/tri_force_white"
+
+                    app:cardCornerRadius="@dimen/card_corner_radius_small"
+
+                    app:cardElevation="0dp"
+
+                    app:strokeColor="@color/tri_force_stroke"
+                    app:strokeWidth="@dimen/stroke_thin">
+
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+
+                        android:orientation="vertical"
+
+                        android:gravity="center">
+
+
+                        <ImageView
+                            android:layout_width="23dp"
+                            android:layout_height="23dp"
+
+                            android:src="@drawable/ic_baseline_add_24"
+
+                            app:tint="@color/tri_force_blue"
+
+                            android:contentDescription="@null" />
+
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+
+                            android:layout_marginTop="@dimen/space_8"
+
+                            android:text="Tạo lịch"
+
+                            android:textColor="@color/tri_force_text_primary"
+
+                            android:textSize="9sp"
+                            android:textStyle="bold"
+
+                            android:includeFontPadding="false" />
+
+
+                    </LinearLayout>
+
+                </com.google.android.material.card.MaterialCardView>
+
+
+                <!-- Profile -->
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/btnQuickProfile"
+
+                    android:layout_width="0dp"
+                    android:layout_height="84dp"
+
+                    android:layout_weight="1"
+
+                    android:layout_marginStart="4dp"
+
+                    android:clickable="true"
+                    android:focusable="true"
+
+                    android:foreground="?attr/selectableItemBackground"
+
+                    app:cardBackgroundColor="@color/tri_force_white"
+
+                    app:cardCornerRadius="@dimen/card_corner_radius_small"
+
+                    app:cardElevation="0dp"
+
+                    app:strokeColor="@color/tri_force_stroke"
+                    app:strokeWidth="@dimen/stroke_thin">
+
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+
+                        android:orientation="vertical"
+
+                        android:gravity="center">
+
+
+                        <ImageView
+                            android:layout_width="23dp"
+                            android:layout_height="23dp"
+
+                            android:src="@drawable/ic_nav_profile"
+
+                            app:tint="@color/tri_force_blue"
+
+                            android:contentDescription="@null" />
+
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+
+                            android:layout_marginTop="@dimen/space_8"
+
+                            android:text="Hồ sơ"
+
+                            android:textColor="@color/tri_force_text_primary"
+
+                            android:textSize="9sp"
+                            android:textStyle="bold"
+
+                            android:includeFontPadding="false" />
+
+
+                    </LinearLayout>
+
+                </com.google.android.material.card.MaterialCardView>
+
+
+            </LinearLayout>
+
+
+            <!-- =================================================
+                 SAVED PLANS
+                 ================================================= -->
+
             <TextView
                 android:id="@+id/tvSavedPlansHeader"
+
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="DANH SÁCH TIẾN TRÌNH ĐÃ LƯU"
-                android:textSize="12sp"
+
+                android:layout_marginTop="@dimen/space_24"
+                android:layout_marginBottom="@dimen/space_8"
+
+                android:text="Kế hoạch đã lưu"
+
+                android:textColor="@color/tri_force_text_primary"
+
+                android:textSize="16sp"
                 android:textStyle="bold"
-                android:textColor="@color/mp_color_primary_variant"
-                android:letterSpacing="0.04"
-                android:layout_marginTop="16dp"
-                android:layout_marginBottom="6dp"
-                android:visibility="gone"/>
+
+                android:includeFontPadding="false"
+
+                android:visibility="gone" />
+
 
             <LinearLayout
                 android:id="@+id/layoutSavedPlansList"
+
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:visibility="gone"/>
 
-            <!-- Today Header Title -->
+                android:orientation="vertical"
+
+                android:visibility="gone" />
+
+
+            <!-- =================================================
+                 LEGACY IDS
+                 ================================================= -->
+
             <TextView
                 android:id="@+id/tvTodayTitle"
+
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="BÀI TẬP HÔM NAY"
-                android:textSize="14sp"
-                android:textStyle="bold"
-                android:textColor="@color/tri_force_white"
-                android:letterSpacing="0.04"
-                android:layout_marginTop="16dp"
-                android:layout_marginBottom="8dp"/>
 
-            <!-- Today's Exercise List Container -->
+                android:text="Bài tập hôm nay"
+
+                android:visibility="gone" />
+
+
             <LinearLayout
                 android:id="@+id/layoutTodayExercises"
+
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"/>
 
-            <!-- "ĐẾN VỚI TIẾN TRÌNH TẬP HIỆN TẠI" Button -->
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnGoToCurrentWorkout"
-                android:layout_width="match_parent"
-                android:layout_height="52dp"
-                android:text="ĐẾN VỚI TIẾN TRÌNH TẬP HIỆN TẠI  ➔"
-                android:textSize="13sp"
-                android:textStyle="bold"
-                android:textColor="@color/tri_force_white"
-                app:backgroundTint="#260066FF"
-                app:strokeColor="@color/mp_color_primary_variant"
-                app:strokeWidth="1.2dp"
-                app:cornerRadius="18dp"
-                app:elevation="0dp"
-                android:layout_marginTop="16dp"
-                android:layout_marginBottom="24dp"
-                style="@style/Widget.MaterialComponents.Button"/>
+                android:orientation="vertical"
+
+                android:visibility="gone" />
+
+
+            <Space
+                android:layout_width="1dp"
+                android:layout_height="@dimen/space_24" />
+
 
         </LinearLayout>
+
     </ScrollView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

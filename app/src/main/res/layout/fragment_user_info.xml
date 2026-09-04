@@ -1,195 +1,130 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/transparent"
-    android:padding="20dp">
+    android:background="@color/tri_force_bg">
 
-    <ScrollView
+    <TextView
+        android:id="@+id/tvUserInfoTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Thiết Lập Hồ Sơ Cá Nhân"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:textColor="@color/tri_force_text_primary"
+        android:layout_marginTop="88dp"
+        android:layout_marginStart="20dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"/>
+
+    <TextView
+        android:id="@+id/tvQuestionProgress"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Câu 1/9"
+        android:textSize="11sp"
+        android:textStyle="bold"
+        android:textColor="@color/mp_color_primary"
+        android:layout_marginTop="4dp"
+        android:layout_marginStart="20dp"
+        app:layout_constraintTop_toBottomOf="@id/tvUserInfoTitle"
+        app:layout_constraintStart_toStartOf="parent"/>
+
+    <ProgressBar
+        android:id="@+id/progressQuestions"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="0dp"
+        android:layout_height="4dp"
+        android:layout_marginTop="6dp"
+        android:layout_marginHorizontal="20dp"
+        android:max="100"
+        android:progress="11"
+        android:progressTint="@color/mp_color_primary"
+        android:progressBackgroundTint="@color/tri_force_silver"
+        app:layout_constraintTop_toBottomOf="@id/tvQuestionProgress"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvChat"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:fillViewport="true"
-        android:scrollbars="none">
+        android:layout_height="0dp"
+        android:clipToPadding="false"
+        android:paddingTop="12dp"
+        android:paddingBottom="12dp"
+        app:layout_constraintTop_toBottomOf="@id/progressQuestions"
+        app:layout_constraintBottom_toTopOf="@id/panelInput"
+        tools:listitem="@layout/item_chat_bot_message"/>
+
+    <LinearLayout
+        android:id="@+id/panelInput"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@color/tri_force_dark_card"
+        android:padding="16dp"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilDynamicInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            android:textColorHint="@color/tri_force_slate"
+            app:hintTextColor="@color/mp_color_primary"
+            app:boxStrokeColor="@color/mp_color_primary"
+            app:boxStrokeWidthFocused="2dp"
+            app:boxCornerRadiusTopStart="14dp"
+            app:boxCornerRadiusTopEnd="14dp"
+            app:boxCornerRadiusBottomStart="14dp"
+            app:boxCornerRadiusBottomEnd="14dp"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etDynamicInput"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/tri_force_text_primary"/>
+        </com.google.android.material.textfield.TextInputLayout>
 
         <LinearLayout
+            android:id="@+id/containerChoices"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:gravity="center_horizontal">
+            android:visibility="gone"/>
 
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="68dp"
-                android:layout_height="68dp"
-                android:layout_marginTop="20dp"
-                app:cardCornerRadius="34dp"
-                app:cardElevation="4dp"
-                app:cardBackgroundColor="@color/tri_force_navy"
-                app:strokeColor="@color/mp_color_primary_variant"
-                app:strokeWidth="2dp">
+        <FrameLayout
+            android:id="@+id/containerHeightWheel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone"/>
 
-                <ImageView
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:src="@drawable/tri_force_logo"
-                    android:scaleType="centerCrop"
-                    android:contentDescription="@string/app_name"/>
-            </com.google.android.material.card.MaterialCardView>
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnChatContinue"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="12dp"
+            android:text="TIẾP TỤC"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:textColor="@color/tri_force_white"
+            app:backgroundTint="@color/mp_color_primary"
+            app:cornerRadius="14dp"
+            app:elevation="0dp"
+            style="@style/Widget.MaterialComponents.Button"/>
 
-            <TextView
-                android:id="@+id/tvUserInfoTitle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Thiết Lập Hồ Sơ Cá Nhân"
-                android:textSize="22sp"
-                android:textStyle="bold"
-                android:textColor="@color/tri_force_white"
-                android:layout_marginTop="14dp"
-                android:layout_marginBottom="6dp"/>
+        <ProgressBar
+            android:id="@+id/infoProgress"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_gravity="center"
+            android:layout_marginTop="8dp"
+            android:indeterminateTint="@color/mp_color_primary"
+            android:visibility="gone"/>
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Cung cấp các chỉ số cơ bản để Tri Force tính toán BMI và tự động tạo lộ trình 30 ngày tối ưu cho bạn."
-                android:textSize="13sp"
-                android:textColor="@color/tri_force_silver"
-                android:gravity="center"
-                android:layout_marginBottom="20dp"
-                android:paddingHorizontal="12dp"/>
-
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:cardCornerRadius="22dp"
-                app:cardElevation="6dp"
-                app:cardBackgroundColor="#CC0A192F"
-                app:strokeColor="#1E3A8A"
-                app:strokeWidth="1.2dp"
-                app:cardUseCompatPadding="true">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="22dp">
-
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:hint="Họ và Tên"
-                        android:textColorHint="#94A3B8"
-                        app:hintTextColor="@color/mp_color_primary_variant"
-                        android:layout_marginBottom="16dp"
-                        app:boxStrokeColor="@color/mp_color_primary_variant"
-                        app:boxStrokeWidthFocused="2dp"
-                        app:boxCornerRadiusTopStart="14dp"
-                        app:boxCornerRadiusTopEnd="14dp"
-                        app:boxCornerRadiusBottomStart="14dp"
-                        app:boxCornerRadiusBottomEnd="14dp"
-                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
-
-                        <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/etFullName"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:textColor="@color/tri_force_white"
-                            android:inputType="textPersonName"/>
-                    </com.google.android.material.textfield.TextInputLayout>
-
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:hint="Tuổi (năm)"
-                        android:textColorHint="#94A3B8"
-                        app:hintTextColor="@color/mp_color_primary_variant"
-                        android:layout_marginBottom="16dp"
-                        app:boxStrokeColor="@color/mp_color_primary_variant"
-                        app:boxStrokeWidthFocused="2dp"
-                        app:boxCornerRadiusTopStart="14dp"
-                        app:boxCornerRadiusTopEnd="14dp"
-                        app:boxCornerRadiusBottomStart="14dp"
-                        app:boxCornerRadiusBottomEnd="14dp"
-                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
-
-                        <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/etAge"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:textColor="@color/tri_force_white"
-                            android:inputType="number"/>
-                    </com.google.android.material.textfield.TextInputLayout>
-
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:hint="Chiều cao (cm)"
-                        android:textColorHint="#94A3B8"
-                        app:hintTextColor="@color/mp_color_primary_variant"
-                        android:layout_marginBottom="16dp"
-                        app:boxStrokeColor="@color/mp_color_primary_variant"
-                        app:boxStrokeWidthFocused="2dp"
-                        app:boxCornerRadiusTopStart="14dp"
-                        app:boxCornerRadiusTopEnd="14dp"
-                        app:boxCornerRadiusBottomStart="14dp"
-                        app:boxCornerRadiusBottomEnd="14dp"
-                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
-
-                        <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/etHeight"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:textColor="@color/tri_force_white"
-                            android:inputType="numberDecimal"/>
-                    </com.google.android.material.textfield.TextInputLayout>
-
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:hint="Cân nặng (kg)"
-                        android:textColorHint="#94A3B8"
-                        app:hintTextColor="@color/mp_color_primary_variant"
-                        android:layout_marginBottom="24dp"
-                        app:boxStrokeColor="@color/mp_color_primary_variant"
-                        app:boxStrokeWidthFocused="2dp"
-                        app:boxCornerRadiusTopStart="14dp"
-                        app:boxCornerRadiusTopEnd="14dp"
-                        app:boxCornerRadiusBottomStart="14dp"
-                        app:boxCornerRadiusBottomEnd="14dp"
-                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
-
-                        <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/etWeight"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:textColor="@color/tri_force_white"
-                            android:inputType="numberDecimal"/>
-                    </com.google.android.material.textfield.TextInputLayout>
-
-                    <Button
-                        android:id="@+id/btnSaveInfo"
-                        android:layout_width="match_parent"
-                        android:layout_height="54dp"
-                        android:text="LƯU &amp; TẠO LỘ TRÌNH 30 NGÀY"
-                        android:textSize="15sp"
-                        android:textStyle="bold"
-                        android:textColor="@color/tri_force_white"
-                        android:backgroundTint="@color/mp_color_primary"
-                        app:cornerRadius="16dp"
-                        app:elevation="6dp"/>
-
-                    <ProgressBar
-                        android:id="@+id/infoProgress"
-                        android:layout_width="36dp"
-                        android:layout_height="36dp"
-                        android:layout_gravity="center"
-                        android:layout_marginTop="12dp"
-                        android:indeterminateTint="@color/mp_color_primary_variant"
-                        android:visibility="gone"/>
-
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
-
-        </LinearLayout>
-    </ScrollView>
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

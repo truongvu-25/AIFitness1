@@ -1,208 +1,405 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+
     android:background="@color/tri_force_navy"
-    android:padding="24dp">
+
+    android:paddingStart="@dimen/space_24"
+    android:paddingEnd="@dimen/space_24">
+
 
     <ScrollView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+
         android:fillViewport="true"
-        android:scrollbars="none">
+        android:scrollbars="none"
+
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:gravity="center_horizontal">
 
-            <!-- Header Branding Section -->
+            android:orientation="vertical"
+
+            android:gravity="center_horizontal"
+
+            android:paddingTop="@dimen/space_24"
+            android:paddingBottom="@dimen/space_32">
+
+
+            <!-- =================================================
+                 TRI FORCE BRANDING
+                 ================================================= -->
+
             <LinearLayout
                 android:id="@+id/headerLayout"
+
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+
                 android:orientation="vertical"
-                android:gravity="center"
-                android:layout_marginTop="32dp">
+
+                android:gravity="center_horizontal">
+
+
+                <!-- Logo -->
 
                 <com.google.android.material.card.MaterialCardView
-                    android:layout_width="84dp"
-                    android:layout_height="84dp"
-                    app:cardCornerRadius="42dp"
-                    app:cardElevation="4dp"
-                    app:cardBackgroundColor="@color/tri_force_navy"
-                    app:strokeColor="@color/mp_color_primary_variant"
-                    app:strokeWidth="2.5dp">
+                    android:layout_width="76dp"
+                    android:layout_height="76dp"
+
+                    app:cardBackgroundColor="@color/tri_force_navy_deep"
+
+                    app:cardCornerRadius="38dp"
+
+                    app:cardElevation="0dp"
+
+                    app:strokeColor="@color/tri_force_blue"
+                    app:strokeWidth="@dimen/stroke_medium">
+
 
                     <ImageView
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
+
                         android:src="@drawable/tri_force_logo"
+
                         android:scaleType="centerCrop"
-                        android:contentDescription="@string/app_name"/>
+
+                        android:contentDescription="@string/app_name" />
+
+
                 </com.google.android.material.card.MaterialCardView>
+
+
+                <!-- Wordmark -->
 
                 <ImageView
                     android:id="@+id/ivTitleLogo"
-                    android:layout_width="220dp"
-                    android:layout_height="56dp"
+
+                    android:layout_width="210dp"
+                    android:layout_height="52dp"
+
+                    android:layout_marginTop="@dimen/space_12"
+
                     android:src="@drawable/tri_force_text_logo"
+
                     android:scaleType="fitCenter"
+
                     android:adjustViewBounds="true"
-                    android:layout_marginTop="14dp"
+
                     android:contentDescription="@string/app_name" />
+
+
+                <!-- Subtitle -->
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+
+                    android:layout_marginTop="@dimen/space_4"
+
                     android:text="@string/login_header_subtitle"
+
+                    android:textColor="@color/tri_force_text_on_dark_secondary"
+
                     android:textSize="13sp"
-                    android:textColor="@color/tri_force_silver"
-                    android:layout_marginTop="4dp"/>
+
+                    android:includeFontPadding="false" />
+
+
             </LinearLayout>
 
-            <!-- Dark Themed Login Form Card -->
+
+            <!-- =================================================
+                 LOGIN FORM
+                 ================================================= -->
+
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardLogin"
+
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
-                app:cardCornerRadius="20dp"
-                app:cardElevation="6dp"
-                app:cardBackgroundColor="@color/tri_force_dark_card"
-                app:strokeColor="#1E3A8A"
-                app:strokeWidth="1.5dp"
-                app:cardUseCompatPadding="true">
+
+                android:layout_marginTop="@dimen/space_24"
+
+                app:cardBackgroundColor="@color/tri_force_white"
+
+                app:cardCornerRadius="@dimen/card_corner_radius"
+
+                app:cardElevation="0dp"
+
+                app:strokeColor="@color/tri_force_stroke"
+                app:strokeWidth="@dimen/stroke_thin">
+
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+
                     android:orientation="vertical"
-                    android:padding="22dp">
+
+                    android:padding="@dimen/card_padding_large">
+
+
+                    <!-- Title -->
 
                     <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/login_title"
-                        android:textSize="18sp"
-                        android:textStyle="bold"
-                        android:textColor="@color/tri_force_white"
-                        android:letterSpacing="0.08"
-                        android:layout_marginBottom="20dp"
-                        android:layout_gravity="center_horizontal"/>
-
-                    <!-- Email Input Field with Clear Purpose & Placeholder -->
-                    <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+
+                        android:text="@string/login_title"
+
+                        android:textColor="@color/tri_force_text_primary"
+
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+
+                        android:gravity="center"
+
+                        android:letterSpacing="0.05"
+
+                        android:includeFontPadding="false" />
+
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+
+                        android:layout_marginTop="@dimen/space_4"
+                        android:layout_marginBottom="@dimen/space_20"
+
+                        android:text="Tiếp tục hành trình luyện tập của bạn"
+
+                        android:textColor="@color/tri_force_text_secondary"
+
+                        android:textSize="12sp"
+
+                        android:gravity="center"
+
+                        android:includeFontPadding="false" />
+
+
+                    <!-- =================================================
+                         EMAIL
+                         ================================================= -->
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+
+                        android:layout_marginBottom="@dimen/space_16"
+
                         android:hint="@string/login_email_hint"
-                        android:textColorHint="#94A3B8"
-                        app:hintTextColor="@color/mp_color_primary_variant"
+
+                        app:boxBackgroundColor="@color/input_background"
+
+                        app:boxStrokeColor="@color/input_border_focused"
+
+                        app:boxStrokeWidth="@dimen/stroke_thin"
+
+                        app:boxStrokeWidthFocused="@dimen/stroke_medium"
+
+                        app:boxCornerRadiusTopStart="@dimen/button_corner_radius"
+                        app:boxCornerRadiusTopEnd="@dimen/button_corner_radius"
+                        app:boxCornerRadiusBottomStart="@dimen/button_corner_radius"
+                        app:boxCornerRadiusBottomEnd="@dimen/button_corner_radius"
+
+                        app:hintTextColor="@color/tri_force_text_secondary"
+
                         app:placeholderText="@string/login_email_placeholder"
-                        app:placeholderTextColor="#64748B"
-                        android:layout_marginBottom="18dp"
-                        app:boxStrokeColor="@color/mp_color_primary_variant"
-                        app:boxStrokeWidthFocused="2dp"
-                        app:boxCornerRadiusTopStart="14dp"
-                        app:boxCornerRadiusTopEnd="14dp"
-                        app:boxCornerRadiusBottomStart="14dp"
-                        app:boxCornerRadiusBottomEnd="14dp"
-                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+                        app:placeholderTextColor="@color/input_hint">
+
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/etEmail"
+
                             android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:textColor="@color/tri_force_white"
-                            android:textColorHighlight="#330066FF"
-                            android:inputType="textEmailAddress"/>
+                            android:layout_height="56dp"
+
+                            android:inputType="textEmailAddress"
+
+                            android:textColor="@color/tri_force_text_primary"
+
+                            android:textColorHint="@color/input_hint"
+
+                            android:textColorHighlight="@color/tri_force_blue_light"
+
+                            android:textSize="15sp"
+
+                            android:singleLine="true" />
+
+
                     </com.google.android.material.textfield.TextInputLayout>
 
-                    <!-- Password Input Field with Clear Purpose & Placeholder -->
+
+                    <!-- =================================================
+                         PASSWORD
+                         ================================================= -->
+
                     <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+
+                        android:layout_marginBottom="@dimen/space_20"
+
                         android:hint="@string/login_password_hint"
-                        android:textColorHint="#94A3B8"
-                        app:hintTextColor="@color/mp_color_primary_variant"
+
+                        app:boxBackgroundColor="@color/input_background"
+
+                        app:boxStrokeColor="@color/input_border_focused"
+
+                        app:boxStrokeWidth="@dimen/stroke_thin"
+
+                        app:boxStrokeWidthFocused="@dimen/stroke_medium"
+
+                        app:boxCornerRadiusTopStart="@dimen/button_corner_radius"
+                        app:boxCornerRadiusTopEnd="@dimen/button_corner_radius"
+                        app:boxCornerRadiusBottomStart="@dimen/button_corner_radius"
+                        app:boxCornerRadiusBottomEnd="@dimen/button_corner_radius"
+
+                        app:hintTextColor="@color/tri_force_text_secondary"
+
                         app:placeholderText="@string/login_password_placeholder"
-                        app:placeholderTextColor="#64748B"
-                        android:layout_marginBottom="24dp"
+
+                        app:placeholderTextColor="@color/input_hint"
+
                         app:passwordToggleEnabled="true"
-                        app:passwordToggleTint="@color/mp_color_primary_variant"
-                        app:boxStrokeColor="@color/mp_color_primary_variant"
-                        app:boxStrokeWidthFocused="2dp"
-                        app:boxCornerRadiusTopStart="14dp"
-                        app:boxCornerRadiusTopEnd="14dp"
-                        app:boxCornerRadiusBottomStart="14dp"
-                        app:boxCornerRadiusBottomEnd="14dp"
-                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+                        app:passwordToggleTint="@color/tri_force_blue">
+
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/etPassword"
+
                             android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:textColor="@color/tri_force_white"
-                            android:textColorHighlight="#330066FF"
-                            android:inputType="textPassword"/>
+                            android:layout_height="56dp"
+
+                            android:inputType="textPassword"
+
+                            android:textColor="@color/tri_force_text_primary"
+
+                            android:textColorHint="@color/input_hint"
+
+                            android:textColorHighlight="@color/tri_force_blue_light"
+
+                            android:textSize="15sp"
+
+                            android:singleLine="true" />
+
+
                     </com.google.android.material.textfield.TextInputLayout>
 
-                    <Button
+
+                    <!-- =================================================
+                         LOGIN BUTTON
+                         ================================================= -->
+
+                    <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnLogin"
+
+                        style="@style/TriForceButtonPrimary"
+
                         android:layout_width="match_parent"
-                        android:layout_height="54dp"
+                        android:layout_height="@dimen/button_height"
+
                         android:text="@string/login_btn"
-                        android:textSize="16sp"
-                        android:textStyle="bold"
-                        android:textColor="@color/tri_force_white"
-                        android:letterSpacing="0.08"
-                        android:backgroundTint="@color/mp_color_primary"
-                        app:cornerRadius="14dp"
-                        app:elevation="6dp"/>
+
+                        android:textSize="15sp"
+
+                        android:letterSpacing="0.06"
+
+                        app:elevation="0dp" />
+
+
+                    <!-- Loading -->
 
                     <ProgressBar
                         android:id="@+id/loadingProgress"
+
                         android:layout_width="36dp"
                         android:layout_height="36dp"
+
                         android:layout_gravity="center"
-                        android:layout_marginTop="12dp"
-                        android:indeterminateTint="@color/mp_color_primary_variant"
-                        android:visibility="gone"/>
+
+                        android:layout_marginTop="@dimen/space_12"
+
+                        android:indeterminateTint="@color/tri_force_blue"
+
+                        android:visibility="gone" />
+
 
                 </LinearLayout>
+
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Bottom Redirect to Register -->
+
+            <!-- =================================================
+                 REGISTER REDIRECT
+                 ================================================= -->
+
             <LinearLayout
                 android:id="@+id/redirectLayout"
+
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+
+                android:layout_marginTop="@dimen/space_20"
+
                 android:orientation="horizontal"
-                android:gravity="center"
-                android:layout_marginTop="20dp"
-                android:layout_marginBottom="30dp">
+
+                android:gravity="center">
+
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+
                     android:text="@string/login_no_account"
-                    android:textColor="@color/tri_force_silver"
-                    android:textSize="14sp"/>
+
+                    android:textColor="@color/tri_force_text_on_dark_secondary"
+
+                    android:textSize="14sp" />
+
 
                 <TextView
                     android:id="@+id/tvGoToRegister"
+
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+
                     android:text="@string/login_register_now"
-                    android:textColor="@color/mp_color_primary_variant"
+
+                    android:textColor="@color/tri_force_blue"
+
                     android:textStyle="bold"
+
                     android:textSize="14sp"
-                    android:padding="8dp"/>
+
+                    android:padding="8dp" />
+
+
             </LinearLayout>
 
+
         </LinearLayout>
+
     </ScrollView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

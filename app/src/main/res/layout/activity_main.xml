@@ -1,83 +1,256 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/tri_force_navy">
 
-    <!-- Global Clean Gym Interior Background -->
-    <ImageView
-        android:id="@+id/ivGlobalBackground"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:src="@drawable/app_main_bg"
-        android:scaleType="centerCrop"
-        android:contentDescription="@string/app_name" />
+    android:background="@color/tri_force_bg">
 
-    <!-- Subtle Dark Tint Layer for Maximum UI Contrast -->
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="#66030E20" />
 
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <!-- Full-Screen Fragment Navigation Host Container -->
+
+        <!-- =====================================================
+             NAV HOST
+             ===================================================== -->
+
         <androidx.fragment.app.FragmentContainerView
             android:id="@+id/fragment_container"
+
             android:name="androidx.navigation.fragment.NavHostFragment"
+
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+
             android:layout_alignParentTop="true"
             android:layout_above="@id/bottomNavCard"
+
             android:background="@android:color/transparent"
+
             android:keepScreenOn="true"
+
             app:defaultNavHost="true"
             app:navGraph="@navigation/nav_graph"
+
             tools:context=".MainActivity" />
 
-        <!-- Metallic TRI FORCE Wordmark in Top-Left Corner -->
-        <ImageView
-            android:id="@+id/ivHeaderWordmark"
-            android:layout_width="160dp"
-            android:layout_height="38dp"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentStart="true"
-            android:layout_marginTop="38dp"
-            android:layout_marginStart="20dp"
-            android:src="@drawable/tri_force_text_logo"
-            android:scaleType="fitStart"
-            android:adjustViewBounds="true"
-            android:contentDescription="@string/app_name" />
 
-        <!-- iOS-Style Floating Glassmorphic Bottom Navigation Bar -->
+        <!-- =====================================================
+             TRI FORCE
+             AI WORKOUT & CALISTHENICS BRAND HEADER
+             ===================================================== -->
+
+        <LinearLayout
+            android:id="@+id/headerBrandBar"
+
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/header_height"
+
+            android:layout_alignParentTop="true"
+
+            android:orientation="horizontal"
+
+            android:gravity="center_vertical"
+
+            android:paddingStart="@dimen/header_horizontal_padding"
+            android:paddingEnd="@dimen/header_horizontal_padding"
+
+            android:background="@color/nav_background">
+
+
+            <!-- Metallic wordmark -->
+
+            <ImageView
+                android:id="@+id/ivHeaderWordmarkImage"
+
+                android:layout_width="@dimen/header_wordmark_width"
+                android:layout_height="@dimen/header_wordmark_height"
+
+                android:src="@drawable/tri_force_text_logo"
+
+                android:scaleType="fitCenter"
+
+                android:adjustViewBounds="true"
+
+                android:contentDescription="@string/app_name" />
+
+
+            <!-- Divider -->
+
+            <View
+                android:layout_width="1dp"
+                android:layout_height="26dp"
+
+                android:layout_marginStart="@dimen/space_12"
+                android:layout_marginEnd="@dimen/space_12"
+
+                android:background="@color/white_16" />
+
+
+            <!-- AI sub-brand -->
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+
+                android:orientation="vertical">
+
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+
+                    android:text="AI WORKOUT"
+
+                    android:textColor="@color/tri_force_blue"
+
+                    android:textSize="9sp"
+                    android:textStyle="bold"
+
+                    android:letterSpacing="0.10"
+
+                    android:includeFontPadding="false" />
+
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+
+                    android:layout_marginTop="2dp"
+
+                    android:text="CALISTHENICS"
+
+                    android:textColor="@color/tri_force_text_on_dark_secondary"
+
+                    android:textSize="8sp"
+                    android:textStyle="bold"
+
+                    android:letterSpacing="0.10"
+
+                    android:includeFontPadding="false" />
+
+
+            </LinearLayout>
+
+
+            <Space
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+
+                android:layout_weight="1" />
+
+
+            <!-- AI live indicator -->
+
+            <View
+                android:layout_width="6dp"
+                android:layout_height="6dp"
+
+                android:background="@color/tri_force_blue" />
+
+
+        </LinearLayout>
+
+
+        <!-- =====================================================
+             LEGACY COMPATIBILITY
+             ===================================================== -->
+
+        <TextView
+            android:id="@+id/ivHeaderWordmark"
+
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+
+            android:text=""
+
+            android:visibility="gone"
+
+            android:importantForAccessibility="no" />
+
+
+        <!-- =====================================================
+             AI DARK NAVIGATION
+             ===================================================== -->
+
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/bottomNavCard"
+
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="@dimen/bottom_nav_height"
+
             android:layout_alignParentBottom="true"
-            android:layout_marginHorizontal="20dp"
-            android:layout_marginBottom="16dp"
-            app:cardCornerRadius="24dp"
-            app:cardElevation="10dp"
-            app:cardBackgroundColor="#E60A192F"
-            app:strokeColor="#1E3A8A"
-            app:strokeWidth="1.2dp">
+
+            android:background="@android:color/transparent"
+
+            android:elevation="0dp"
+
+            android:stateListAnimator="@null"
+
+            app:cardBackgroundColor="@color/nav_background"
+
+            app:cardCornerRadius="0dp"
+
+            app:cardElevation="0dp"
+
+            app:cardUseCompatPadding="false"
+
+            app:cardPreventCornerOverlap="false"
+
+            app:strokeWidth="0dp">
+
 
             <com.google.android.material.bottomnavigation.BottomNavigationView
                 android:id="@+id/navigation"
+
                 android:layout_width="match_parent"
-                android:layout_height="56dp"
-                android:background="@android:color/transparent"
+                android:layout_height="match_parent"
+
+                android:background="@color/nav_background"
+
                 android:elevation="0dp"
+
+                android:stateListAnimator="@null"
+
+                app:elevation="0dp"
+
+                app:itemBackground="@android:color/transparent"
+
                 app:itemIconTint="@color/bg_nav_item"
+
                 app:itemTextColor="@color/bg_nav_item"
-                app:itemRippleColor="#330066FF"
+
+                app:itemIconSize="@dimen/bottom_nav_icon_size"
+
+                app:itemRippleColor="@color/white_12"
+
+                app:itemHorizontalTranslationEnabled="false"
+
+                app:labelVisibilityMode="labeled"
+
                 app:menu="@menu/menu_bottom_nav" />
+
+
         </com.google.android.material.card.MaterialCardView>
 
+
+        <!-- Top nav separator -->
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/bottom_nav_top_divider"
+
+            android:layout_above="@id/bottomNavCard"
+
+            android:background="@color/white_08" />
+
+
     </RelativeLayout>
+
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
