@@ -6,7 +6,7 @@
 
     <fragment
         android:id="@+id/welcome_fragment"
-        android:name="com.google.mediapipe.examples.poselandmarker.fragment.WelcomeFragment"
+        android:name="com.google.mediapipe.examples.poselandmarker.ui.fragment.onboarding.WelcomeFragment"
         android:label="WelcomeFragment">
         <action
             android:id="@+id/action_welcome_to_login"
@@ -47,7 +47,7 @@
 
     <fragment
         android:id="@+id/login_fragment"
-        android:name="com.google.mediapipe.examples.poselandmarker.fragment.LoginFragment"
+        android:name="com.google.mediapipe.examples.poselandmarker.ui.fragment.onboarding.LoginFragment"
         android:label="LoginFragment">
         <action
             android:id="@+id/action_login_to_register"
@@ -81,7 +81,7 @@
 
     <fragment
         android:id="@+id/register_fragment"
-        android:name="com.google.mediapipe.examples.poselandmarker.fragment.RegisterFragment"
+        android:name="com.google.mediapipe.examples.poselandmarker.ui.fragment.onboarding.RegisterFragment"
         android:label="RegisterFragment">
         <action
             android:id="@+id/action_register_to_login"
@@ -101,7 +101,7 @@
 
     <fragment
         android:id="@+id/user_info_fragment"
-        android:name="com.google.mediapipe.examples.poselandmarker.fragment.UserInfoFragment"
+        android:name="com.google.mediapipe.examples.poselandmarker.ui.fragment.profile.UserInfoFragment"
         android:label="UserInfoFragment">
         <argument
             android:name="isEditMode"
@@ -118,7 +118,7 @@
 
     <fragment
         android:id="@+id/home_fragment"
-        android:name="com.google.mediapipe.examples.poselandmarker.fragment.HomeFragment"
+        android:name="com.google.mediapipe.examples.poselandmarker.ui.fragment.home.HomeFragment"
         android:label="HomeFragment">
         <action
             android:id="@+id/action_home_to_camera"
@@ -127,7 +127,7 @@
 
     <fragment
         android:id="@+id/workout_calendar_fragment"
-        android:name="com.google.mediapipe.examples.poselandmarker.fragment.WorkoutCalendarFragment"
+        android:name="com.google.mediapipe.examples.poselandmarker.ui.fragment.home.WorkoutCalendarFragment"
         android:label="WorkoutCalendarFragment">
         <action
             android:id="@+id/action_workout_calendar_to_camera"
@@ -146,7 +146,7 @@
 
     <fragment
         android:id="@+id/library_fragment"
-        android:name="com.google.mediapipe.examples.poselandmarker.fragment.LibraryFragment"
+        android:name="com.google.mediapipe.examples.poselandmarker.ui.fragment.library.LibraryFragment"
         android:label="LibraryFragment">
         <action
             android:id="@+id/action_library_to_camera"
@@ -162,12 +162,12 @@
 
     <fragment
         android:id="@+id/create_custom_plan_fragment"
-        android:name="com.google.mediapipe.examples.poselandmarker.fragment.CreateCustomPlanFragment"
+        android:name="com.google.mediapipe.examples.poselandmarker.ui.fragment.library.CreateCustomPlanFragment"
         android:label="CreateCustomPlanFragment" />
 
     <fragment
         android:id="@+id/profile_fragment"
-        android:name="com.google.mediapipe.examples.poselandmarker.fragment.ProfileFragment"
+        android:name="com.google.mediapipe.examples.poselandmarker.ui.fragment.profile.ProfileFragment"
         android:label="ProfileFragment">
         <action
             android:id="@+id/action_profile_to_login"
@@ -192,7 +192,7 @@
 
     <fragment
         android:id="@+id/permissions_fragment"
-        android:name="com.google.mediapipe.examples.poselandmarker.fragment.PermissionsFragment"
+        android:name="com.google.mediapipe.examples.poselandmarker.ui.fragment.onboarding.PermissionsFragment"
         android:label="PermissionsFragment">
         <action
             android:id="@+id/action_permissions_to_camera"
@@ -203,7 +203,7 @@
 
     <fragment
         android:id="@+id/camera_fragment"
-        android:name="com.google.mediapipe.examples.poselandmarker.fragment.CameraFragment"
+        android:name="com.google.mediapipe.examples.poselandmarker.ui.fragment.camera.CameraFragment"
         android:label="CameraFragment">
         <argument
             android:name="exerciseId"
@@ -226,12 +226,12 @@
 
     <fragment
         android:id="@+id/gallery_fragment"
-        android:name="com.google.mediapipe.examples.poselandmarker.fragment.GalleryFragment"
+        android:name="com.google.mediapipe.examples.poselandmarker.ui.fragment.camera.GalleryFragment"
         android:label="GalleryFragment" />
 
     <fragment
         android:id="@+id/update_bmi_fragment"
-        android:name="com.google.mediapipe.examples.poselandmarker.fragment.UpdateBmiFragment"
+        android:name="com.google.mediapipe.examples.poselandmarker.ui.fragment.profile.UpdateBmiFragment"
         android:label="UpdateBmiFragment" />
 
 </navigation>
