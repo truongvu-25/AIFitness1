@@ -88,6 +88,7 @@ class CreateCustomPlanFragment : Fragment() {
         allExercises.add(LibraryExercise("situp", "Gập Bụng (Sit-up)", "20 lần", "Cơ bụng", "Không dụng cụ", "Bodyweight", 20))
         allExercises.add(LibraryExercise("squat", "Ngồi Xổm (Squats)", "20 lần", "Cơ đùi & mông", "Không dụng cụ", "Bodyweight", 20))
         allExercises.add(LibraryExercise("plank", "Plank Căng Cơ", "45 giây", "Cơ lõi Core", "Không dụng cụ", "Bodyweight", 45))
+        allExercises.add(LibraryExercise("sideplank", "Plank Nghiêng (Side Plank)", "30 giây", "Cơ liên sườn & eo", "Không dụng cụ", "Bodyweight", 30))
         allExercises.add(LibraryExercise("jumping_jacks", "Jumping Jacks", "30 lần", "Cardio đốt mỡ", "Không dụng cụ", "Bodyweight", 30))
         allExercises.add(LibraryExercise("lunges", "Lunge Chùng Chân", "15 lần", "Đùi & khớp gối", "Không dụng cụ", "Bodyweight", 15))
         allExercises.add(LibraryExercise("mountain_climber", "Leo Núi (Mountain Climbers)", "30 giây", "Bụng dưới", "Không dụng cụ", "Bodyweight", 30))
