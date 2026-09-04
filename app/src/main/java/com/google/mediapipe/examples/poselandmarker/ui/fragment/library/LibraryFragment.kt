@@ -69,14 +69,14 @@ class LibraryFragment : Fragment() {
 
     private fun initExerciseDatabase() {
         allExercises.clear()
-        // 1. Không Dụng Cụ (Bodyweight) - Linked to original video assets
+        // Chính xác 7 bài tập tương ứng với 7 video trong thư mục assets/videos/
         allExercises.add(
             LibraryExercise(
                 "pushup",
                 "Hít Đất (Push-up)",
                 "Mục tiêu: 15 lần",
                 "Phát triển cơ ngực, vai và bắp tay sau toàn diện.",
-                "Không dụng cụ",
+                "Thân trên & Core",
                 "Bodyweight",
                 15,
                 videoUrl = "asset:///videos/push_up.mp4"
@@ -88,7 +88,7 @@ class LibraryFragment : Fragment() {
                 "Gập Bụng (Sit-up)",
                 "Mục tiêu: 20 lần",
                 "Tăng cường sức mạnh nhóm cơ bụng và core cốt lõi.",
-                "Không dụng cụ",
+                "Thân trên & Core",
                 "Bodyweight",
                 20,
                 videoUrl = "asset:///videos/sit_up.mp4"
@@ -100,7 +100,7 @@ class LibraryFragment : Fragment() {
                 "Ngồi Xổm (Squats)",
                 "Mục tiêu: 20 lần",
                 "Xây dựng cơ đùi trước, đùi sau và cơ mông săn chắc.",
-                "Không dụng cụ",
+                "Thân dưới & Cardio",
                 "Bodyweight",
                 20,
                 videoUrl = "asset:///videos/squat.mp4"
@@ -112,7 +112,7 @@ class LibraryFragment : Fragment() {
                 "Plank Căng Cơ",
                 "Mục tiêu: 45 giây",
                 "Cố định cơ thể thẳng hàng giúp siết chặt cơ bụng và lưng dưới.",
-                "Không dụng cụ",
+                "Thân trên & Core",
                 "Bodyweight",
                 45,
                 videoUrl = "asset:///videos/plank.mp4"
@@ -124,7 +124,7 @@ class LibraryFragment : Fragment() {
                 "Plank Nghiêng (Side Plank)",
                 "Mục tiêu: 30 giây",
                 "Nằm nghiêng nâng hông giữ thẳng thân để siết cơ liên sườn và eo.",
-                "Không dụng cụ",
+                "Thân trên & Core",
                 "Bodyweight",
                 30,
                 videoUrl = "asset:///videos/side_plank.mp4"
@@ -132,11 +132,11 @@ class LibraryFragment : Fragment() {
         )
         allExercises.add(
             LibraryExercise(
-                "jumping_jacks",
+                "jumpingjack",
                 "Jumping Jacks",
                 "Mục tiêu: 30 lần",
                 "Đốt mỡ toàn thân và kích hoạt nhịp tim cực hiệu quả.",
-                "Không dụng cụ",
+                "Thân dưới & Cardio",
                 "Bodyweight",
                 30,
                 videoUrl = "asset:///videos/jumping_jack.mp4"
@@ -144,44 +144,16 @@ class LibraryFragment : Fragment() {
         )
         allExercises.add(
             LibraryExercise(
-                "lunges",
-                "Lunge Chùng Chân",
+                "splitsquat",
+                "Ngồi Xổm Một Chân (Split Squat)",
                 "Mục tiêu: 15 lần/bên",
-                "Tăng thăng bằng, độ linh hoạt và độ khỏe của khớp gối.",
-                "Không dụng cụ",
+                "Tăng thăng bằng, độ linh hoạt và phát triển cơ đùi săn chắc.",
+                "Thân dưới & Cardio",
                 "Bodyweight",
                 15,
                 videoUrl = "asset:///videos/split_squat.mp4"
             )
         )
-        allExercises.add(
-            LibraryExercise(
-                "mountain_climber",
-                "Leo Núi (Mountain Climbers)",
-                "Mục tiêu: 30 giây",
-                "Đốt mỡ nhanh và tăng sức bền cơ bụng dưới.",
-                "Không dụng cụ",
-                "Bodyweight",
-                30,
-                videoUrl = ""
-            )
-        )
-
-        // 2. Có Dụng Cụ - Tại Nhà (Home Equipment) - Chưa có video thì để trống
-        allExercises.add(LibraryExercise("db_curl", "Cuốn Tạ Tay (Dumbbell Curl)", "Mục tiêu: 12 lần", "Phát triển khối cơ bắp tay trước căng tròn.", "Tại nhà", "Tạ đơn (Dumbbell)", 12, videoUrl = ""))
-        allExercises.add(LibraryExercise("db_shoulder_press", "Đẩy Vai Tạ Đơn (Shoulder Press)", "Mục tiêu: 12 lần", "Tạo cầu vai rộng, dày và khỏe mạnh.", "Tại nhà", "Tạ đơn (Dumbbell)", 12, videoUrl = ""))
-        allExercises.add(LibraryExercise("goblet_squat", "Goblet Squat (Squat Ôm Tạ)", "Mục tiêu: 15 lần", "Squat có tải trọng kích thích đùi và mông tối đa.", "Tại nhà", "Tạ đơn (Dumbbell)", 15, videoUrl = ""))
-        allExercises.add(LibraryExercise("tricep_dips", "Tricep Dips (Ghế Tựa)", "Mục tiêu: 15 lần", "Dùng ghế chắc chắn để ép sâu cơ tay sau.", "Tại nhà", "Ghế tập / Bậc thang", 15, videoUrl = ""))
-        allExercises.add(LibraryExercise("band_lateral_walk", "Bước Ngang Dây Kháng Lực", "Mục tiêu: 20 bước", "Kích hoạt cơ mông nhỡ và cải thiện hông cân đối.", "Tại nhà", "Dây Miniband", 20, videoUrl = ""))
-        allExercises.add(LibraryExercise("db_rdl", "Dumbbell Romanian Deadlift", "Mục tiêu: 12 lần", "Tác động sâu vào cơ đùi sau và chuỗi cơ lưng dưới.", "Tại nhà", "Tạ đơn (Dumbbell)", 12, videoUrl = ""))
-
-        // 3. Có Dụng Cụ - Phòng Gym (Gym Equipment) - Chưa có video thì để trống
-        allExercises.add(LibraryExercise("barbell_bench_press", "Nằm Đẩy Tạ Đòn (Bench Press)", "Mục tiêu: 10 lần", "Bài tập vua xây dựng độ dày và sức mạnh cơ ngực.", "Phòng gym", "Tạ đòn & Ghế phẳng", 10, videoUrl = ""))
-        allExercises.add(LibraryExercise("lat_pulldown", "Kéo Cáp Xô Lưng (Lat Pulldown)", "Mục tiêu: 12 lần", "Mở rộng lưng xô chữ V cuốn hút.", "Phòng gym", "Máy kéo cáp (Cable)", 12, videoUrl = ""))
-        allExercises.add(LibraryExercise("barbell_squat", "Gánh Tạ Đòn Squat (Barbell Squat)", "Mục tiêu: 10 lần", "Tăng khối lượng cơ bắp toàn bộ phần thân dưới.", "Phòng gym", "Khung gánh tạ đòn", 10, videoUrl = ""))
-        allExercises.add(LibraryExercise("cable_tricep_pushdown", "Kéo Cáp Tay Sau (Pushdown)", "Mục tiêu: 12 lần", "Cô lập và siết nét cơ tay sau sắc cạnh.", "Phòng gym", "Dây thừng kéo cáp", 12, videoUrl = ""))
-        allExercises.add(LibraryExercise("leg_press", "Đạp Đùi Máy Nghiêng (Leg Press)", "Mục tiêu: 12 lần", "Đẩy tạ nặng an toàn cho khớp lưng và tối ưu đùi.", "Phòng gym", "Máy đạp đùi (Leg Press)", 12, videoUrl = ""))
-        allExercises.add(LibraryExercise("seated_cable_row", "Kéo Cáp Ngồi (Seated Row)", "Mục tiêu: 12 lần", "Làm dày cơ lưng giữa và cải thiện tư thế đứng thẳng.", "Phòng gym", "Máy chèo cáp (Row)", 12, videoUrl = ""))
     }
 
     private fun setupRecyclerView() {
@@ -320,6 +292,11 @@ class LibraryFragment : Fragment() {
     }
 
     private fun setupSegmentedControls() {
+        binding.btnTabNoEquipment.text = "TẤT CẢ (7)"
+        binding.btnTabWithEquipment.text = "THEO NHÓM CƠ"
+        binding.btnSubTabHome.text = "Thân trên & Core (4)"
+        binding.btnSubTabGym.text = "Thân dưới & Cardio (3)"
+
         binding.btnTabNoEquipment.setOnClickListener {
             isEquipmentMode = false
             updateFilter()
@@ -355,50 +332,49 @@ class LibraryFragment : Fragment() {
         val silverColor = ContextCompat.getColor(requireContext(), R.color.tri_force_silver)
 
         if (!isEquipmentMode) {
-            // "Không Dụng Cụ" Active -> Solid Blue Background
+            // "Tất cả" Active -> Solid Blue Background
             binding.btnTabNoEquipment.backgroundTintList = ColorStateList.valueOf(activePrimaryColor)
             binding.btnTabNoEquipment.setTextColor(whiteColor)
 
-            // "Có Dụng Cụ" Inactive -> Transparent Background
+            // "Theo Nhóm Cơ" Inactive -> Transparent Background
             binding.btnTabWithEquipment.backgroundTintList = ColorStateList.valueOf(transparentColor)
             binding.btnTabWithEquipment.setTextColor(silverColor)
 
             binding.layoutSubTabs.visibility = View.GONE
 
-            val filtered = allExercises.filter { it.category == "Không dụng cụ" }
-            adapter.submitList(filtered)
+            adapter.submitList(allExercises)
         } else {
-            // "Không Dụng Cụ" Inactive -> Transparent Background
+            // "Tất cả" Inactive -> Transparent Background
             binding.btnTabNoEquipment.backgroundTintList = ColorStateList.valueOf(transparentColor)
             binding.btnTabNoEquipment.setTextColor(silverColor)
 
-            // "Có Dụng Cụ" Active -> Solid Blue Background
+            // "Theo Nhóm Cơ" Active -> Solid Blue Background
             binding.btnTabWithEquipment.backgroundTintList = ColorStateList.valueOf(activePrimaryColor)
             binding.btnTabWithEquipment.setTextColor(whiteColor)
 
             binding.layoutSubTabs.visibility = View.VISIBLE
 
             if (!isGymMode) {
-                // "Tại Nhà" Active -> Solid Cyan Background
+                // "Thân trên & Core" Active -> Solid Cyan Background
                 binding.btnSubTabHome.backgroundTintList = ColorStateList.valueOf(activeSecondaryColor)
                 binding.btnSubTabHome.setTextColor(whiteColor)
 
-                // "Phòng Gym" Inactive -> Transparent Background
+                // "Thân dưới & Cardio" Inactive -> Transparent Background
                 binding.btnSubTabGym.backgroundTintList = ColorStateList.valueOf(transparentColor)
                 binding.btnSubTabGym.setTextColor(silverColor)
 
-                val filtered = allExercises.filter { it.category == "Tại nhà" }
+                val filtered = allExercises.filter { it.category == "Thân trên & Core" }
                 adapter.submitList(filtered)
             } else {
-                // "Tại Nhà" Inactive -> Transparent Background
+                // "Thân trên & Core" Inactive -> Transparent Background
                 binding.btnSubTabHome.backgroundTintList = ColorStateList.valueOf(transparentColor)
                 binding.btnSubTabHome.setTextColor(silverColor)
 
-                // "Phòng Gym" Active -> Solid Cyan Background
+                // "Thân dưới & Cardio" Active -> Solid Cyan Background
                 binding.btnSubTabGym.backgroundTintList = ColorStateList.valueOf(activeSecondaryColor)
                 binding.btnSubTabGym.setTextColor(whiteColor)
 
-                val filtered = allExercises.filter { it.category == "Phòng gym" }
+                val filtered = allExercises.filter { it.category == "Thân dưới & Cardio" }
                 adapter.submitList(filtered)
             }
         }

@@ -72,9 +72,76 @@ class WorkoutCalendarFragment : Fragment() {
         null
 
 
-    // Cache exercise master data.
-    private val exercisesCache =
-        HashMap<String, ExerciseDetails>()
+    // Cache exercise master data pre-populated with the 7 asset video exercises
+    private val exercisesCache = getDefaultMasterExercises()
+
+    companion object {
+        fun getDefaultMasterExercises(): HashMap<String, ExerciseDetails> {
+            val map = HashMap<String, ExerciseDetails>()
+            val list = listOf(
+                ExerciseDetails(
+                    id = "pushup",
+                    name = "Hít Đất (Push-up)",
+                    description = "Giữ thẳng lưng, hạ ngực sát sàn rồi đẩy lên.",
+                    videoUrl = "asset:///videos/push_up.mp4",
+                    isTimed = false,
+                    unit = "lần"
+                ),
+                ExerciseDetails(
+                    id = "squat",
+                    name = "Ngồi Xổm (Squat)",
+                    description = "Gập gối hạ hông xuống sâu, giữ lưng thẳng.",
+                    videoUrl = "asset:///videos/squat.mp4",
+                    isTimed = false,
+                    unit = "lần"
+                ),
+                ExerciseDetails(
+                    id = "jumpingjack",
+                    name = "Nhảy Dang Tay Chân (Jumping Jack)",
+                    description = "Bật nhảy dang rộng chân đồng thời vung hai tay chạm nhau ở trên đầu.",
+                    videoUrl = "asset:///videos/jumping_jack.mp4",
+                    isTimed = false,
+                    unit = "lần"
+                ),
+                ExerciseDetails(
+                    id = "situp",
+                    name = "Gập Bụng (Sit-up)",
+                    description = "Nằm ngửa gối co, dùng cơ bụng kéo thân trên ngồi dậy hoàn toàn.",
+                    videoUrl = "asset:///videos/sit_up.mp4",
+                    isTimed = false,
+                    unit = "lần"
+                ),
+                ExerciseDetails(
+                    id = "plank",
+                    name = "Giữ Thân (Plank)",
+                    description = "Tì khuỷu tay xuống sàn, giữ thẳng toàn thân song song với sàn.",
+                    videoUrl = "asset:///videos/plank.mp4",
+                    isTimed = true,
+                    unit = "giây"
+                ),
+                ExerciseDetails(
+                    id = "sideplank",
+                    name = "Plank Nghiêng (Side Plank)",
+                    description = "Nằm nghiêng, tì một khuỷu tay nâng hông lên cao giữ cơ thể thẳng.",
+                    videoUrl = "asset:///videos/side_plank.mp4",
+                    isTimed = true,
+                    unit = "giây"
+                ),
+                ExerciseDetails(
+                    id = "splitsquat",
+                    name = "Ngồi Xổm Một Chân (Split Squat)",
+                    description = "Đứng chân trước chân sau rộng, hạ đầu gối chân sau xuống vuông góc.",
+                    videoUrl = "asset:///videos/split_squat.mp4",
+                    isTimed = false,
+                    unit = "lần"
+                )
+            )
+            for (ex in list) {
+                map[ex.id] = ex
+            }
+            return map
+        }
+    }
 
 
     // 30-day workout memory cache.
@@ -857,16 +924,23 @@ class WorkoutCalendarFragment : Fragment() {
             val displayExercises =
                 exercises.map { userEx ->
 
+                    val normalizedId = when (userEx.exerciseId.lowercase().trim()) {
+                        "jumping_jacks", "jumping_jack" -> "jumpingjack"
+                        "side_plank" -> "sideplank"
+                        "split_squat", "lunges" -> "splitsquat"
+                        "push_up" -> "pushup"
+                        "sit_up" -> "situp"
+                        else -> userEx.exerciseId
+                    }
+
                     val details =
-                        exercisesCache[
-                            userEx.exerciseId
-                        ]
+                        exercisesCache[normalizedId] ?: exercisesCache[userEx.exerciseId]
 
 
                     Exercise(
 
                         id =
-                            userEx.exerciseId,
+                            normalizedId,
 
                         name =
                             details?.name

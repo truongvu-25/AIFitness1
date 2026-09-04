@@ -811,14 +811,14 @@ class HomeFragment : Fragment() {
 
         val plansArray =
             try {
-
-                JSONArray(
-                    allPlansStr
-                )
-
+                val parsed = JSONArray(allPlansStr)
+                if (parsed.length() == 0) {
+                    getDefaultSuggestedPlans()
+                } else {
+                    parsed
+                }
             } catch (_: Exception) {
-
-                JSONArray()
+                getDefaultSuggestedPlans()
             }
 
 
@@ -852,6 +852,190 @@ class HomeFragment : Fragment() {
             plansArray,
             activePlanName
         )
+    }
+
+    private fun getDefaultSuggestedPlans(): JSONArray {
+        val array = JSONArray()
+
+        // 1. Lộ trình Toàn Thân Tinh Gọn (Full-Body)
+        val p1 = JSONObject().apply {
+            put("planId", "preset_fullbody")
+            put("planName", "Lộ trình Toàn Thân Tinh Gọn (Full-Body)")
+            put("createdAt", 1700000000000L)
+            put("isPreset", true)
+            val days = JSONArray()
+            val dayData = listOf(
+                Pair("Thứ Hai", "mon") to listOf(
+                    Triple("pushup", "Hít Đất (Push-up)", 15),
+                    Triple("squat", "Ngồi Xổm (Squats)", 20),
+                    Triple("plank", "Plank Căng Cơ", 45)
+                ),
+                Pair("Thứ Ba", "tue") to listOf(
+                    Triple("splitsquat", "Ngồi Xổm Một Chân (Split Squat)", 15),
+                    Triple("situp", "Gập Bụng (Sit-up)", 20),
+                    Triple("sideplank", "Plank Nghiêng (Side Plank)", 30)
+                ),
+                Pair("Thứ Tư", "wed") to emptyList(),
+                Pair("Thứ Năm", "thu") to listOf(
+                    Triple("pushup", "Hít Đất (Push-up)", 15),
+                    Triple("squat", "Ngồi Xổm (Squats)", 20),
+                    Triple("jumpingjack", "Jumping Jacks", 30),
+                    Triple("plank", "Plank Căng Cơ", 45)
+                ),
+                Pair("Thứ Sáu", "fri") to listOf(
+                    Triple("splitsquat", "Ngồi Xổm Một Chân (Split Squat)", 15),
+                    Triple("situp", "Gập Bụng (Sit-up)", 20),
+                    Triple("sideplank", "Plank Nghiêng (Side Plank)", 30)
+                ),
+                Pair("Thứ Bảy", "sat") to listOf(
+                    Triple("jumpingjack", "Jumping Jacks", 35),
+                    Triple("squat", "Ngồi Xổm (Squats)", 20),
+                    Triple("pushup", "Hít Đất (Push-up)", 15),
+                    Triple("plank", "Plank Căng Cơ", 50)
+                ),
+                Pair("Chủ Nhật", "sun") to emptyList()
+            )
+            for ((dayInfo, exercises) in dayData) {
+                val dayObj = JSONObject().apply {
+                    put("dayName", dayInfo.first)
+                    put("dayKey", dayInfo.second)
+                    val exArr = JSONArray()
+                    for (ex in exercises) {
+                        exArr.put(JSONObject().apply {
+                            put("id", ex.first)
+                            put("name", ex.second)
+                            put("targetCount", ex.third)
+                        })
+                    }
+                    put("exercises", exArr)
+                }
+                days.put(dayObj)
+            }
+            put("days", days)
+        }
+        array.put(p1)
+
+        // 2. Lộ trình Siết Cơ Bụng & Lõi Cốt (Core & Abs)
+        val p2 = JSONObject().apply {
+            put("planId", "preset_core")
+            put("planName", "Lộ trình Siết Bụng & Core (Abs Pro)")
+            put("createdAt", 1700000001000L)
+            put("isPreset", true)
+            val days = JSONArray()
+            val dayData = listOf(
+                Pair("Thứ Hai", "mon") to listOf(
+                    Triple("situp", "Gập Bụng (Sit-up)", 25),
+                    Triple("plank", "Plank Căng Cơ", 45),
+                    Triple("sideplank", "Plank Nghiêng (Side Plank)", 30),
+                    Triple("pushup", "Hít Đất (Push-up)", 12)
+                ),
+                Pair("Thứ Ba", "tue") to listOf(
+                    Triple("squat", "Ngồi Xổm (Squats)", 20),
+                    Triple("jumpingjack", "Jumping Jacks", 30),
+                    Triple("plank", "Plank Căng Cơ", 45)
+                ),
+                Pair("Thứ Tư", "wed") to listOf(
+                    Triple("situp", "Gập Bụng (Sit-up)", 25),
+                    Triple("sideplank", "Plank Nghiêng (Side Plank)", 40),
+                    Triple("plank", "Plank Căng Cơ", 60)
+                ),
+                Pair("Thứ Năm", "thu") to emptyList(),
+                Pair("Thứ Sáu", "fri") to listOf(
+                    Triple("pushup", "Hít Đất (Push-up)", 15),
+                    Triple("situp", "Gập Bụng (Sit-up)", 20),
+                    Triple("plank", "Plank Căng Cơ", 45),
+                    Triple("jumpingjack", "Jumping Jacks", 30)
+                ),
+                Pair("Thứ Bảy", "sat") to listOf(
+                    Triple("sideplank", "Plank Nghiêng (Side Plank)", 35),
+                    Triple("situp", "Gập Bụng (Sit-up)", 25),
+                    Triple("squat", "Ngồi Xổm (Squats)", 20),
+                    Triple("plank", "Plank Căng Cơ", 50)
+                ),
+                Pair("Chủ Nhật", "sun") to emptyList()
+            )
+            for ((dayInfo, exercises) in dayData) {
+                val dayObj = JSONObject().apply {
+                    put("dayName", dayInfo.first)
+                    put("dayKey", dayInfo.second)
+                    val exArr = JSONArray()
+                    for (ex in exercises) {
+                        exArr.put(JSONObject().apply {
+                            put("id", ex.first)
+                            put("name", ex.second)
+                            put("targetCount", ex.third)
+                        })
+                    }
+                    put("exercises", exArr)
+                }
+                days.put(dayObj)
+            }
+            put("days", days)
+        }
+        array.put(p2)
+
+        // 3. Lộ trình Đốt Mỡ Thần Tốc (HIIT Fat Burn)
+        val p3 = JSONObject().apply {
+            put("planId", "preset_hiit")
+            put("planName", "Lộ trình Đốt Mỡ Thần Tốc (HIIT Fat Burn)")
+            put("createdAt", 1700000002000L)
+            put("isPreset", true)
+            val days = JSONArray()
+            val dayData = listOf(
+                Pair("Thứ Hai", "mon") to listOf(
+                    Triple("jumpingjack", "Jumping Jacks", 35),
+                    Triple("squat", "Ngồi Xổm (Squats)", 25),
+                    Triple("situp", "Gập Bụng (Sit-up)", 20),
+                    Triple("plank", "Plank Căng Cơ", 45)
+                ),
+                Pair("Thứ Ba", "tue") to listOf(
+                    Triple("jumpingjack", "Jumping Jacks", 35),
+                    Triple("splitsquat", "Ngồi Xổm Một Chân (Split Squat)", 15),
+                    Triple("pushup", "Hít Đất (Push-up)", 15),
+                    Triple("sideplank", "Plank Nghiêng (Side Plank)", 35)
+                ),
+                Pair("Thứ Tư", "wed") to emptyList(),
+                Pair("Thứ Năm", "thu") to listOf(
+                    Triple("jumpingjack", "Jumping Jacks", 40),
+                    Triple("squat", "Ngồi Xổm (Squats)", 25),
+                    Triple("splitsquat", "Ngồi Xổm Một Chân (Split Squat)", 15),
+                    Triple("plank", "Plank Căng Cơ", 50)
+                ),
+                Pair("Thứ Sáu", "fri") to listOf(
+                    Triple("jumpingjack", "Jumping Jacks", 35),
+                    Triple("situp", "Gập Bụng (Sit-up)", 25),
+                    Triple("pushup", "Hít Đất (Push-up)", 15),
+                    Triple("sideplank", "Plank Nghiêng (Side Plank)", 35)
+                ),
+                Pair("Thứ Bảy", "sat") to listOf(
+                    Triple("jumpingjack", "Jumping Jacks", 40),
+                    Triple("squat", "Ngồi Xổm (Squats)", 25),
+                    Triple("situp", "Gập Bụng (Sit-up)", 20),
+                    Triple("plank", "Plank Căng Cơ", 45)
+                ),
+                Pair("Chủ Nhật", "sun") to emptyList()
+            )
+            for ((dayInfo, exercises) in dayData) {
+                val dayObj = JSONObject().apply {
+                    put("dayName", dayInfo.first)
+                    put("dayKey", dayInfo.second)
+                    val exArr = JSONArray()
+                    for (ex in exercises) {
+                        exArr.put(JSONObject().apply {
+                            put("id", ex.first)
+                            put("name", ex.second)
+                            put("targetCount", ex.third)
+                        })
+                    }
+                    put("exercises", exArr)
+                }
+                days.put(dayObj)
+            }
+            put("days", days)
+        }
+        array.put(p3)
+
+        return array
     }
 
 
@@ -890,6 +1074,14 @@ class HomeFragment : Fragment() {
         }
 
 
+        val hasCustom = (0 until plansArray.length()).any {
+            !plansArray.getJSONObject(it).optBoolean("isPreset", false)
+        }
+        binding.tvSavedPlansHeader.text = if (hasCustom) {
+            "LỊCH TẬP ĐÃ LƯU & GỢI Ý"
+        } else {
+            "GỢI Ý LỘ TRÌNH TẬP LUYỆN"
+        }
         binding.tvSavedPlansHeader.visibility =
             View.VISIBLE
 
@@ -1052,15 +1244,21 @@ class HomeFragment : Fragment() {
             }
 
 
-            itemBinding.btnDeletePlan
-                .setOnClickListener {
+            val isPreset = planObj.optBoolean("isPreset", false)
+            if (isPreset) {
+                itemBinding.btnDeletePlan.visibility = View.GONE
+            } else {
+                itemBinding.btnDeletePlan.visibility = View.VISIBLE
+                itemBinding.btnDeletePlan
+                    .setOnClickListener {
 
-                    showDeletePlanConfirmationDialog(
-                        planId,
-                        planName,
-                        i
-                    )
-                }
+                        showDeletePlanConfirmationDialog(
+                            planId,
+                            planName,
+                            i
+                        )
+                    }
+            }
 
 
             binding.layoutSavedPlansList

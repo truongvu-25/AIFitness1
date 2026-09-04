@@ -169,14 +169,14 @@ abstract class BaseExerciseAnalyzer(
             isTimed: Boolean,
             unit: String
         ): BaseExerciseAnalyzer {
-            return when (exerciseId) {
-                "pushup" -> PushupAnalyzer(exerciseId, exerciseName, targetCount, isTimed, unit)
+            return when (exerciseId.lowercase().trim()) {
+                "pushup", "push_up" -> PushupAnalyzer(exerciseId, exerciseName, targetCount, isTimed, unit)
                 "squat" -> SquatAnalyzer(exerciseId, exerciseName, targetCount, isTimed, unit)
-                "jumpingjack" -> JumpingJackAnalyzer(exerciseId, exerciseName, targetCount, isTimed, unit)
-                "situp" -> SitupAnalyzer(exerciseId, exerciseName, targetCount, isTimed, unit)
+                "jumpingjack", "jumping_jack", "jumping_jacks" -> JumpingJackAnalyzer(exerciseId, exerciseName, targetCount, isTimed, unit)
+                "situp", "sit_up" -> SitupAnalyzer(exerciseId, exerciseName, targetCount, isTimed, unit)
                 "plank" -> PlankAnalyzer(exerciseId, exerciseName, targetCount, isTimed, unit)
-                "sideplank" -> SidePlankAnalyzer(exerciseId, exerciseName, targetCount, isTimed, unit)
-                "splitsquat" -> SplitSquatAnalyzer(exerciseId, exerciseName, targetCount, isTimed, unit)
+                "sideplank", "side_plank" -> SidePlankAnalyzer(exerciseId, exerciseName, targetCount, isTimed, unit)
+                "splitsquat", "split_squat", "lunges" -> SplitSquatAnalyzer(exerciseId, exerciseName, targetCount, isTimed, unit)
                 else -> object : BaseExerciseAnalyzer(exerciseId, exerciseName, targetCount, isTimed, unit) {
                     override fun isReadyState(landmarks: List<NormalizedLandmark>): Boolean = true
                     override fun analyze(landmarks: List<NormalizedLandmark>): AnalysisResult {

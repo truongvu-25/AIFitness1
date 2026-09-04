@@ -51,7 +51,7 @@ class CreateCustomPlanFragment : Fragment() {
     )
     private lateinit var weeklyAdapter: WeeklyScheduleAdapter
 
-    private var currentCategory = "Không dụng cụ"
+    private var currentCategory = "Tất cả"
 
     private lateinit var auth: FirebaseAuth
     private lateinit var db: FirebaseFirestore
@@ -83,31 +83,14 @@ class CreateCustomPlanFragment : Fragment() {
 
     private fun initExerciseDatabase() {
         allExercises.clear()
-        // Không dụng cụ
-        allExercises.add(LibraryExercise("pushup", "Hít Đất (Push-up)", "15 lần", "Ngực & vai", "Không dụng cụ", "Bodyweight", 15))
-        allExercises.add(LibraryExercise("situp", "Gập Bụng (Sit-up)", "20 lần", "Cơ bụng", "Không dụng cụ", "Bodyweight", 20))
-        allExercises.add(LibraryExercise("squat", "Ngồi Xổm (Squats)", "20 lần", "Cơ đùi & mông", "Không dụng cụ", "Bodyweight", 20))
-        allExercises.add(LibraryExercise("plank", "Plank Căng Cơ", "45 giây", "Cơ lõi Core", "Không dụng cụ", "Bodyweight", 45))
-        allExercises.add(LibraryExercise("sideplank", "Plank Nghiêng (Side Plank)", "30 giây", "Cơ liên sườn & eo", "Không dụng cụ", "Bodyweight", 30))
-        allExercises.add(LibraryExercise("jumping_jacks", "Jumping Jacks", "30 lần", "Cardio đốt mỡ", "Không dụng cụ", "Bodyweight", 30))
-        allExercises.add(LibraryExercise("lunges", "Lunge Chùng Chân", "15 lần", "Đùi & khớp gối", "Không dụng cụ", "Bodyweight", 15))
-        allExercises.add(LibraryExercise("mountain_climber", "Leo Núi (Mountain Climbers)", "30 giây", "Bụng dưới", "Không dụng cụ", "Bodyweight", 30))
-
-        // Tại nhà
-        allExercises.add(LibraryExercise("db_curl", "Cuốn Tạ Tay (Dumbbell Curl)", "12 lần", "Bắp tay trước", "Tại nhà", "Tạ đơn", 12))
-        allExercises.add(LibraryExercise("db_shoulder_press", "Đẩy Vai Tạ Đơn (Shoulder Press)", "12 lần", "Cơ vai", "Tại nhà", "Tạ đơn", 12))
-        allExercises.add(LibraryExercise("goblet_squat", "Goblet Squat (Squat Ôm Tạ)", "15 lần", "Đùi & mông", "Tại nhà", "Tạ đơn", 15))
-        allExercises.add(LibraryExercise("tricep_dips", "Tricep Dips (Ghế Tựa)", "15 lần", "Tay sau", "Tại nhà", "Ghế tập", 15))
-        allExercises.add(LibraryExercise("band_lateral_walk", "Bước Ngang Dây Kháng Lực", "20 bước", "Cơ mông nhỡ", "Tại nhà", "Miniband", 20))
-        allExercises.add(LibraryExercise("db_rdl", "Dumbbell Romanian Deadlift", "12 lần", "Đùi sau", "Tại nhà", "Tạ đơn", 12))
-
-        // Phòng gym
-        allExercises.add(LibraryExercise("barbell_bench_press", "Nằm Đẩy Tạ Đòn (Bench Press)", "10 lần", "Cơ ngực dày", "Phòng gym", "Tạ đòn", 10))
-        allExercises.add(LibraryExercise("lat_pulldown", "Kéo Cáp Xô Lưng (Lat Pulldown)", "12 lần", "Lưng xô V-taper", "Phòng gym", "Máy kéo cáp", 12))
-        allExercises.add(LibraryExercise("barbell_squat", "Gánh Tạ Đòn (Barbell Squat)", "10 lần", "Đùi trước & sau", "Phòng gym", "Khung gánh", 10))
-        allExercises.add(LibraryExercise("cable_tricep_pushdown", "Kéo Cáp Tay Sau (Pushdown)", "12 lần", "Tay sau sắc nét", "Phòng gym", "Cáp thừng", 12))
-        allExercises.add(LibraryExercise("leg_press", "Đạp Đùi Máy Nghiêng (Leg Press)", "12 lần", "Đùi nặng", "Phòng gym", "Máy Leg Press", 12))
-        allExercises.add(LibraryExercise("seated_cable_row", "Kéo Cáp Ngồi (Seated Row)", "12 lần", "Lưng giữa", "Phòng gym", "Máy Row", 12))
+        // Chính xác 7 bài tập tương ứng với 7 video trong thư mục assets/videos/
+        allExercises.add(LibraryExercise("pushup", "Hít Đất (Push-up)", "15 lần", "Ngực & vai", "Thân trên & Core", "Bodyweight", 15))
+        allExercises.add(LibraryExercise("situp", "Gập Bụng (Sit-up)", "20 lần", "Cơ bụng", "Thân trên & Core", "Bodyweight", 20))
+        allExercises.add(LibraryExercise("squat", "Ngồi Xổm (Squats)", "20 lần", "Cơ đùi & mông", "Thân dưới & Cardio", "Bodyweight", 20))
+        allExercises.add(LibraryExercise("plank", "Plank Căng Cơ", "45 giây", "Cơ lõi Core", "Thân trên & Core", "Bodyweight", 45))
+        allExercises.add(LibraryExercise("sideplank", "Plank Nghiêng (Side Plank)", "30 giây", "Cơ liên sườn & eo", "Thân trên & Core", "Bodyweight", 30))
+        allExercises.add(LibraryExercise("jumpingjack", "Jumping Jacks", "30 lần", "Cardio đốt mỡ", "Thân dưới & Cardio", "Bodyweight", 30))
+        allExercises.add(LibraryExercise("splitsquat", "Ngồi Xổm Một Chân (Split Squat)", "15 lần", "Đùi & khớp gối", "Thân dưới & Cardio", "Bodyweight", 15))
     }
 
     private fun setupUpperPicker() {
@@ -126,16 +109,20 @@ class CreateCustomPlanFragment : Fragment() {
     }
 
     private fun setupFilterButtons() {
+        binding.btnPickerNoEquip.text = "Tất cả (7)"
+        binding.btnPickerHome.text = "Thân trên & Core"
+        binding.btnPickerGym.text = "Thân dưới & Cardio"
+
         binding.btnPickerNoEquip.setOnClickListener {
-            currentCategory = "Không dụng cụ"
+            currentCategory = "Tất cả"
             updatePickerFilter()
         }
         binding.btnPickerHome.setOnClickListener {
-            currentCategory = "Tại nhà"
+            currentCategory = "Thân trên & Core"
             updatePickerFilter()
         }
         binding.btnPickerGym.setOnClickListener {
-            currentCategory = "Phòng gym"
+            currentCategory = "Thân dưới & Cardio"
             updatePickerFilter()
         }
     }
@@ -147,18 +134,22 @@ class CreateCustomPlanFragment : Fragment() {
         val silver = ContextCompat.getColor(requireContext(), R.color.tri_force_silver)
 
         binding.btnPickerNoEquip.backgroundTintList =
-            ColorStateList.valueOf(if (currentCategory == "Không dụng cụ") activeColor else transparentColor)
-        binding.btnPickerNoEquip.setTextColor(if (currentCategory == "Không dụng cụ") white else silver)
+            ColorStateList.valueOf(if (currentCategory == "Tất cả") activeColor else transparentColor)
+        binding.btnPickerNoEquip.setTextColor(if (currentCategory == "Tất cả") white else silver)
 
         binding.btnPickerHome.backgroundTintList =
-            ColorStateList.valueOf(if (currentCategory == "Tại nhà") activeColor else transparentColor)
-        binding.btnPickerHome.setTextColor(if (currentCategory == "Tại nhà") white else silver)
+            ColorStateList.valueOf(if (currentCategory == "Thân trên & Core") activeColor else transparentColor)
+        binding.btnPickerHome.setTextColor(if (currentCategory == "Thân trên & Core") white else silver)
 
         binding.btnPickerGym.backgroundTintList =
-            ColorStateList.valueOf(if (currentCategory == "Phòng gym") activeColor else transparentColor)
-        binding.btnPickerGym.setTextColor(if (currentCategory == "Phòng gym") white else silver)
+            ColorStateList.valueOf(if (currentCategory == "Thân dưới & Cardio") activeColor else transparentColor)
+        binding.btnPickerGym.setTextColor(if (currentCategory == "Thân dưới & Cardio") white else silver)
 
-        val filtered = allExercises.filter { it.category == currentCategory }
+        val filtered = if (currentCategory == "Tất cả") {
+            allExercises
+        } else {
+            allExercises.filter { it.category == currentCategory }
+        }
         horizontalPickerAdapter.submitList(filtered)
     }
 
