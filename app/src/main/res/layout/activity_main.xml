@@ -146,15 +146,6 @@
                 android:layout_weight="1" />
 
 
-            <!-- AI live indicator -->
-
-            <View
-                android:layout_width="6dp"
-                android:layout_height="6dp"
-
-                android:background="@color/tri_force_blue" />
-
-
         </LinearLayout>
 
 
@@ -248,7 +239,7 @@
 
             android:layout_above="@id/bottomNavCard"
 
-            android:background="@color/white_08" />
+            android:background="@color/tri_force_surface_dark_alt" />
 
 
     </RelativeLayout>

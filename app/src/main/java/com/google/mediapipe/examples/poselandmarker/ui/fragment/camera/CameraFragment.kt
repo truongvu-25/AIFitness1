@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.res.Configuration
 import android.graphics.Color
 import android.os.Bundle
+import android.speech.tts.TextToSpeech
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -41,6 +42,8 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
 
     companion object {
         private const val TAG = "PoseLandmarker"
+        private const val VOICE_MIN_INTERVAL_MS = 2_500L
+        private const val VOICE_REPEAT_INTERVAL_MS = 7_000L
     }
 
     private var _fragmentCameraBinding: FragmentCameraBinding? = null
@@ -72,6 +75,13 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
 
     private var exerciseAnalyzer: BaseExerciseAnalyzer? = null
 
+    private var textToSpeech: TextToSpeech? = null
+    private var isVoiceReady = false
+    private var lastSpokenFeedback = ""
+    private var lastVoiceTimeMs = 0L
+    private var lastSpokenProgress = 0
+    private var hasAnnouncedCompletion = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         auth = FirebaseAuth.getInstance()
@@ -102,6 +112,7 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
 
     override fun onPause() {
         super.onPause()
+        textToSpeech?.stop()
         if (this::poseLandmarkerHelper.isInitialized) {
             viewModel.setMinPoseDetectionConfidence(poseLandmarkerHelper.minPoseDetectionConfidence)
             viewModel.setMinPoseTrackingConfidence(poseLandmarkerHelper.minPoseTrackingConfidence)
@@ -113,6 +124,10 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
     }
 
     override fun onDestroyView() {
+        textToSpeech?.stop()
+        textToSpeech?.shutdown()
+        textToSpeech = null
+        isVoiceReady = false
         _fragmentCameraBinding = null
         super.onDestroyView()
         backgroundExecutor.shutdown()
@@ -143,6 +158,8 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
         fragmentCameraBinding.tvCounterLabel.text = if (isTimed) "Thời gian giữ chuẩn tư thế" else "Số lần hoàn thành"
         fragmentCameraBinding.tvCounterValue.text = "0 / $targetCount $unitStr"
         fragmentCameraBinding.tvFormFeedback.text = "Đứng trước camera để hệ thống nhận diện khung xương..."
+
+        initializeVoiceGuidance()
 
         exerciseAnalyzer = BaseExerciseAnalyzer.create(
             exerciseId, exerciseName, targetCount, isTimed, unitStr
@@ -182,6 +199,88 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
         }
 
         initBottomSheetControls()
+    }
+
+    private fun initializeVoiceGuidance() {
+        textToSpeech = TextToSpeech(requireContext().applicationContext) { status ->
+            val engine = textToSpeech ?: return@TextToSpeech
+            if (status != TextToSpeech.SUCCESS) {
+                Log.w(TAG, "Không thể khởi tạo hướng dẫn bằng giọng nói")
+                return@TextToSpeech
+            }
+
+            val languageResult = engine.setLanguage(Locale("vi", "VN"))
+            isVoiceReady = languageResult != TextToSpeech.LANG_MISSING_DATA &&
+                languageResult != TextToSpeech.LANG_NOT_SUPPORTED
+
+            if (!isVoiceReady) {
+                Log.w(TAG, "Thiết bị không có dữ liệu giọng đọc tiếng Việt")
+                return@TextToSpeech
+            }
+
+            // Android không chuẩn hóa thuộc tính giới tính. Ưu tiên voice nữ nếu engine
+            // công bố tên voice, nếu không dùng voice tiếng Việt mặc định của thiết bị.
+            val femaleHints = listOf("female", "woman", "vif", "viet_female")
+            engine.voices
+                ?.firstOrNull { voice ->
+                    voice.locale.language == "vi" &&
+                        femaleHints.any { hint -> voice.name.contains(hint, ignoreCase = true) }
+                }
+                ?.let { engine.voice = it }
+
+            engine.setSpeechRate(1.0f)
+            engine.setPitch(1.06f)
+
+            if (_fragmentCameraBinding == null) return@TextToSpeech
+            val exerciseIntro = exerciseName.takeIf(String::isNotBlank)
+                ?.let { "Bắt đầu $it. " }
+                .orEmpty()
+            speakGuidance(
+                "${exerciseIntro}Đứng trước camera để nhìn thấy toàn thân.",
+                force = true
+            )
+        }
+    }
+
+    private fun handleVoiceGuidance(feedback: String, progress: Int, isComplete: Boolean) {
+        if (isComplete) {
+            if (!hasAnnouncedCompletion) {
+                hasAnnouncedCompletion = true
+                speakGuidance("Hoàn thành bài tập.", force = true)
+            }
+            return
+        }
+
+        if (progress > lastSpokenProgress) {
+            lastSpokenProgress = progress
+            val shouldAnnounceProgress = !isTimed || progress % 5 == 0
+            if (shouldAnnounceProgress) {
+                val progressText = if (isTimed) "$progress giây" else progress.toString()
+                speakGuidance(progressText, force = true)
+                return
+            }
+        }
+
+        speakGuidance(feedback)
+    }
+
+    private fun speakGuidance(text: String, force: Boolean = false) {
+        if (!isVoiceReady || text.isBlank()) return
+
+        val now = System.currentTimeMillis()
+        val elapsed = now - lastVoiceTimeMs
+        val isRepeatedFeedback = text == lastSpokenFeedback
+        if (!force && elapsed < VOICE_MIN_INTERVAL_MS) return
+        if (!force && isRepeatedFeedback && elapsed < VOICE_REPEAT_INTERVAL_MS) return
+
+        textToSpeech?.speak(
+            text,
+            TextToSpeech.QUEUE_FLUSH,
+            null,
+            "tri_force_guidance_${now}"
+        )
+        lastSpokenFeedback = text
+        lastVoiceTimeMs = now
     }
 
     private var isCompletingWorkout = false
@@ -430,6 +529,11 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
                         fragmentCameraBinding.tvCounterValue.text = "$currentProgressCount / $targetCount $unitStr"
                         fragmentCameraBinding.tvFormFeedback.text = result.feedback
                         fragmentCameraBinding.tvFormFeedback.setTextColor(result.feedbackColor)
+                        handleVoiceGuidance(
+                            feedback = result.feedback,
+                            progress = currentProgressCount,
+                            isComplete = result.isComplete
+                        )
 
                         // Update overlay with landmarks and custom lines from analysis
                         fragmentCameraBinding.overlay.setResults(
@@ -452,8 +556,10 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
                         RunningMode.LIVE_STREAM,
                         emptyList()
                     )
-                    fragmentCameraBinding.tvFormFeedback.text = "Hãy đứng lùi lại để camera quét được toàn thân"
+                    val noBodyFeedback = "Hãy đứng lùi lại để camera quét được toàn thân"
+                    fragmentCameraBinding.tvFormFeedback.text = noBodyFeedback
                     fragmentCameraBinding.tvFormFeedback.setTextColor(Color.parseColor("#FFCA28"))
+                    speakGuidance(noBodyFeedback)
                 }
                 fragmentCameraBinding.overlay.invalidate()
             }

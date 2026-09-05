@@ -1,375 +1,218 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<androidx.constraintlayout.widget.ConstraintLayout
+<androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-
     android:background="@color/tri_force_bg">
 
-
-    <!-- =========================================================
-         ACTIVE PLAN HERO
-
-         Dark navy chỉ sử dụng cho feature area.
-         Không biến toàn Calendar thành dark mode.
-         ========================================================= -->
-
-    <com.google.android.material.card.MaterialCardView
-        android:id="@+id/headerPlanCard"
-
-        android:layout_width="0dp"
+    <!-- Collapses with the exercise list while preserving room for the global header. -->
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/calendarAppBar"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-
-        android:layout_marginStart="@dimen/screen_horizontal_padding"
-        android:layout_marginEnd="@dimen/screen_horizontal_padding"
-        android:layout_marginTop="@dimen/main_content_top_offset"
-
-        app:cardBackgroundColor="@color/tri_force_surface_dark"
-
-        app:cardCornerRadius="@dimen/card_corner_radius"
-
-        app:cardElevation="0dp"
-
-        app:strokeColor="@color/tri_force_surface_dark_alt"
-        app:strokeWidth="@dimen/stroke_thin"
-
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
-
+        android:background="@android:color/transparent"
+        android:elevation="0dp"
+        app:elevation="0dp"
+        app:liftOnScroll="true"
+        app:liftOnScrollTargetViewId="@id/rvExercises">
 
         <LinearLayout
-            android:id="@+id/headerPlan"
-
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-
+            android:minHeight="@dimen/main_content_top_offset"
             android:orientation="vertical"
+            android:paddingTop="@dimen/main_content_top_offset"
+            app:layout_scrollFlags="scroll|exitUntilCollapsed">
 
-            android:padding="@dimen/card_padding_large">
-
-
-            <!-- Eyebrow -->
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-
-                android:text="KẾ HOẠCH 30 NGÀY"
-
-                android:textColor="@color/tri_force_blue"
-
-                android:textSize="10sp"
-                android:textStyle="bold"
-
-                android:letterSpacing="0.12"
-
-                android:includeFontPadding="false" />
-
-
-            <!-- Plan name -->
-
-            <TextView
-                android:id="@+id/tvPlanType"
-
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/headerPlanCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/screen_horizontal_padding"
+                android:layout_marginEnd="@dimen/screen_horizontal_padding"
+                app:cardBackgroundColor="@color/tri_force_white"
+                app:cardCornerRadius="@dimen/card_corner_radius"
+                app:cardElevation="0dp"
+                app:strokeColor="@color/tri_force_stroke"
+                app:strokeWidth="@dimen/stroke_thin">
 
+                <LinearLayout
+                    android:id="@+id/headerPlan"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/card_padding_large">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:includeFontPadding="false"
+                        android:letterSpacing="0.12"
+                        android:text="KẾ HOẠCH 30 NGÀY"
+                        android:textColor="@color/tri_force_blue"
+                        android:textSize="10sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tvPlanType"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_8"
+                        android:includeFontPadding="false"
+                        android:lineSpacingExtra="1dp"
+                        android:maxLines="2"
+                        android:text="Đang tải lộ trình..."
+                        android:textColor="@color/tri_force_navy"
+                        android:textSize="21sp"
+                        android:textStyle="bold"
+                        tools:text="Lộ trình: Săn Chắc Thể Hình" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_8"
+                        android:includeFontPadding="false"
+                        android:lineSpacingExtra="2dp"
+                        android:maxLines="2"
+                        android:text="Theo dõi từng ngày, duy trì nhịp tập và hoàn thành mục tiêu của bạn."
+                        android:textColor="@color/tri_force_text_secondary"
+                        android:textSize="13sp" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_12"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <View
+                            android:layout_width="52dp"
+                            android:layout_height="3dp"
+                            android:background="@color/tri_force_blue" />
+
+                        <Space
+                            android:layout_width="0dp"
+                            android:layout_height="1dp"
+                            android:layout_weight="1" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnResetPlan"
+                            style="@style/TriForceButtonOutlined"
+                            android:layout_width="wrap_content"
+                            android:layout_height="@dimen/button_height_small"
+                            android:minWidth="0dp"
+                            android:paddingStart="@dimen/space_16"
+                            android:paddingEnd="@dimen/space_16"
+                            android:text="@string/btn_create_new_plan"
+                            android:textColor="@color/tri_force_blue"
+                            android:textSize="11sp"
+                            app:backgroundTint="@color/tri_force_white"
+                            app:elevation="0dp"
+                            app:strokeColor="@color/tri_force_blue" />
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvDays"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/calendar_day_strip_height"
                 android:layout_marginTop="@dimen/space_8"
-
-                android:text="Đang tải lộ trình..."
-
-                android:textColor="@color/tri_force_text_on_dark"
-
-                android:textSize="21sp"
-                android:textStyle="bold"
-
-                android:maxLines="2"
-
-                android:lineSpacingExtra="1dp"
-
-                android:includeFontPadding="false"
-
-                tools:text="Lộ trình: Săn Chắc Thể Hình" />
-
-
-            <!-- Supporting text -->
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-
-                android:layout_marginTop="@dimen/space_8"
-
-                android:text="Theo dõi từng ngày, duy trì nhịp tập và hoàn thành mục tiêu của bạn."
-
-                android:textColor="@color/tri_force_text_on_dark_secondary"
-
-                android:textSize="13sp"
-
-                android:lineSpacingExtra="2dp"
-
-                android:includeFontPadding="false" />
-
-
-            <!-- Bottom hero row -->
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-
-                android:layout_marginTop="@dimen/space_16"
-
+                android:clipToPadding="false"
+                android:nestedScrollingEnabled="false"
                 android:orientation="horizontal"
-
-                android:gravity="center_vertical">
-
-
-                <!-- Accent -->
-
-                <View
-                    android:layout_width="52dp"
-                    android:layout_height="3dp"
-
-                    android:background="@color/tri_force_blue" />
-
-
-                <Space
-                    android:layout_width="0dp"
-                    android:layout_height="1dp"
-
-                    android:layout_weight="1" />
-
-
-                <!-- Reset/Create plan -->
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnResetPlan"
-
-                    style="@style/TriForceButtonOutlined"
-
-                    android:layout_width="wrap_content"
-                    android:layout_height="@dimen/button_height_small"
-
-                    android:minWidth="0dp"
-
-                    android:text="@string/btn_create_new_plan"
-
-                    android:textColor="@color/tri_force_text_on_dark"
-
-                    android:textSize="11sp"
-
-                    android:paddingStart="@dimen/space_16"
-                    android:paddingEnd="@dimen/space_16"
-
-                    app:backgroundTint="@color/white_08"
-
-                    app:strokeColor="@color/white_24"
-
-                    app:elevation="0dp" />
-
-
-            </LinearLayout>
-
-
-        </LinearLayout>
-
-    </com.google.android.material.card.MaterialCardView>
-
-
-    <!-- =========================================================
-         30-DAY TIMELINE
-         ========================================================= -->
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rvDays"
-
-        android:layout_width="0dp"
-        android:layout_height="@dimen/calendar_day_strip_height"
-
-        android:layout_marginTop="@dimen/space_12"
-
-        android:paddingStart="16dp"
-        android:paddingEnd="16dp"
-
-        android:clipToPadding="false"
-
-        android:orientation="horizontal"
-
-        android:overScrollMode="never"
-
-        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-
-        app:layout_constraintTop_toBottomOf="@id/headerPlanCard"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-
-        tools:listitem="@layout/item_workout_day" />
-
-
-    <!-- =========================================================
-         SELECTED DAY
-         ========================================================= -->
-
-    <TextView
-        android:id="@+id/tvSelectedDay"
-
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-
-        android:layout_marginStart="@dimen/screen_horizontal_padding"
-        android:layout_marginEnd="@dimen/screen_horizontal_padding"
-        android:layout_marginTop="@dimen/space_16"
-
-        android:text="@string/today_workout_title"
-
-        android:textColor="@color/tri_force_text_primary"
-
-        android:textSize="20sp"
-        android:textStyle="bold"
-
-        android:includeFontPadding="false"
-
-        app:layout_constraintTop_toBottomOf="@id/rvDays"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-
-        tools:text="Bài tập Ngày 2 • 01/09" />
-
-
-    <!-- =========================================================
-         STATUS NOTICE
-         ========================================================= -->
-
-    <com.google.android.material.card.MaterialCardView
-        android:id="@+id/cardStatusNotice"
-
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-
-        android:layout_marginStart="@dimen/screen_horizontal_padding"
-        android:layout_marginEnd="@dimen/screen_horizontal_padding"
-        android:layout_marginTop="@dimen/space_12"
-
-        android:visibility="gone"
-
-        app:cardBackgroundColor="@color/tri_force_surface_soft"
-
-        app:cardCornerRadius="@dimen/card_corner_radius_small"
-
-        app:cardElevation="0dp"
-
-        app:strokeColor="@color/tri_force_stroke"
-        app:strokeWidth="@dimen/stroke_thin"
-
-        app:layout_constraintTop_toBottomOf="@id/tvSelectedDay"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
-
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-
-            android:orientation="horizontal"
-
-            android:gravity="center_vertical"
-
-            android:padding="@dimen/space_12">
-
-
-            <ImageView
-                android:id="@+id/ivNoticeIcon"
-
-                android:layout_width="@dimen/icon_size"
-                android:layout_height="@dimen/icon_size"
-
-                android:layout_marginEnd="@dimen/space_12"
-
-                android:src="@android:drawable/ic_dialog_info"
-
-                app:tint="@color/tri_force_info"
-
-                android:contentDescription="@null" />
-
+                android:overScrollMode="never"
+                android:paddingStart="@dimen/screen_horizontal_padding"
+                android:paddingEnd="@dimen/screen_horizontal_padding"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                tools:listitem="@layout/item_workout_day" />
 
             <TextView
-                android:id="@+id/tvNoticeMessage"
-
-                android:layout_width="0dp"
+                android:id="@+id/tvSelectedDay"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-
-                android:layout_weight="1"
-
-                android:text="Thông báo trạng thái ngày tập"
-
-                android:textColor="@color/tri_force_text_secondary"
-
-                android:textSize="13sp"
+                android:layout_marginStart="@dimen/screen_horizontal_padding"
+                android:layout_marginTop="@dimen/space_12"
+                android:layout_marginEnd="@dimen/screen_horizontal_padding"
+                android:includeFontPadding="false"
+                android:text="@string/today_workout_title"
+                android:textColor="@color/tri_force_text_primary"
+                android:textSize="20sp"
                 android:textStyle="bold"
+                tools:text="Bài tập Ngày 2 • 01/09" />
 
-                android:lineSpacingExtra="2dp"
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardStatusNotice"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/screen_horizontal_padding"
+                android:layout_marginTop="@dimen/space_8"
+                android:layout_marginEnd="@dimen/screen_horizontal_padding"
+                android:visibility="gone"
+                app:cardBackgroundColor="@color/tri_force_surface_soft"
+                app:cardCornerRadius="@dimen/card_corner_radius_small"
+                app:cardElevation="0dp"
+                app:strokeColor="@color/tri_force_stroke"
+                app:strokeWidth="@dimen/stroke_thin">
 
-                android:includeFontPadding="false" />
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:padding="@dimen/space_12">
 
+                    <ImageView
+                        android:id="@+id/ivNoticeIcon"
+                        android:layout_width="@dimen/icon_size"
+                        android:layout_height="@dimen/icon_size"
+                        android:layout_marginEnd="@dimen/space_12"
+                        android:contentDescription="@null"
+                        android:src="@android:drawable/ic_dialog_info"
+                        app:tint="@color/tri_force_info" />
 
+                    <TextView
+                        android:id="@+id/tvNoticeMessage"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:includeFontPadding="false"
+                        android:lineSpacingExtra="2dp"
+                        android:text="Thông báo trạng thái ngày tập"
+                        android:textColor="@color/tri_force_text_secondary"
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/space_8" />
         </LinearLayout>
-
-    </com.google.android.material.card.MaterialCardView>
-
-
-    <!-- =========================================================
-         EXERCISE LIST
-         ========================================================= -->
+    </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvExercises"
-
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-
-        android:layout_marginTop="@dimen/space_8"
-
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clipToPadding="false"
+        android:overScrollMode="never"
         android:paddingStart="@dimen/screen_horizontal_padding"
         android:paddingEnd="@dimen/screen_horizontal_padding"
         android:paddingBottom="@dimen/calendar_list_bottom_padding"
-
-        android:clipToPadding="false"
-
-        android:overScrollMode="never"
-
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-
-        app:layout_constraintTop_toBottomOf="@id/cardStatusNotice"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
         tools:listitem="@layout/item_exercise" />
-
-
-    <!-- =========================================================
-         LOADING
-         ========================================================= -->
 
     <ProgressBar
         android:id="@+id/calendarProgress"
-
         android:layout_width="44dp"
         android:layout_height="44dp"
-
-        android:visibility="gone"
-
+        android:layout_gravity="center"
         android:indeterminateTint="@color/mp_color_primary"
+        android:visibility="gone" />
 
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
-
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

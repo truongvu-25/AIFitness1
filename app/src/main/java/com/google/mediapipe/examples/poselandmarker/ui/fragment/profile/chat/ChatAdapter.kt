@@ -118,5 +118,12 @@ class ChatAdapter(
         notifyItemRangeRemoved(fromPosition, count)
     }
 
+    fun clearItems() {
+        val count = items.size
+        if (count == 0) return
+        items.clear()
+        notifyItemRangeRemoved(0, count)
+    }
+
     fun getItems(): List<ChatItem> = items
 }

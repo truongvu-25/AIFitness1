@@ -24,6 +24,12 @@ class ChatFlowController(private val questions: List<ChatQuestion> = ChatQuestio
         currentIndex = questionIndex
     }
 
+    /** Cập nhật riêng một câu trả lời trong chế độ sửa hồ sơ, không quay lại flow onboarding. */
+    fun updateAnswer(questionIndex: Int, rawValue: String) {
+        val question = questions.getOrNull(questionIndex) ?: return
+        answers[question.id] = rawValue
+    }
+
     /** Dùng cho chế độ Chỉnh sửa hồ sơ: nạp sẵn toàn bộ câu trả lời đã có, coi như đã hỏi xong hết. */
     fun preload(existingAnswers: Map<String, String>) {
         answers.clear()

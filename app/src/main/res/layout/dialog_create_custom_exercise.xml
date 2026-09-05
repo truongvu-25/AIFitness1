@@ -3,11 +3,11 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    app:cardCornerRadius="24dp"
-    app:cardElevation="10dp"
-    app:cardBackgroundColor="#E60A192F"
-    app:strokeColor="@color/mp_color_primary_variant"
-    app:strokeWidth="1.5dp">
+    app:cardCornerRadius="@dimen/card_corner_radius_small"
+    app:cardElevation="0dp"
+    app:cardBackgroundColor="@color/tri_force_white"
+    app:strokeColor="@color/tri_force_stroke"
+    app:strokeWidth="@dimen/stroke_thin">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -21,7 +21,7 @@
             android:text="TỰ TẠO BÀI TẬP MỚI"
             android:textSize="18sp"
             android:textStyle="bold"
-            android:textColor="@color/tri_force_white"
+            android:textColor="@color/tri_force_text_primary"
             android:letterSpacing="0.04"/>
 
         <TextView
@@ -29,7 +29,7 @@
             android:layout_height="wrap_content"
             android:text="Tùy chỉnh bài tập theo ý muốn và lưu vào thư viện"
             android:textSize="12sp"
-            android:textColor="@color/tri_force_silver"
+            android:textColor="@color/tri_force_text_secondary"
             android:layout_marginTop="2dp"
             android:layout_marginBottom="16dp"/>
 
@@ -38,10 +38,11 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Tên bài tập (vd: Hít đất kim cương)"
-            android:textColorHint="#94A3B8"
+            android:textColorHint="@color/input_hint"
             app:hintTextColor="@color/mp_color_primary_variant"
             android:layout_marginBottom="12dp"
-            app:boxStrokeColor="@color/mp_color_primary_variant"
+            app:boxBackgroundColor="@color/input_background"
+            app:boxStrokeColor="@color/library_input_stroke"
             app:boxCornerRadiusTopStart="14dp"
             app:boxCornerRadiusTopEnd="14dp"
             app:boxCornerRadiusBottomStart="14dp"
@@ -52,7 +53,7 @@
                 android:id="@+id/etCustomName"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textColor="@color/tri_force_white"
+                android:textColor="@color/tri_force_text_primary"
                 android:inputType="textCapWords"/>
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -63,7 +64,7 @@
             android:text="Hình thức tập luyện:"
             android:textSize="13sp"
             android:textStyle="bold"
-            android:textColor="@color/tri_force_white"
+            android:textColor="@color/tri_force_text_primary"
             android:layout_marginBottom="6dp"/>
 
         <RadioGroup
@@ -79,7 +80,7 @@
                 android:layout_height="wrap_content"
                 android:text="Không dụng cụ"
                 android:textSize="12sp"
-                android:textColor="@color/tri_force_white"
+                android:textColor="@color/tri_force_text_primary"
                 android:checked="true"
                 android:buttonTint="@color/mp_color_primary_variant"/>
 
@@ -89,7 +90,7 @@
                 android:layout_height="wrap_content"
                 android:text="Tại nhà"
                 android:textSize="12sp"
-                android:textColor="@color/tri_force_white"
+                android:textColor="@color/tri_force_text_primary"
                 android:layout_marginStart="8dp"
                 android:buttonTint="@color/mp_color_primary_variant"/>
 
@@ -99,7 +100,7 @@
                 android:layout_height="wrap_content"
                 android:text="Phòng gym"
                 android:textSize="12sp"
-                android:textColor="@color/tri_force_white"
+                android:textColor="@color/tri_force_text_primary"
                 android:layout_marginStart="8dp"
                 android:buttonTint="@color/mp_color_primary_variant"/>
         </RadioGroup>
@@ -109,10 +110,11 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Dụng cụ yêu cầu (vd: Bodyweight, Tạ đơn 5kg...)"
-            android:textColorHint="#94A3B8"
+            android:textColorHint="@color/input_hint"
             app:hintTextColor="@color/mp_color_primary_variant"
             android:layout_marginBottom="12dp"
-            app:boxStrokeColor="@color/mp_color_primary_variant"
+            app:boxBackgroundColor="@color/input_background"
+            app:boxStrokeColor="@color/library_input_stroke"
             app:boxCornerRadiusTopStart="14dp"
             app:boxCornerRadiusTopEnd="14dp"
             app:boxCornerRadiusBottomStart="14dp"
@@ -124,7 +126,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Bodyweight"
-                android:textColor="@color/tri_force_white"
+                android:textColor="@color/tri_force_text_primary"
                 android:inputType="text"/>
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -133,10 +135,11 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Mục tiêu (vd: 15 lần hoặc 45 giây)"
-            android:textColorHint="#94A3B8"
+            android:textColorHint="@color/input_hint"
             app:hintTextColor="@color/mp_color_primary_variant"
             android:layout_marginBottom="12dp"
-            app:boxStrokeColor="@color/mp_color_primary_variant"
+            app:boxBackgroundColor="@color/input_background"
+            app:boxStrokeColor="@color/library_input_stroke"
             app:boxCornerRadiusTopStart="14dp"
             app:boxCornerRadiusTopEnd="14dp"
             app:boxCornerRadiusBottomStart="14dp"
@@ -148,7 +151,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Mục tiêu: 15 lần"
-                android:textColor="@color/tri_force_white"
+                android:textColor="@color/tri_force_text_primary"
                 android:inputType="text"/>
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -157,10 +160,11 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Mô tả kỹ thuật / nhóm cơ tác động"
-            android:textColorHint="#94A3B8"
+            android:textColorHint="@color/input_hint"
             app:hintTextColor="@color/mp_color_primary_variant"
             android:layout_marginBottom="18dp"
-            app:boxStrokeColor="@color/mp_color_primary_variant"
+            app:boxBackgroundColor="@color/input_background"
+            app:boxStrokeColor="@color/library_input_stroke"
             app:boxCornerRadiusTopStart="14dp"
             app:boxCornerRadiusTopEnd="14dp"
             app:boxCornerRadiusBottomStart="14dp"
@@ -171,7 +175,7 @@
                 android:id="@+id/etCustomDesc"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textColor="@color/tri_force_white"
+                android:textColor="@color/tri_force_text_primary"
                 android:inputType="textMultiLine"/>
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -190,9 +194,9 @@
                 android:text="HỦY"
                 android:textSize="13sp"
                 android:textStyle="bold"
-                android:textColor="@color/tri_force_silver"
-                android:backgroundTint="#26FFFFFF"
-                app:cornerRadius="14dp"
+                android:textColor="@color/tri_force_blue"
+                android:backgroundTint="@color/tri_force_white"
+                app:cornerRadius="@dimen/button_corner_radius"
                 android:layout_marginEnd="8dp"/>
 
             <Button
@@ -205,7 +209,7 @@
                 android:textStyle="bold"
                 android:textColor="@color/tri_force_white"
                 android:backgroundTint="@color/mp_color_primary"
-                app:cornerRadius="14dp"/>
+                app:cornerRadius="@dimen/button_corner_radius"/>
         </LinearLayout>
 
     </LinearLayout>

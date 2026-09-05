@@ -4,11 +4,11 @@
     android:layout_width="168dp"
     android:layout_height="148dp"
     android:layout_marginEnd="10dp"
-    app:cardCornerRadius="18dp"
-    app:cardElevation="4dp"
-    app:cardBackgroundColor="#D90A192F"
-    app:strokeColor="#1E3A8A"
-    app:strokeWidth="1.2dp">
+    app:cardCornerRadius="@dimen/card_corner_radius_small"
+    app:cardElevation="0dp"
+    app:cardBackgroundColor="@color/tri_force_white"
+    app:strokeColor="@color/tri_force_stroke"
+    app:strokeWidth="@dimen/stroke_thin">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -24,8 +24,9 @@
             android:text="Bodyweight"
             android:textSize="9sp"
             android:textStyle="bold"
-            android:textColor="@color/mp_color_primary_variant"
-            android:background="#260066FF"
+            android:stateListAnimator="@null"
+            android:textColor="@color/tri_force_blue"
+            android:background="@drawable/bg_library_chip"
             android:paddingHorizontal="6dp"
             android:paddingVertical="2dp"
             android:layout_marginBottom="4dp"/>
@@ -37,7 +38,7 @@
             android:text="Hít Đất (Push-up)"
             android:textSize="13sp"
             android:textStyle="bold"
-            android:textColor="@color/tri_force_white"
+            android:textColor="@color/tri_force_text_primary"
             android:maxLines="2"
             android:ellipsize="end"/>
 
@@ -47,7 +48,7 @@
             android:layout_height="wrap_content"
             android:text="15 lần"
             android:textSize="11sp"
-            android:textColor="@color/mp_color_primary_variant"
+            android:textColor="@color/tri_force_blue"
             android:textStyle="bold"
             android:layout_marginTop="2dp"/>
 

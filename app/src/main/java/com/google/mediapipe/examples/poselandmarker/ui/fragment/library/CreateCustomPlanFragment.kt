@@ -3,7 +3,6 @@ package com.google.mediapipe.examples.poselandmarker.ui.fragment.library
 import android.app.AlertDialog
 import android.content.Context
 import android.content.res.ColorStateList
-import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -14,6 +13,7 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.button.MaterialButton
 import com.google.android.material.chip.Chip
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -128,22 +128,9 @@ class CreateCustomPlanFragment : Fragment() {
     }
 
     private fun updatePickerFilter() {
-        val activeColor = ContextCompat.getColor(requireContext(), R.color.mp_color_primary)
-        val transparentColor = Color.TRANSPARENT
-        val white = ContextCompat.getColor(requireContext(), R.color.tri_force_white)
-        val silver = ContextCompat.getColor(requireContext(), R.color.tri_force_silver)
-
-        binding.btnPickerNoEquip.backgroundTintList =
-            ColorStateList.valueOf(if (currentCategory == "Tất cả") activeColor else transparentColor)
-        binding.btnPickerNoEquip.setTextColor(if (currentCategory == "Tất cả") white else silver)
-
-        binding.btnPickerHome.backgroundTintList =
-            ColorStateList.valueOf(if (currentCategory == "Thân trên & Core") activeColor else transparentColor)
-        binding.btnPickerHome.setTextColor(if (currentCategory == "Thân trên & Core") white else silver)
-
-        binding.btnPickerGym.backgroundTintList =
-            ColorStateList.valueOf(if (currentCategory == "Thân dưới & Cardio") activeColor else transparentColor)
-        binding.btnPickerGym.setTextColor(if (currentCategory == "Thân dưới & Cardio") white else silver)
+        applyPickerStyle(binding.btnPickerNoEquip, currentCategory == "Tất cả")
+        applyPickerStyle(binding.btnPickerHome, currentCategory == "Thân trên & Core")
+        applyPickerStyle(binding.btnPickerGym, currentCategory == "Thân dưới & Cardio")
 
         val filtered = if (currentCategory == "Tất cả") {
             allExercises
@@ -151,6 +138,19 @@ class CreateCustomPlanFragment : Fragment() {
             allExercises.filter { it.category == currentCategory }
         }
         horizontalPickerAdapter.submitList(filtered)
+    }
+
+    private fun applyPickerStyle(button: MaterialButton, active: Boolean) {
+        val context = requireContext()
+        val background = if (active) R.color.tri_force_blue else R.color.tri_force_white
+        val text = if (active) R.color.tri_force_white else R.color.tri_force_text_secondary
+        val stroke = if (active) R.color.tri_force_blue else R.color.tri_force_stroke
+
+        button.backgroundTintList =
+            ColorStateList.valueOf(ContextCompat.getColor(context, background))
+        button.setTextColor(ContextCompat.getColor(context, text))
+        button.strokeColor =
+            ColorStateList.valueOf(ContextCompat.getColor(context, stroke))
     }
 
     private fun showAssignDayDialog(exercise: LibraryExercise) {
@@ -340,15 +340,21 @@ class CreateCustomPlanFragment : Fragment() {
 
                 if (count == 0) {
                     binding.tvDayStatusBadge.text = "Nghỉ ngơi"
-                    binding.tvDayStatusBadge.setTextColor(Color.parseColor("#94A3B8"))
-                    binding.tvDayStatusBadge.setBackgroundColor(Color.parseColor("#2664748B"))
+                    binding.tvDayStatusBadge.setTextColor(
+                        ContextCompat.getColor(binding.root.context, R.color.tri_force_text_secondary)
+                    )
+                    binding.tvDayStatusBadge.backgroundTintList =
+                        ContextCompat.getColorStateList(binding.root.context, R.color.tri_force_surface_soft)
                     binding.tvExerciseCount.text = "0 bài tập"
                     binding.tvEmptyDayPrompt.visibility = View.VISIBLE
                     binding.chipGroupExercises.removeAllViews()
                 } else {
                     binding.tvDayStatusBadge.text = "Có lịch tập"
-                    binding.tvDayStatusBadge.setTextColor(ContextCompat.getColor(binding.root.context, R.color.mp_color_primary_variant))
-                    binding.tvDayStatusBadge.setBackgroundColor(Color.parseColor("#260066FF"))
+                    binding.tvDayStatusBadge.setTextColor(
+                        ContextCompat.getColor(binding.root.context, R.color.tri_force_blue)
+                    )
+                    binding.tvDayStatusBadge.backgroundTintList =
+                        ContextCompat.getColorStateList(binding.root.context, R.color.tri_force_blue_soft)
                     binding.tvExerciseCount.text = "$count bài tập"
                     binding.tvEmptyDayPrompt.visibility = View.GONE
 
@@ -357,8 +363,10 @@ class CreateCustomPlanFragment : Fragment() {
                         val chip = Chip(binding.root.context).apply {
                             text = "${ex.name} (${ex.target})"
                             isCloseIconVisible = true
-                            setChipBackgroundColorResource(R.color.tri_force_navy)
-                            setTextColor(Color.WHITE)
+                            setChipBackgroundColorResource(R.color.tri_force_blue_soft)
+                            setTextColor(
+                                ContextCompat.getColor(context, R.color.tri_force_text_primary)
+                            )
                             setCloseIconTintResource(R.color.tri_force_error)
                             setOnCloseIconClickListener {
                                 onDeleteExercise(dayIndex, exIndex)

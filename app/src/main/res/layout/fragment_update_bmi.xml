@@ -4,7 +4,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/tri_force_bg"
-    android:padding="24dp">
+    android:paddingStart="@dimen/screen_horizontal_padding"
+    android:paddingEnd="@dimen/screen_horizontal_padding">
 
     <ScrollView
         android:layout_width="match_parent"
@@ -23,9 +24,9 @@
                 android:layout_height="64dp"
                 android:layout_marginTop="32dp"
                 app:cardCornerRadius="32dp"
-                app:cardElevation="2dp"
-                app:strokeColor="@color/mp_color_primary_variant"
-                app:strokeWidth="1.5dp">
+                app:cardElevation="0dp"
+                app:strokeColor="@color/tri_force_stroke_medium"
+                app:strokeWidth="@dimen/stroke_thin">
 
                 <ImageView
                     android:layout_width="match_parent"
@@ -58,25 +59,25 @@
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardCornerRadius="20dp"
-                app:cardElevation="3dp"
+                app:cardCornerRadius="@dimen/card_corner_radius_small"
+                app:cardElevation="0dp"
                 app:cardBackgroundColor="@color/tri_force_white"
-                app:strokeColor="#E2E8F0"
-                app:strokeWidth="1dp"
-                app:cardUseCompatPadding="true">
+                app:strokeColor="@color/tri_force_stroke"
+                app:strokeWidth="@dimen/stroke_thin">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="22dp">
+                    android:padding="@dimen/card_padding">
 
                     <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:hint="Chiều cao mới (cm)"
                         android:layout_marginBottom="16dp"
-                        app:boxStrokeColor="@color/mp_color_primary"
+                        app:boxBackgroundColor="@color/input_background"
+                        app:boxStrokeColor="@color/library_input_stroke"
                         app:boxCornerRadiusTopStart="12dp"
                         app:boxCornerRadiusTopEnd="12dp"
                         app:boxCornerRadiusBottomStart="12dp"
@@ -96,7 +97,8 @@
                         android:layout_height="wrap_content"
                         android:hint="Cân nặng mới (kg)"
                         android:layout_marginBottom="24dp"
-                        app:boxStrokeColor="@color/mp_color_primary"
+                        app:boxBackgroundColor="@color/input_background"
+                        app:boxStrokeColor="@color/library_input_stroke"
                         app:boxCornerRadiusTopStart="12dp"
                         app:boxCornerRadiusTopEnd="12dp"
                         app:boxCornerRadiusBottomStart="12dp"

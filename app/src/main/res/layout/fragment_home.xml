@@ -46,55 +46,9 @@
 
             <FrameLayout
                 android:layout_width="match_parent"
-                android:layout_height="218dp"
+                android:layout_height="190dp"
 
                 android:background="@drawable/bg_ai_home_hero">
-
-
-                <!-- Subtle TRI FORCE watermark -->
-
-                <ImageView
-                    android:layout_width="170dp"
-                    android:layout_height="170dp"
-
-                    android:layout_gravity="end|center_vertical"
-
-                    android:layout_marginEnd="-38dp"
-
-                    android:alpha="0.065"
-
-                    android:src="@drawable/tri_force_logo"
-
-                    android:scaleType="centerCrop"
-
-                    android:contentDescription="@null" />
-
-
-                <!-- Decorative performance accents -->
-
-                <View
-                    android:layout_width="48dp"
-                    android:layout_height="3dp"
-
-                    android:layout_gravity="top|end"
-
-                    android:layout_marginTop="20dp"
-                    android:layout_marginEnd="20dp"
-
-                    android:background="@color/tri_force_blue" />
-
-
-                <View
-                    android:layout_width="24dp"
-                    android:layout_height="2dp"
-
-                    android:layout_gravity="top|end"
-
-                    android:layout_marginTop="29dp"
-                    android:layout_marginEnd="20dp"
-
-                    android:background="@color/white_16" />
-
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -102,7 +56,7 @@
 
                     android:orientation="vertical"
 
-                    android:padding="@dimen/card_padding_large">
+                    android:padding="@dimen/card_padding">
 
 
                     <!-- Top hero meta -->
@@ -153,29 +107,6 @@
                         </LinearLayout>
 
 
-                        <Space
-                            android:layout_width="0dp"
-                            android:layout_height="1dp"
-
-                            android:layout_weight="1" />
-
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-
-                            android:text="CALISTHENICS"
-
-                            android:textColor="@color/tri_force_text_on_dark_secondary"
-
-                            android:textSize="8sp"
-                            android:textStyle="bold"
-
-                            android:letterSpacing="0.10"
-
-                            android:includeFontPadding="false" />
-
-
                     </LinearLayout>
 
 
@@ -184,16 +115,16 @@
                     <TextView
                         android:id="@+id/tvHomeGreetingName"
 
-                        android:layout_width="270dp"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
 
-                        android:layout_marginTop="@dimen/space_16"
+                        android:layout_marginTop="@dimen/space_12"
 
                         android:text="Bạn"
 
-                        android:textColor="@color/tri_force_white"
+                        android:textColor="@color/tri_force_navy"
 
-                        android:textSize="27sp"
+                        android:textSize="25sp"
                         android:textStyle="bold"
 
                         android:maxLines="1"
@@ -205,14 +136,14 @@
 
 
                     <TextView
-                        android:layout_width="270dp"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
 
                         android:layout_marginTop="@dimen/space_4"
 
                         android:text="Sẵn sàng cho buổi tập hôm nay. Giữ nhịp, tập chuẩn và tiến bộ từng ngày."
 
-                        android:textColor="@color/tri_force_text_on_dark_secondary"
+                        android:textColor="@color/tri_force_text_secondary"
 
                         android:textSize="11sp"
 
@@ -236,15 +167,15 @@
 
                     <com.google.android.material.card.MaterialCardView
                         android:layout_width="match_parent"
-                        android:layout_height="70dp"
+                        android:layout_height="62dp"
 
-                        app:cardBackgroundColor="@color/tri_force_surface_dark_alt"
+                        app:cardBackgroundColor="@color/tri_force_white"
 
                         app:cardCornerRadius="11dp"
 
                         app:cardElevation="0dp"
 
-                        app:strokeColor="@color/white_12"
+                        app:strokeColor="@color/tri_force_stroke"
                         app:strokeWidth="@dimen/stroke_thin">
 
 
@@ -278,7 +209,7 @@
 
                                     android:text="0/0"
 
-                                    android:textColor="@color/tri_force_white"
+                                    android:textColor="@color/tri_force_navy"
 
                                     android:textSize="19sp"
                                     android:textStyle="bold"
@@ -294,7 +225,7 @@
 
                                     android:text="Bài tập"
 
-                                    android:textColor="@color/tri_force_text_on_dark_secondary"
+                                    android:textColor="@color/tri_force_text_secondary"
 
                                     android:textSize="9sp"
 
@@ -310,7 +241,7 @@
 
                                 android:layout_gravity="center_vertical"
 
-                                android:background="@color/white_12" />
+                                android:background="@color/tri_force_divider" />
 
 
                             <!-- Steps -->
@@ -334,7 +265,7 @@
 
                                     android:text="0"
 
-                                    android:textColor="@color/tri_force_white"
+                                    android:textColor="@color/tri_force_navy"
 
                                     android:textSize="19sp"
                                     android:textStyle="bold"
@@ -350,7 +281,7 @@
 
                                     android:text="Bước chân"
 
-                                    android:textColor="@color/tri_force_text_on_dark_secondary"
+                                    android:textColor="@color/tri_force_text_secondary"
 
                                     android:textSize="9sp"
 
@@ -366,7 +297,7 @@
 
                                 android:layout_gravity="center_vertical"
 
-                                android:background="@color/white_12" />
+                                android:background="@color/tri_force_divider" />
 
 
                             <!-- Calories -->
@@ -406,7 +337,7 @@
 
                                     android:text="Calo"
 
-                                    android:textColor="@color/tri_force_text_on_dark_secondary"
+                                    android:textColor="@color/tri_force_text_secondary"
 
                                     android:textSize="9sp"
 
@@ -435,7 +366,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
 
-                android:layout_marginTop="@dimen/space_20"
+                android:layout_marginTop="@dimen/space_12"
 
                 android:orientation="horizontal"
 
@@ -603,6 +534,8 @@
 
                                 android:textSize="25sp"
 
+                                android:stateListAnimator="@null"
+
                                 app:backgroundTint="@color/tri_force_blue"
 
                                 app:cornerRadius="10dp"
@@ -617,7 +550,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
 
-                            android:layout_marginTop="@dimen/space_16"
+                            android:layout_marginTop="@dimen/space_12"
 
                             android:orientation="horizontal"
 
@@ -674,7 +607,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="5dp"
 
-                            android:layout_marginTop="@dimen/space_8"
+                            android:layout_marginTop="@dimen/space_4"
 
                             android:max="100"
                             android:progress="3"
@@ -770,13 +703,13 @@
 
                 android:layout_marginTop="@dimen/space_8"
 
-                app:cardBackgroundColor="@color/tri_force_surface_dark"
+                app:cardBackgroundColor="@color/tri_force_white"
 
                 app:cardCornerRadius="@dimen/card_corner_radius_small"
 
                 app:cardElevation="0dp"
 
-                app:strokeColor="@color/white_12"
+                app:strokeColor="@color/tri_force_stroke"
                 app:strokeWidth="@dimen/stroke_thin">
 
 
@@ -824,7 +757,7 @@
 
                             android:text="Tạo lộ trình tập luyện"
 
-                            android:textColor="@color/tri_force_white"
+                            android:textColor="@color/tri_force_text_primary"
 
                             android:textSize="13sp"
                             android:textStyle="bold"
@@ -842,7 +775,7 @@
 
                             android:text="Xây dựng kế hoạch calisthenics phù hợp với mục tiêu của bạn."
 
-                            android:textColor="@color/tri_force_text_on_dark_secondary"
+                            android:textColor="@color/tri_force_text_secondary"
 
                             android:textSize="9sp"
 
@@ -892,7 +825,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
 
-                android:layout_marginTop="@dimen/space_20"
+                android:layout_marginTop="@dimen/space_12"
 
                 android:orientation="horizontal"
 
@@ -928,7 +861,7 @@
 
                         android:layout_marginTop="@dimen/space_4"
 
-                        android:text="TRAIN • TRACK • PROGRESS"
+                        android:text="LUYỆN TẬP • THEO DÕI • TIẾN BỘ"
 
                         android:textColor="@color/tri_force_blue"
 
@@ -959,7 +892,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
 
-                android:layout_marginTop="@dimen/space_12"
+                android:layout_marginTop="@dimen/space_8"
 
                 android:orientation="horizontal"
 
@@ -972,7 +905,7 @@
                     android:id="@+id/btnQuickCalendar"
 
                     android:layout_width="0dp"
-                    android:layout_height="84dp"
+                    android:layout_height="68dp"
 
                     android:layout_weight="1"
 
@@ -983,14 +916,14 @@
 
                     android:foreground="?attr/selectableItemBackground"
 
-                    app:cardBackgroundColor="@color/tri_force_surface_dark"
+                    app:cardBackgroundColor="@color/tri_force_blue_soft"
 
                     app:cardCornerRadius="@dimen/card_corner_radius_small"
 
                     app:cardElevation="0dp"
 
                     app:strokeColor="@color/tri_force_blue"
-                    app:strokeWidth="@dimen/stroke_medium">
+                    app:strokeWidth="@dimen/stroke_thin">
 
 
                     <LinearLayout
@@ -1003,8 +936,8 @@
 
 
                         <ImageView
-                            android:layout_width="23dp"
-                            android:layout_height="23dp"
+                            android:layout_width="21dp"
+                            android:layout_height="21dp"
 
                             android:src="@drawable/ic_nav_calendar"
 
@@ -1017,11 +950,11 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
 
-                            android:layout_marginTop="@dimen/space_8"
+                            android:layout_marginTop="@dimen/space_4"
 
                             android:text="Lịch tập"
 
-                            android:textColor="@color/tri_force_white"
+                            android:textColor="@color/tri_force_blue_dark"
 
                             android:textSize="9sp"
                             android:textStyle="bold"
@@ -1040,7 +973,7 @@
                     android:id="@+id/btnQuickLibrary"
 
                     android:layout_width="0dp"
-                    android:layout_height="84dp"
+                    android:layout_height="68dp"
 
                     android:layout_weight="1"
 
@@ -1072,8 +1005,8 @@
 
 
                         <ImageView
-                            android:layout_width="23dp"
-                            android:layout_height="23dp"
+                            android:layout_width="21dp"
+                            android:layout_height="21dp"
 
                             android:src="@drawable/ic_nav_library"
 
@@ -1086,7 +1019,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
 
-                            android:layout_marginTop="@dimen/space_8"
+                            android:layout_marginTop="@dimen/space_4"
 
                             android:text="Thư viện"
 
@@ -1109,7 +1042,7 @@
                     android:id="@+id/btnQuickCreatePlan"
 
                     android:layout_width="0dp"
-                    android:layout_height="84dp"
+                    android:layout_height="68dp"
 
                     android:layout_weight="1"
 
@@ -1141,8 +1074,8 @@
 
 
                         <ImageView
-                            android:layout_width="23dp"
-                            android:layout_height="23dp"
+                            android:layout_width="21dp"
+                            android:layout_height="21dp"
 
                             android:src="@drawable/ic_baseline_add_24"
 
@@ -1155,7 +1088,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
 
-                            android:layout_marginTop="@dimen/space_8"
+                            android:layout_marginTop="@dimen/space_4"
 
                             android:text="Tạo lịch"
 
@@ -1178,7 +1111,7 @@
                     android:id="@+id/btnQuickProfile"
 
                     android:layout_width="0dp"
-                    android:layout_height="84dp"
+                    android:layout_height="68dp"
 
                     android:layout_weight="1"
 
@@ -1209,8 +1142,8 @@
 
 
                         <ImageView
-                            android:layout_width="23dp"
-                            android:layout_height="23dp"
+                            android:layout_width="21dp"
+                            android:layout_height="21dp"
 
                             android:src="@drawable/ic_nav_profile"
 
@@ -1223,7 +1156,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
 
-                            android:layout_marginTop="@dimen/space_8"
+                            android:layout_marginTop="@dimen/space_4"
 
                             android:text="Hồ sơ"
 
@@ -1253,7 +1186,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
 
-                android:layout_marginTop="@dimen/space_24"
+                android:layout_marginTop="@dimen/space_12"
                 android:layout_marginBottom="@dimen/space_8"
 
                 android:text="Kế hoạch đã lưu"
@@ -1307,7 +1240,7 @@
 
             <Space
                 android:layout_width="1dp"
-                android:layout_height="@dimen/space_24" />
+                android:layout_height="@dimen/space_32" />
 
 
         </LinearLayout>

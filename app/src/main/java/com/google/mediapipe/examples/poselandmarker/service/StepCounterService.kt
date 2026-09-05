@@ -150,6 +150,7 @@ class StepCounterService : Service(), SensorEventListener {
 
     private fun broadcastStepsUpdate(steps: Int, calories: Float) {
         val intent = Intent(ACTION_STEPS_UPDATED).apply {
+            setPackage(packageName)
             putExtra(EXTRA_STEPS, steps)
             putExtra(EXTRA_CALORIES, calories)
         }

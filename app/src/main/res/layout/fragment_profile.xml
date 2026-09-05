@@ -4,12 +4,15 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/tri_force_bg"
-    android:padding="16dp">
+    android:paddingStart="@dimen/screen_horizontal_padding"
+    android:paddingEnd="@dimen/screen_horizontal_padding">
 
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:clipToPadding="false"
         android:fillViewport="true"
+        android:paddingBottom="@dimen/space_24"
         android:scrollbars="none">
 
         <LinearLayout
@@ -21,14 +24,14 @@
             <!-- Profile Avatar -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardAvatar"
-                android:layout_width="92dp"
-                android:layout_height="92dp"
-                android:layout_marginTop="88dp"
-                app:cardCornerRadius="46dp"
-                app:cardBackgroundColor="@color/tri_force_navy"
-                app:cardElevation="6dp"
-                app:strokeColor="@color/mp_color_primary_variant"
-                app:strokeWidth="2.5dp">
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:layout_marginTop="@dimen/main_content_top_offset"
+                app:cardCornerRadius="40dp"
+                app:cardBackgroundColor="@color/tri_force_white"
+                app:cardElevation="0dp"
+                app:strokeColor="@color/tri_force_stroke_medium"
+                app:strokeWidth="@dimen/stroke_thin">
 
                 <ImageView
                     android:id="@+id/ivAvatar"
@@ -44,10 +47,10 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Họ và Tên"
-                android:textSize="20sp"
+                android:textSize="22sp"
                 android:textStyle="bold"
                 android:textColor="@color/tri_force_text_primary"
-                android:layout_marginTop="10dp"/>
+                android:layout_marginTop="@dimen/space_12"/>
 
             <TextView
                 android:id="@+id/tvProfileEmail"
@@ -56,25 +59,24 @@
                 android:text="email@example.com"
                 android:textSize="13sp"
                 android:textColor="@color/tri_force_text_secondary"
-                android:layout_marginTop="2dp"/>
+                android:layout_marginTop="@dimen/space_4"/>
 
             <!-- BMI Info Card -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                app:cardCornerRadius="22dp"
-                app:cardElevation="2dp"
-                app:cardBackgroundColor="@color/tri_force_dark_card"
-                app:strokeColor="@color/tri_force_silver"
-                app:strokeWidth="1dp"
-                app:cardUseCompatPadding="true">
+                android:layout_marginTop="@dimen/space_16"
+                app:cardCornerRadius="@dimen/card_corner_radius_small"
+                app:cardElevation="0dp"
+                app:cardBackgroundColor="@color/tri_force_white"
+                app:strokeColor="@color/tri_force_stroke"
+                app:strokeWidth="@dimen/stroke_thin">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="18dp">
+                    android:padding="@dimen/card_padding">
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -111,7 +113,7 @@
                     <View
                         android:layout_width="match_parent"
                         android:layout_height="1dp"
-                        android:background="@color/tri_force_silver"
+                        android:background="@color/tri_force_divider"
                         android:layout_marginVertical="8dp"/>
 
                     <LinearLayout
@@ -139,19 +141,18 @@
                 android:id="@+id/cardStepCounter"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                app:cardCornerRadius="22dp"
-                app:cardElevation="2dp"
-                app:cardBackgroundColor="@color/tri_force_dark_card"
-                app:strokeColor="@color/tri_force_silver"
-                app:strokeWidth="1dp"
-                app:cardUseCompatPadding="true">
+                android:layout_marginTop="@dimen/space_12"
+                app:cardCornerRadius="@dimen/card_corner_radius_small"
+                app:cardElevation="0dp"
+                app:cardBackgroundColor="@color/tri_force_white"
+                app:strokeColor="@color/tri_force_stroke"
+                app:strokeWidth="@dimen/stroke_thin">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="18dp">
+                    android:padding="@dimen/card_padding">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -189,10 +190,10 @@
                             android:layout_weight="1"
                             android:orientation="vertical"
                             android:gravity="center"
-                            android:background="@color/tri_force_success_bg"
+                            android:background="@color/tri_force_blue_soft"
                             android:padding="14dp">
 
-                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Số bước" android:textSize="12sp" android:textColor="@color/tri_force_success" android:textStyle="bold"/>
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Số bước" android:textSize="12sp" android:textColor="@color/tri_force_blue" android:textStyle="bold"/>
                             <TextView android:id="@+id/tvProfileSteps" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0 bước" android:textSize="18sp" android:textStyle="bold" android:textColor="@color/tri_force_text_primary" android:layout_marginTop="2dp"/>
                         </LinearLayout>
 
@@ -221,14 +222,13 @@
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:layout_marginBottom="40dp"
-                app:cardCornerRadius="22dp"
-                app:cardElevation="2dp"
-                app:cardBackgroundColor="@color/tri_force_dark_card"
-                app:strokeColor="@color/tri_force_silver"
-                app:strokeWidth="1dp"
-                app:cardUseCompatPadding="true">
+                android:layout_marginTop="@dimen/space_12"
+                android:layout_marginBottom="@dimen/space_24"
+                app:cardCornerRadius="@dimen/card_corner_radius_small"
+                app:cardElevation="0dp"
+                app:cardBackgroundColor="@color/tri_force_white"
+                app:strokeColor="@color/tri_force_stroke"
+                app:strokeWidth="@dimen/stroke_thin">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -253,7 +253,7 @@
                             android:layout_height="38dp"
                             app:cardCornerRadius="19dp"
                             app:cardElevation="0dp"
-                            app:cardBackgroundColor="@color/tri_force_success_bg"
+                            app:cardBackgroundColor="@color/tri_force_blue_soft"
                             app:strokeWidth="0dp">
 
                             <ImageView
@@ -287,7 +287,7 @@
                     <View
                         android:layout_width="match_parent"
                         android:layout_height="1dp"
-                        android:background="@color/tri_force_silver"
+                        android:background="@color/tri_force_divider"
                         android:layout_marginStart="70dp" />
 
                     <!-- Logout Action Row -->

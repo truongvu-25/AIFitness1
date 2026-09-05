@@ -5,13 +5,14 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.graphics.Color
+import android.content.res.ColorStateList
 import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.google.firebase.auth.FirebaseAuth
@@ -137,14 +138,15 @@ class ProfileFragment : Fragment() {
         binding.tvProfileWeight.text = "${profile.weight} kg"
         binding.tvProfileBmi.text = profile.bmi.toString()
 
-        val (bmiLabel, bmiColor) = when (profile.bmiType) {
-            "GAY" -> Pair("GẦY", "#F57C00")        // Orange
-            "CAN DOI" -> Pair("CÂN ĐỐI", "#388E3C") // Green
-            else -> Pair("THỪA CÂN", "#D32F2F")     // Red
+        val (bmiLabel, bmiColorRes) = when (profile.bmiType) {
+            "GAY" -> Pair("GẦY", R.color.tri_force_warning)
+            "CAN DOI" -> Pair("CÂN ĐỐI", R.color.tri_force_success)
+            else -> Pair("THỪA CÂN", R.color.tri_force_error)
         }
 
         binding.tvProfileBmiType.text = bmiLabel
-        binding.tvProfileBmiType.setBackgroundColor(Color.parseColor(bmiColor))
+        binding.tvProfileBmiType.backgroundTintList =
+            ColorStateList.valueOf(ContextCompat.getColor(requireContext(), bmiColorRes))
     }
 
     private fun performLogout() {
