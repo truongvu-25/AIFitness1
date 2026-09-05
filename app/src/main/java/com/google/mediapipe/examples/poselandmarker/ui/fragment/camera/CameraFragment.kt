@@ -5,6 +5,7 @@ import android.content.res.Configuration
 import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
+import android.util.Size
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -16,6 +17,7 @@ import androidx.camera.core.ImageProxy
 import androidx.camera.core.Preview
 import androidx.camera.core.resolutionselector.AspectRatioStrategy
 import androidx.camera.core.resolutionselector.ResolutionSelector
+import androidx.camera.core.resolutionselector.ResolutionStrategy
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
@@ -73,6 +75,7 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        cameraFacing = CameraSelector.LENS_FACING_FRONT
         auth = FirebaseAuth.getInstance()
         db = FirebaseFirestore.getInstance()
 
@@ -297,9 +300,22 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
         val cameraProvider = cameraProvider ?: return
         val display = fragmentCameraBinding.viewFinder.display ?: return
 
+        // Prioritize front camera if available on device
+        val hasFrontCamera = cameraProvider.hasCamera(CameraSelector.DEFAULT_FRONT_CAMERA)
+        val hasBackCamera = cameraProvider.hasCamera(CameraSelector.DEFAULT_BACK_CAMERA)
+        if (cameraFacing == CameraSelector.LENS_FACING_FRONT && !hasFrontCamera && hasBackCamera) {
+            cameraFacing = CameraSelector.LENS_FACING_BACK
+        }
+
         val cameraSelector = CameraSelector.Builder().requireLensFacing(cameraFacing).build()
         val resolutionSelector = ResolutionSelector.Builder()
             .setAspectRatioStrategy(AspectRatioStrategy.RATIO_4_3_FALLBACK_AUTO_STRATEGY)
+            .setResolutionStrategy(
+                ResolutionStrategy(
+                    Size(640, 480),
+                    ResolutionStrategy.FALLBACK_RULE_CLOSEST_HIGHER_THEN_LOWER
+                )
+            )
             .build()
 
         preview = Preview.Builder()
@@ -326,14 +342,16 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
         } catch (exc: Exception) {
             Log.e(TAG, "Use case binding failed, attempting fallback camera", exc)
             try {
-                val fallbackSelector = if (cameraFacing == CameraSelector.LENS_FACING_FRONT) {
-                    CameraSelector.DEFAULT_BACK_CAMERA
+                val fallbackFacing = if (cameraFacing == CameraSelector.LENS_FACING_FRONT) {
+                    CameraSelector.LENS_FACING_BACK
                 } else {
-                    CameraSelector.DEFAULT_FRONT_CAMERA
+                    CameraSelector.LENS_FACING_FRONT
                 }
+                val fallbackSelector = CameraSelector.Builder().requireLensFacing(fallbackFacing).build()
                 cameraProvider.unbindAll()
                 camera = cameraProvider.bindToLifecycle(this, fallbackSelector, preview, imageAnalyzer)
                 preview?.setSurfaceProvider(fragmentCameraBinding.viewFinder.surfaceProvider)
+                cameraFacing = fallbackFacing
             } catch (e: Exception) {
                 Log.e(TAG, "Fallback camera binding failed", e)
             }
