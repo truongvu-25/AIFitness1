@@ -35,6 +35,13 @@ data class CatalogExercise(
     )
 }
 
+data class PresetPlanDefinition(
+    val id: String,
+    @StringRes val nameRes: Int,
+    val createdAt: Long,
+    val schedule: List<Pair<String, List<Pair<String, Int>>>>
+)
+
 /**
  * Single source of truth for the seven supported exercises.
  *
@@ -244,5 +251,65 @@ object ExerciseCatalog {
             else -> return feedback
         }
         return context.getString(resource)
+    }
+
+    val presetPlans: List<PresetPlanDefinition> = listOf(
+        PresetPlanDefinition(
+            id = "preset_fullbody",
+            nameRes = R.string.preset_fullbody_name,
+            createdAt = 1700000000000L,
+            schedule = listOf(
+                "mon" to listOf("pushup" to 15, "squat" to 20, "plank" to 45),
+                "tue" to listOf("splitsquat" to 15, "situp" to 20, "sideplank" to 30),
+                "wed" to emptyList(),
+                "thu" to listOf("pushup" to 15, "squat" to 20, "jumpingjack" to 30, "plank" to 45),
+                "fri" to listOf("splitsquat" to 15, "situp" to 20, "sideplank" to 30),
+                "sat" to listOf("jumpingjack" to 35, "squat" to 20, "pushup" to 15, "plank" to 50),
+                "sun" to emptyList()
+            )
+        ),
+        PresetPlanDefinition(
+            id = "preset_core",
+            nameRes = R.string.preset_core_name,
+            createdAt = 1700000001000L,
+            schedule = listOf(
+                "mon" to listOf("situp" to 25, "plank" to 45, "sideplank" to 30, "pushup" to 12),
+                "tue" to listOf("squat" to 20, "jumpingjack" to 30, "plank" to 45),
+                "wed" to listOf("situp" to 25, "sideplank" to 40, "plank" to 60),
+                "thu" to emptyList(),
+                "fri" to listOf("pushup" to 15, "situp" to 20, "plank" to 45, "jumpingjack" to 30),
+                "sat" to listOf("sideplank" to 35, "situp" to 25, "squat" to 20, "plank" to 50),
+                "sun" to emptyList()
+            )
+        ),
+        PresetPlanDefinition(
+            id = "preset_hiit",
+            nameRes = R.string.preset_hiit_name,
+            createdAt = 1700000002000L,
+            schedule = listOf(
+                "mon" to listOf("jumpingjack" to 35, "squat" to 25, "situp" to 20, "plank" to 45),
+                "tue" to listOf("jumpingjack" to 35, "splitsquat" to 15, "pushup" to 15, "sideplank" to 35),
+                "wed" to emptyList(),
+                "thu" to listOf("jumpingjack" to 40, "squat" to 25, "splitsquat" to 15, "plank" to 50),
+                "fri" to listOf("jumpingjack" to 35, "situp" to 25, "pushup" to 15, "sideplank" to 35),
+                "sat" to listOf("jumpingjack" to 40, "squat" to 25, "situp" to 20, "plank" to 45),
+                "sun" to emptyList()
+            )
+        )
+    )
+
+    fun findPresetPlan(planId: String): PresetPlanDefinition? {
+        return presetPlans.firstOrNull { it.id == planId }
+    }
+
+    @StringRes
+    fun weekdayNameRes(dayKey: String): Int = when (dayKey) {
+        "mon" -> R.string.weekday_monday
+        "tue" -> R.string.weekday_tuesday
+        "wed" -> R.string.weekday_wednesday
+        "thu" -> R.string.weekday_thursday
+        "fri" -> R.string.weekday_friday
+        "sat" -> R.string.weekday_saturday
+        else -> R.string.weekday_sunday
     }
 }

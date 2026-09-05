@@ -424,20 +424,26 @@ class HomeFragment : Fragment() {
                         "customPlanName"
                     )
 
+                val activeCustomPlanJson =
+                    document.getString(
+                        "activeCustomPlanJson"
+                    )
 
-                val planName =
-                    if (
-                        !customPlanName.isNullOrBlank()
-                    ) {
-
-                        customPlanName
-
-                    } else {
-
-                        getDefaultPlanName(
-                            profile.bmiType
-                        )
+                val activePlanId = if (!activeCustomPlanJson.isNullOrEmpty()) {
+                    try {
+                        JSONObject(activeCustomPlanJson).optString("planId")
+                    } catch (_: Exception) {
+                        null
                     }
+                } else null
+
+                val presetDef = activePlanId?.let { ExerciseCatalog.findPresetPlan(it) }
+
+                val planName = when {
+                    presetDef != null -> getString(presetDef.nameRes)
+                    !customPlanName.isNullOrBlank() -> customPlanName
+                    else -> getDefaultPlanName(profile.bmiType)
+                }
 
 
                 if (createdTime > 0L) {
@@ -856,90 +862,41 @@ class HomeFragment : Fragment() {
     }
 
     private fun getDefaultSuggestedPlans(): JSONArray {
-        val plans = listOf(
-            PresetPlan(
-                "preset_fullbody",
-                R.string.preset_fullbody_name,
-                1700000000000L,
-                listOf(
-                    "mon" to listOf("pushup" to 15, "squat" to 20, "plank" to 45),
-                    "tue" to listOf("splitsquat" to 15, "situp" to 20, "sideplank" to 30),
-                    "wed" to emptyList(),
-                    "thu" to listOf("pushup" to 15, "squat" to 20, "jumpingjack" to 30, "plank" to 45),
-                    "fri" to listOf("splitsquat" to 15, "situp" to 20, "sideplank" to 30),
-                    "sat" to listOf("jumpingjack" to 35, "squat" to 20, "pushup" to 15, "plank" to 50),
-                    "sun" to emptyList()
-                )
-            ),
-            PresetPlan(
-                "preset_core",
-                R.string.preset_core_name,
-                1700000001000L,
-                listOf(
-                    "mon" to listOf("situp" to 25, "plank" to 45, "sideplank" to 30, "pushup" to 12),
-                    "tue" to listOf("squat" to 20, "jumpingjack" to 30, "plank" to 45),
-                    "wed" to listOf("situp" to 25, "sideplank" to 40, "plank" to 60),
-                    "thu" to emptyList(),
-                    "fri" to listOf("pushup" to 15, "situp" to 20, "plank" to 45, "jumpingjack" to 30),
-                    "sat" to listOf("sideplank" to 35, "situp" to 25, "squat" to 20, "plank" to 50),
-                    "sun" to emptyList()
-                )
-            ),
-            PresetPlan(
-                "preset_hiit",
-                R.string.preset_hiit_name,
-                1700000002000L,
-                listOf(
-                    "mon" to listOf("jumpingjack" to 35, "squat" to 25, "situp" to 20, "plank" to 45),
-                    "tue" to listOf("jumpingjack" to 35, "splitsquat" to 15, "pushup" to 15, "sideplank" to 35),
-                    "wed" to emptyList(),
-                    "thu" to listOf("jumpingjack" to 40, "squat" to 25, "splitsquat" to 15, "plank" to 50),
-                    "fri" to listOf("jumpingjack" to 35, "situp" to 25, "pushup" to 15, "sideplank" to 35),
-                    "sat" to listOf("jumpingjack" to 40, "squat" to 25, "situp" to 20, "plank" to 45),
-                    "sun" to emptyList()
-                )
-            )
-        )
-        val exercisesById = ExerciseCatalog.all(requireContext()).associateBy { it.id }
+        val ctx = context ?: return JSONArray()
+        val exercisesById = ExerciseCatalog.all(ctx).associateBy { it.id }
 
-        return JSONArray().apply {
-            plans.forEach { plan ->
-                put(JSONObject().apply {
-                    put("planId", plan.id)
-                    put("planName", getString(plan.nameRes))
-                    put("createdAt", plan.createdAt)
-                    put("isPreset", true)
-                    put("days", JSONArray().apply {
-                        plan.schedule.forEach { (dayKey, exercises) ->
-                            put(JSONObject().apply {
-                                put("dayName", getString(weekdayNameRes(dayKey)))
-                                put("dayKey", dayKey)
-                                put("exercises", JSONArray().apply {
-                                    exercises.forEach { (exerciseId, targetCount) ->
-                                        put(JSONObject().apply {
-                                            put("id", exerciseId)
-                                            put("name", exercisesById[exerciseId]?.name ?: exerciseId)
-                                            put("targetCount", targetCount)
-                                        })
-                                    }
-                                })
-                            })
-                        }
-                    })
-                })
+        val rootArray = JSONArray()
+        for (plan in ExerciseCatalog.presetPlans) {
+            val planObj = JSONObject()
+            planObj.put("planId", plan.id)
+            planObj.put("planName", ctx.getString(plan.nameRes))
+            planObj.put("createdAt", plan.createdAt)
+            planObj.put("isPreset", true)
+
+            val daysArray = JSONArray()
+            for ((dayKey, exercises) in plan.schedule) {
+                val dayObj = JSONObject()
+                dayObj.put("dayName", ctx.getString(ExerciseCatalog.weekdayNameRes(dayKey)))
+                dayObj.put("dayKey", dayKey)
+
+                val exercisesArray = JSONArray()
+                for ((exerciseId, targetCount) in exercises) {
+                    val exObj = JSONObject()
+                    exObj.put("id", exerciseId)
+                    exObj.put("name", exercisesById[exerciseId]?.name ?: exerciseId)
+                    exObj.put("targetCount", targetCount)
+                    exercisesArray.put(exObj)
+                }
+                dayObj.put("exercises", exercisesArray)
+                daysArray.put(dayObj)
             }
+            planObj.put("days", daysArray)
+            rootArray.put(planObj)
         }
+        return rootArray
     }
 
-    private fun weekdayNameRes(dayKey: String): Int = when (dayKey) {
-        "mon" -> R.string.weekday_monday
-        "tue" -> R.string.weekday_tuesday
-        "wed" -> R.string.weekday_wednesday
-        "thu" -> R.string.weekday_thursday
-        "fri" -> R.string.weekday_friday
-        "sat" -> R.string.weekday_saturday
-        else -> R.string.weekday_sunday
-    }
+    private fun weekdayNameRes(dayKey: String): Int = ExerciseCatalog.weekdayNameRes(dayKey)
 
 
     // =============================================================
@@ -1013,12 +970,17 @@ class HomeFragment : Fragment() {
                     ""
                 )
 
+            val presetDef = ExerciseCatalog.findPresetPlan(planId)
 
             val planName =
-                planObj.optString(
-                    "planName",
-                    getString(R.string.home_plan_fallback_format, i + 1)
-                )
+                if (presetDef != null) {
+                    ctx.getString(presetDef.nameRes)
+                } else {
+                    planObj.optString(
+                        "planName",
+                        getString(R.string.home_plan_fallback_format, i + 1)
+                    )
+                }
 
 
             val days =
@@ -1147,7 +1109,7 @@ class HomeFragment : Fragment() {
             }
 
 
-            val isPreset = planObj.optBoolean("isPreset", false)
+            val isPreset = planObj.optBoolean("isPreset", false) || presetDef != null
             if (isPreset) {
                 itemBinding.btnDeletePlan.visibility = View.GONE
             } else {
@@ -1678,7 +1640,7 @@ class HomeFragment : Fragment() {
                 ).show()
 
 
-                findNavController().navigate(
+                navigateSafely(
                     R.id.workout_calendar_fragment
                 )
             }
