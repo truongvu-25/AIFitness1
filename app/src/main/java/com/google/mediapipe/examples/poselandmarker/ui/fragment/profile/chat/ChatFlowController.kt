@@ -24,6 +24,11 @@ class ChatFlowController(private val questions: List<ChatQuestion>) {
         currentIndex = questionIndex
     }
 
+    fun reset() {
+        answers.clear()
+        currentIndex = 0
+    }
+
     /** Dùng cho chế độ Chỉnh sửa hồ sơ: nạp sẵn toàn bộ câu trả lời đã có, coi như đã hỏi xong hết. */
     fun preload(existingAnswers: Map<String, String>) {
         answers.clear()

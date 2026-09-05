@@ -216,42 +216,6 @@ class HomeFragment : Fragment() {
                     R.id.workout_calendar_fragment
                 )
             }
-
-
-        binding.btnQuickCalendar
-            .setOnClickListener {
-
-                navigateSafely(
-                    R.id.workout_calendar_fragment
-                )
-            }
-
-
-        binding.btnQuickLibrary
-            .setOnClickListener {
-
-                navigateSafely(
-                    R.id.library_fragment
-                )
-            }
-
-
-        binding.btnQuickCreatePlan
-            .setOnClickListener {
-
-                navigateSafely(
-                    R.id.create_custom_plan_fragment
-                )
-            }
-
-
-        binding.btnQuickProfile
-            .setOnClickListener {
-
-                navigateSafely(
-                    R.id.profile_fragment
-                )
-            }
     }
 
 

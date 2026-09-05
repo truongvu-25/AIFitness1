@@ -73,7 +73,14 @@ class UserInfoFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        controller.reset()
+        questionStartPos.clear()
+        selectedSingleButton = null
+        selectedMultiOptions.clear()
+        pendingEditAnswer = null
+
         chatAdapter = ChatAdapter(onEditClicked = { questionIndex -> onEditRequested(questionIndex) })
+        chatAdapter.clear()
         binding.rvChat.layoutManager = LinearLayoutManager(requireContext())
         binding.rvChat.adapter = chatAdapter
 
@@ -81,12 +88,21 @@ class UserInfoFragment : Fragment() {
 
         if (isEditMode) {
             binding.tvUserInfoTitle.setText(R.string.profile_edit_screen_title)
-            binding.tvQuestionProgress.visibility = View.GONE
-            binding.progressQuestions.visibility = View.GONE
-            loadExistingProfileThenPreload()
-        } else {
-            askCurrentQuestion()
+            val uid = auth.currentUser?.uid
+            if (!uid.isNullOrEmpty()) {
+                db.collection("users").document(uid).get()
+                    .addOnSuccessListener { document ->
+                        if (document.exists()) {
+                            val profile = document.toObject(UserProfile::class.java)
+                            if (profile != null && profile.createdTime > 0L) {
+                                originalCreatedTime = profile.createdTime
+                            }
+                        }
+                    }
+            }
         }
+
+        askCurrentQuestion()
     }
 
     // ---------- Luồng hỏi-đáp ----------
@@ -381,75 +397,6 @@ class UserInfoFragment : Fragment() {
         askCurrentQuestion()
     }
 
-    // ---------- Chế độ Chỉnh sửa hồ sơ ----------
-
-    private fun loadExistingProfileThenPreload() {
-        val uid = auth.currentUser?.uid
-        if (uid.isNullOrEmpty()) {
-            Toast.makeText(context, R.string.camera_sign_in_required, Toast.LENGTH_SHORT).show()
-            findNavController().popBackStack()
-            return
-        }
-        setLoading(true)
-        db.collection("users").document(uid).get()
-            .addOnSuccessListener { document ->
-                setLoading(false)
-                if (document.exists()) {
-                    val profile = document.toObject(UserProfile::class.java)
-                    if (profile != null) {
-                        originalCreatedTime = profile.createdTime
-                        val existing = mapOf(
-                            "name" to profile.fullName,
-                            "age" to profile.age.toString(),
-                            "height" to profile.height.toString(),
-                            "weight" to profile.weight.toString(),
-                            "fitness_level" to profile.fitnessLevel,
-                            "goals" to profile.goals.joinToString(", "),
-                            "pullups" to profile.pullupsRange,
-                            "pushups" to profile.pushupsRange,
-                            "squats" to profile.squatsRange
-                        )
-                        controller.preload(existing)
-                        renderFullTranscript()
-                    } else {
-                        Toast.makeText(context, R.string.calendar_profile_missing, Toast.LENGTH_SHORT).show()
-                        findNavController().popBackStack()
-                    }
-                } else {
-                    Toast.makeText(context, R.string.calendar_profile_missing, Toast.LENGTH_SHORT).show()
-                    findNavController().popBackStack()
-                }
-            }
-            .addOnFailureListener { e ->
-                setLoading(false)
-                Toast.makeText(
-                    context,
-                    getString(R.string.calendar_profile_load_error, e.localizedMessage.orEmpty()),
-                    Toast.LENGTH_SHORT
-                ).show()
-            }
-    }
-
-    private fun renderFullTranscript() {
-        controller.allQuestions().forEachIndexed { index, question ->
-            questionStartPos.add(chatAdapter.itemCount)
-            chatAdapter.addItem(ChatItem.BotMessage(question.botText))
-            val rawValue = controller.getAnswer(question.id).orEmpty()
-            val display = when (question.id) {
-                "height" -> getString(R.string.value_centimeters, rawValue)
-                "weight" -> getString(R.string.value_kilograms, rawValue)
-                else -> question.displayValue(rawValue)
-            }
-            chatAdapter.addItem(ChatItem.UserAnswer(display, index))
-        }
-        binding.tilDynamicInput.visibility = View.GONE
-        binding.containerChoices.visibility = View.GONE
-        binding.containerHeightWheel.visibility = View.GONE
-        binding.btnChatContinue.setText(R.string.save_changes)
-        binding.btnChatContinue.isEnabled = true
-        binding.btnChatContinue.alpha = 1.0f
-    }
-
     // ---------- Lưu dữ liệu ----------
 
     private fun finishAndSave() {
@@ -483,7 +430,7 @@ class UserInfoFragment : Fragment() {
             else -> "THUA CAN"
         }
 
-        val createdTime = if (isEditMode) originalCreatedTime else System.currentTimeMillis()
+        val createdTime = if (isEditMode && originalCreatedTime > 0L) originalCreatedTime else System.currentTimeMillis()
 
         val goalsList = answers["goals"]
             ?.split(", ")

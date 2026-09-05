@@ -107,6 +107,7 @@ class ProfileFragment : Fragment() {
         } else {
             requireActivity().registerReceiver(stepsReceiver, filter)
         }
+        loadUserProfile()
         loadInitialStepData()
     }
 
