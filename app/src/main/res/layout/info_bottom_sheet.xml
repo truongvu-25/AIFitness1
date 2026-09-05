@@ -68,7 +68,7 @@
                 android:layout_height="wrap_content"
                 android:layout_centerVertical="true"
                 android:gravity="end"
-                android:text="0ms"
+            android:text="@string/inference_time_placeholder"
                 android:textColor="@color/bottom_sheet_text_color"
                 android:textSize="@dimen/bottom_sheet_text_size" />
         </androidx.appcompat.widget.LinearLayoutCompat>
@@ -85,14 +85,17 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerVertical="true"
+                android:layout_toStartOf="@id/detection_threshold_controls"
+                android:layout_marginEnd="8dp"
                 android:text="@string/label_pose_detection_confidence_threshold"
                 android:textColor="@color/bottom_sheet_text_color"
                 android:textSize="@dimen/bottom_sheet_text_size" />
 
             <LinearLayout
+                android:id="@+id/detection_threshold_controls"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_alignParentRight="true"
+                android:layout_alignParentEnd="true"
                 android:gravity="center_vertical"
                 android:orientation="horizontal">
 
@@ -107,8 +110,8 @@
                     android:id="@+id/detection_threshold_value"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginLeft="@dimen/bottom_sheet_control_text_side_margin"
-                    android:layout_marginRight="@dimen/bottom_sheet_control_text_side_margin"
+                    android:layout_marginStart="@dimen/bottom_sheet_control_text_side_margin"
+                    android:layout_marginEnd="@dimen/bottom_sheet_control_text_side_margin"
                     android:gravity="center"
                     android:minEms="@integer/bottom_sheet_control_text_min_ems"
                     android:textColor="@color/bottom_sheet_text_color"
@@ -134,14 +137,17 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerVertical="true"
+                android:layout_toStartOf="@id/tracking_threshold_controls"
+                android:layout_marginEnd="8dp"
                 android:text="@string/label_pose_tracking_confidence_threshold"
                 android:textColor="@color/bottom_sheet_text_color"
                 android:textSize="@dimen/bottom_sheet_text_size" />
 
             <LinearLayout
+                android:id="@+id/tracking_threshold_controls"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_alignParentRight="true"
+                android:layout_alignParentEnd="true"
                 android:gravity="center_vertical"
                 android:orientation="horizontal">
 
@@ -156,8 +162,8 @@
                     android:id="@+id/tracking_threshold_value"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginLeft="@dimen/bottom_sheet_control_text_side_margin"
-                    android:layout_marginRight="@dimen/bottom_sheet_control_text_side_margin"
+                    android:layout_marginStart="@dimen/bottom_sheet_control_text_side_margin"
+                    android:layout_marginEnd="@dimen/bottom_sheet_control_text_side_margin"
                     android:gravity="center"
                     android:minEms="@integer/bottom_sheet_control_text_min_ems"
                     android:textColor="@color/bottom_sheet_text_color"
@@ -183,14 +189,17 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerVertical="true"
+                android:layout_toStartOf="@id/presence_threshold_controls"
+                android:layout_marginEnd="8dp"
                 android:text="@string/label_pose_presence_confidence_threshold"
                 android:textColor="@color/bottom_sheet_text_color"
                 android:textSize="@dimen/bottom_sheet_text_size" />
 
             <LinearLayout
+                android:id="@+id/presence_threshold_controls"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_alignParentRight="true"
+                android:layout_alignParentEnd="true"
                 android:gravity="center_vertical"
                 android:orientation="horizontal">
 
@@ -205,8 +214,8 @@
                     android:id="@+id/presence_threshold_value"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginLeft="@dimen/bottom_sheet_control_text_side_margin"
-                    android:layout_marginRight="@dimen/bottom_sheet_control_text_side_margin"
+                    android:layout_marginStart="@dimen/bottom_sheet_control_text_side_margin"
+                    android:layout_marginEnd="@dimen/bottom_sheet_control_text_side_margin"
                     android:gravity="center"
                     android:minEms="@integer/bottom_sheet_control_text_min_ems"
                     android:textColor="@color/bottom_sheet_text_color"
@@ -231,6 +240,8 @@
                 android:text="@string/label_models"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_toStartOf="@id/spinner_model"
+                android:layout_marginEnd="8dp"
                 android:textSize="@dimen/bottom_sheet_text_size"
                 android:textColor="@color/bottom_sheet_text_color" />
 
@@ -241,7 +252,7 @@
                 android:minWidth="@dimen/bottom_sheet_spinner_model_min_width"
                 android:spinnerMode="dropdown"
                 android:theme="@style/BottomSheetSpinnerItemStyle"
-                android:layout_alignParentRight="true"
+                android:layout_alignParentEnd="true"
                 android:entries="@array/models_spinner_titles"/>
 
         </RelativeLayout>
@@ -255,6 +266,8 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_toStartOf="@id/spinner_delegate"
+                android:layout_marginEnd="8dp"
                 android:text="@string/label_delegate"
                 android:textColor="@color/bottom_sheet_text_color"
                 android:textSize="@dimen/bottom_sheet_text_size" />
@@ -263,7 +276,7 @@
                 android:id="@+id/spinner_delegate"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_alignParentRight="true"
+                android:layout_alignParentEnd="true"
                 android:entries="@array/delegate_spinner_titles"
                 android:minWidth="@dimen/bottom_sheet_spinner_delegate_min_width"
                 android:spinnerMode="dropdown"

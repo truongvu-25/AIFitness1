@@ -1,6 +1,5 @@
 package com.google.mediapipe.examples.poselandmarker.service
 
-import android.R
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -14,6 +13,7 @@ import android.os.CountDownTimer
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import com.google.mediapipe.examples.poselandmarker.MainActivity
+import com.google.mediapipe.examples.poselandmarker.R
 import java.util.Locale
 
 class RestTimerService : Service() {
@@ -116,13 +116,13 @@ class RestTimerService : Service() {
         }
         val pendingIntent = PendingIntent.getActivity(
             this, 0, mainIntent,
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE else PendingIntent.FLAG_UPDATE_CURRENT
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
         return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_dialog_info)
-            .setContentTitle("Thời gian nghỉ giữa các bài tập ($timeStr)")
-            .setContentText("Hãy thả lỏng cơ bắp. Bấm vào đây để sẵn sàng cho bài tập tiếp theo!")
+            .setSmallIcon(android.R.drawable.ic_dialog_info)
+            .setContentTitle(getString(R.string.notification_rest_title, timeStr))
+            .setContentText(getString(R.string.notification_rest_text))
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .setOngoing(true)
             .setContentIntent(pendingIntent)
@@ -146,13 +146,13 @@ class RestTimerService : Service() {
         }
         val pendingIntent = PendingIntent.getActivity(
             this, 0, mainIntent,
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE else PendingIntent.FLAG_UPDATE_CURRENT
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
         val expiredNotification = NotificationCompat.Builder(this, CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_dialog_alert)
-            .setContentTitle("Đã hết 5 phút nghỉ ngơi! 🔔")
-            .setContentText("Thời gian nghỉ đã hết. Hãy quay lại tập luyện bài tiếp theo trong Ngày $dayIndex ngay nhé!")
+            .setSmallIcon(android.R.drawable.ic_dialog_alert)
+            .setContentTitle(getString(R.string.notification_rest_finished_title))
+            .setContentText(getString(R.string.notification_rest_finished_text, dayIndex))
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setDefaults(NotificationCompat.DEFAULT_ALL)
             .setAutoCancel(true)
@@ -164,8 +164,8 @@ class RestTimerService : Service() {
 
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val name = "Đếm giờ nghỉ giữa bài tập"
-            val descriptionText = "Đếm ngược 5 phút nghỉ ngơi và nhắc nhở bài tập tiếp theo"
+            val name = getString(R.string.notification_rest_channel)
+            val descriptionText = getString(R.string.notification_rest_channel_description)
             val importance = NotificationManager.IMPORTANCE_DEFAULT
             val channel = NotificationChannel(CHANNEL_ID, name, importance).apply {
                 description = descriptionText

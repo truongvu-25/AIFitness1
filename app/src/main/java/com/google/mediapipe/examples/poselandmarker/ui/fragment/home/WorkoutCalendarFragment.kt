@@ -31,6 +31,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.mediapipe.examples.poselandmarker.R
 import com.google.mediapipe.examples.poselandmarker.databinding.FragmentWorkoutCalendarBinding
 import com.google.mediapipe.examples.poselandmarker.model.Exercise
+import com.google.mediapipe.examples.poselandmarker.model.ExerciseCatalog
 import com.google.mediapipe.examples.poselandmarker.model.ExerciseDetails
 import com.google.mediapipe.examples.poselandmarker.model.UserExercise
 import com.google.mediapipe.examples.poselandmarker.model.UserProfile
@@ -72,77 +73,9 @@ class WorkoutCalendarFragment : Fragment() {
         null
 
 
-    // Cache exercise master data pre-populated with the 7 asset video exercises
-    private val exercisesCache = getDefaultMasterExercises()
-
-    companion object {
-        fun getDefaultMasterExercises(): HashMap<String, ExerciseDetails> {
-            val map = HashMap<String, ExerciseDetails>()
-            val list = listOf(
-                ExerciseDetails(
-                    id = "pushup",
-                    name = "Hít Đất (Push-up)",
-                    description = "Giữ thẳng lưng, hạ ngực sát sàn rồi đẩy lên.",
-                    videoUrl = "asset:///videos/push_up.mp4",
-                    isTimed = false,
-                    unit = "lần"
-                ),
-                ExerciseDetails(
-                    id = "squat",
-                    name = "Ngồi Xổm (Squat)",
-                    description = "Gập gối hạ hông xuống sâu, giữ lưng thẳng.",
-                    videoUrl = "asset:///videos/squat.mp4",
-                    isTimed = false,
-                    unit = "lần"
-                ),
-                ExerciseDetails(
-                    id = "jumpingjack",
-                    name = "Nhảy Dang Tay Chân (Jumping Jack)",
-                    description = "Bật nhảy dang rộng chân đồng thời vung hai tay chạm nhau ở trên đầu.",
-                    videoUrl = "asset:///videos/jumping_jack.mp4",
-                    isTimed = false,
-                    unit = "lần"
-                ),
-                ExerciseDetails(
-                    id = "situp",
-                    name = "Gập Bụng (Sit-up)",
-                    description = "Nằm ngửa gối co, dùng cơ bụng kéo thân trên ngồi dậy hoàn toàn.",
-                    videoUrl = "asset:///videos/sit_up.mp4",
-                    isTimed = false,
-                    unit = "lần"
-                ),
-                ExerciseDetails(
-                    id = "plank",
-                    name = "Giữ Thân (Plank)",
-                    description = "Tì khuỷu tay xuống sàn, giữ thẳng toàn thân song song với sàn.",
-                    videoUrl = "asset:///videos/plank.mp4",
-                    isTimed = true,
-                    unit = "giây"
-                ),
-                ExerciseDetails(
-                    id = "sideplank",
-                    name = "Plank Nghiêng (Side Plank)",
-                    description = "Nằm nghiêng, tì một khuỷu tay nâng hông lên cao giữ cơ thể thẳng.",
-                    videoUrl = "asset:///videos/side_plank.mp4",
-                    isTimed = true,
-                    unit = "giây"
-                ),
-                ExerciseDetails(
-                    id = "splitsquat",
-                    name = "Ngồi Xổm Một Chân (Split Squat)",
-                    description = "Đứng chân trước chân sau rộng, hạ đầu gối chân sau xuống vuông góc.",
-                    videoUrl = "asset:///videos/split_squat.mp4",
-                    isTimed = false,
-                    unit = "lần"
-                )
-            )
-            for (ex in list) {
-                map[ex.id] = ex
-            }
-            return map
-        }
-    }
-
+    // Localized cache for the seven canonical exercises. Firestore may enrich it, but must not
+    // replace the bundled fallback because the workout flow also works offline.
+    private val exercisesCache = HashMap<String, ExerciseDetails>()
 
     // 30-day workout memory cache.
     private val workoutDaysMap =
@@ -163,14 +96,16 @@ class WorkoutCalendarFragment : Fragment() {
                 pendingExercise?.let {
                     openWorkoutCamera(it)
                 }
+                pendingExercise = null
 
             } else {
 
                 Toast.makeText(
                     context,
-                    "Ứng dụng cần quyền Camera để hiển thị khung xương tập luyện AI.",
+                    getString(R.string.camera_permission_required),
                     Toast.LENGTH_LONG
                 ).show()
+                pendingExercise = null
             }
         }
 
@@ -300,59 +235,12 @@ class WorkoutCalendarFragment : Fragment() {
         binding.calendarProgress.visibility =
             View.VISIBLE
 
+        exercisesCache.clear()
+        ExerciseCatalog.all(requireContext()).forEach { exercise ->
+            exercisesCache[exercise.id] = exercise.toExerciseDetails()
+        }
 
-        db.collection("exercises")
-            .get()
-
-            .addOnSuccessListener { result ->
-
-                if (!isAdded || _binding == null) {
-                    return@addOnSuccessListener
-                }
-
-
-                exercisesCache.clear()
-
-
-                for (document in result) {
-
-                    val details =
-                        document.toObject(
-                            ExerciseDetails::class.java
-                        )
-
-
-                    exercisesCache[details.id] =
-                        details
-                }
-
-
-                loadUserProfileAndPlan()
-            }
-
-            .addOnFailureListener { e ->
-
-                if (!isAdded || _binding == null) {
-                    return@addOnFailureListener
-                }
-
-
-                binding.calendarProgress.visibility =
-                    View.GONE
-
-
-                context?.let {
-
-                    Toast.makeText(
-                        it,
-                        "Lỗi tải kho bài tập: ${e.message}",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }
-
-
-                loadUserProfileAndPlan()
-            }
+        loadUserProfileAndPlan()
     }
 
 
@@ -363,6 +251,8 @@ class WorkoutCalendarFragment : Fragment() {
     private fun loadUserProfileAndPlan() {
 
         if (uid.isEmpty()) {
+            binding.calendarProgress.visibility = View.GONE
+            Toast.makeText(context, R.string.camera_sign_in_required, Toast.LENGTH_SHORT).show()
             return
         }
 
@@ -457,20 +347,29 @@ class WorkoutCalendarFragment : Fragment() {
 
                             if (!customPlanName.isNullOrEmpty()) {
 
-                                "Lộ trình: $customPlanName"
+                                getString(R.string.calendar_plan_format, customPlanName)
 
                             } else {
 
                                 when (userBmiType) {
 
                                     "GAY" ->
-                                        "Lộ trình: Tăng Cân & Tăng Cơ"
+                                        getString(
+                                            R.string.calendar_plan_format,
+                                            getString(R.string.home_plan_default_underweight)
+                                        )
 
                                     "CAN DOI" ->
-                                        "Lộ trình: Săn Chắc Thể Hình"
+                                        getString(
+                                            R.string.calendar_plan_format,
+                                            getString(R.string.home_plan_default_balanced)
+                                        )
 
                                     else ->
-                                        "Lộ trình: Đốt Mỡ & Giảm Cân"
+                                        getString(
+                                            R.string.calendar_plan_format,
+                                            getString(R.string.home_plan_default_overweight)
+                                        )
                                 }
                             }
 
@@ -526,7 +425,7 @@ class WorkoutCalendarFragment : Fragment() {
 
                         Toast.makeText(
                             it,
-                            "Không tìm thấy hồ sơ người dùng.",
+                            getString(R.string.calendar_profile_missing),
                             Toast.LENGTH_SHORT
                         ).show()
                     }
@@ -548,7 +447,10 @@ class WorkoutCalendarFragment : Fragment() {
 
                     Toast.makeText(
                         it,
-                        "Lỗi kết nối database: ${e.message}",
+                        getString(
+                            R.string.database_error_with_detail,
+                            e.localizedMessage.orEmpty()
+                        ),
                         Toast.LENGTH_SHORT
                     ).show()
                 }
@@ -733,7 +635,10 @@ class WorkoutCalendarFragment : Fragment() {
 
                     Toast.makeText(
                         it,
-                        "Lỗi tải dữ liệu 30 ngày: ${e.message}",
+                        getString(
+                            R.string.calendar_data_load_error,
+                            e.localizedMessage.orEmpty()
+                        ),
                         Toast.LENGTH_SHORT
                     ).show()
                 }
@@ -793,7 +698,7 @@ class WorkoutCalendarFragment : Fragment() {
 
 
         binding.tvSelectedDay.text =
-            "Bài tập Ngày $dayNum • $dateFormatted"
+            getString(R.string.calendar_selected_day, dayNum, dateFormatted)
 
 
         val ctx =
@@ -839,7 +744,7 @@ class WorkoutCalendarFragment : Fragment() {
 
 
             binding.tvNoticeMessage.text =
-                "Ngày nghỉ ngơi • Hãy thả lỏng cơ bắp, ăn uống đủ chất và ngủ đủ giấc để phục hồi."
+                getString(R.string.calendar_rest_notice)
 
 
             binding.tvNoticeMessage.setTextColor(
@@ -899,7 +804,7 @@ class WorkoutCalendarFragment : Fragment() {
 
 
                 binding.tvNoticeMessage.text =
-                    "Bạn đã bỏ qua buổi tập Ngày $dayNum • Hãy quay lại nhịp luyện tập và tiếp tục duy trì thói quen."
+                    getString(R.string.calendar_missed_notice, dayNum)
 
 
                 binding.tvNoticeMessage.setTextColor(
@@ -924,14 +829,7 @@ class WorkoutCalendarFragment : Fragment() {
             val displayExercises =
                 exercises.map { userEx ->
 
-                    val normalizedId = when (userEx.exerciseId.lowercase().trim()) {
-                        "jumping_jacks", "jumping_jack" -> "jumpingjack"
-                        "side_plank" -> "sideplank"
-                        "split_squat", "lunges" -> "splitsquat"
-                        "push_up" -> "pushup"
-                        "sit_up" -> "situp"
-                        else -> userEx.exerciseId
-                    }
+                    val normalizedId = ExerciseCatalog.canonicalId(userEx.exerciseId)
 
                     val details =
                         exercisesCache[normalizedId] ?: exercisesCache[userEx.exerciseId]
@@ -966,7 +864,7 @@ class WorkoutCalendarFragment : Fragment() {
 
                         unit =
                             details?.unit
-                                ?: "lần"
+                                ?: getString(R.string.unit_reps)
                     )
                 }
 
@@ -988,15 +886,15 @@ class WorkoutCalendarFragment : Fragment() {
             requireContext()
         )
             .setTitle(
-                "Tạo lộ trình mới"
+                R.string.calendar_reset_title
             )
 
             .setMessage(
-                "Bạn có chắc chắn muốn xóa lộ trình hiện tại và tạo lộ trình 30 ngày mới dựa trên thông số cơ thể hiện tại không?"
+                R.string.calendar_reset_message
             )
 
             .setPositiveButton(
-                "Đồng ý"
+                R.string.calendar_reset_confirm
             ) { dialog, _ ->
 
                 dialog.dismiss()
@@ -1005,7 +903,7 @@ class WorkoutCalendarFragment : Fragment() {
             }
 
             .setNegativeButton(
-                "Hủy"
+                R.string.action_cancel
             ) { dialog, _ ->
 
                 dialog.dismiss()
@@ -1148,13 +1046,13 @@ class WorkoutCalendarFragment : Fragment() {
 
                         batch.commit()
 
-                            .addOnSuccessListener {
+                            .addOnSuccessListener batchSuccess@{
 
                                 if (
                                     !isAdded ||
                                     _binding == null
                                 ) {
-                                    return@addOnSuccessListener
+                                    return@batchSuccess
                                 }
 
 
@@ -1169,13 +1067,13 @@ class WorkoutCalendarFragment : Fragment() {
                                     .document(uid)
                                     .set(updatedProfile)
 
-                                    .addOnSuccessListener {
+                                    .addOnSuccessListener profileSuccess@{
 
                                         if (
                                             !isAdded ||
                                             _binding == null
                                         ) {
-                                            return@addOnSuccessListener
+                                            return@profileSuccess
                                         }
 
 
@@ -1187,7 +1085,7 @@ class WorkoutCalendarFragment : Fragment() {
 
                                             Toast.makeText(
                                                 it,
-                                                "Đã tạo lộ trình 30 ngày tập luyện mới!",
+                                                getString(R.string.calendar_reset_success),
                                                 Toast.LENGTH_SHORT
                                             ).show()
                                         }
@@ -1215,7 +1113,10 @@ class WorkoutCalendarFragment : Fragment() {
 
                                     Toast.makeText(
                                         it,
-                                        "Lỗi tạo lại lộ trình: ${e.message}",
+                                        getString(
+                                            R.string.calendar_reset_error,
+                                            e.localizedMessage.orEmpty()
+                                        ),
                                         Toast.LENGTH_SHORT
                                     ).show()
                                 }
@@ -1239,7 +1140,10 @@ class WorkoutCalendarFragment : Fragment() {
 
                     Toast.makeText(
                         it,
-                        "Lỗi tải thông tin: ${e.message}",
+                        getString(
+                            R.string.calendar_profile_load_error,
+                            e.localizedMessage.orEmpty()
+                        ),
                         Toast.LENGTH_SHORT
                     ).show()
                 }
@@ -1559,7 +1463,7 @@ class WorkoutCalendarFragment : Fragment() {
 
                 Toast.makeText(
                     context,
-                    "Không thể mở ứng dụng YouTube.",
+                    R.string.video_youtube_unavailable,
                     Toast.LENGTH_SHORT
                 ).show()
             }
@@ -1628,7 +1532,7 @@ class WorkoutCalendarFragment : Fragment() {
 
 
         tvTitle.text =
-            "Hướng dẫn: ${exercise.name}"
+            getString(R.string.video_tutorial_for, exercise.name)
 
 
         var mediaPlayer: MediaPlayer? =
@@ -1743,7 +1647,7 @@ class WorkoutCalendarFragment : Fragment() {
 
                     Toast.makeText(
                         context,
-                        "Không thể tải video hướng dẫn.",
+                        R.string.video_play_error,
                         Toast.LENGTH_SHORT
                     ).show()
 
@@ -1763,7 +1667,7 @@ class WorkoutCalendarFragment : Fragment() {
 
                 Toast.makeText(
                     context,
-                    "Lỗi phát video: ${e.message}",
+                    getString(R.string.video_open_error, e.localizedMessage.orEmpty()),
                     Toast.LENGTH_SHORT
                 ).show()
             }
@@ -2218,7 +2122,7 @@ class WorkoutCalendarFragment : Fragment() {
 
 
                         tvDayLabel.text =
-                            "Hôm nay"
+                            itemView.context.getString(R.string.calendar_today)
 
 
                         tvDayLabel.setTextColor(
@@ -2256,7 +2160,7 @@ class WorkoutCalendarFragment : Fragment() {
 
 
                         tvDayNum.text =
-                            "NGHỈ"
+                            itemView.context.getString(R.string.calendar_rest)
 
 
                         tvDayNum.setTextColor(
@@ -2267,7 +2171,7 @@ class WorkoutCalendarFragment : Fragment() {
 
 
                         tvDayLabel.text =
-                            "Phục hồi"
+                            itemView.context.getString(R.string.calendar_recovery)
 
 
                         tvDayLabel.setTextColor(
@@ -2330,7 +2234,7 @@ class WorkoutCalendarFragment : Fragment() {
 
 
                                 tvDayLabel.text =
-                                    "Hoàn tất"
+                                    itemView.context.getString(R.string.calendar_completed)
 
 
                                 tvDayLabel.setTextColor(
@@ -2383,7 +2287,7 @@ class WorkoutCalendarFragment : Fragment() {
 
 
                                 tvDayLabel.text =
-                                    "Dở dang"
+                                    itemView.context.getString(R.string.calendar_incomplete)
 
 
                                 tvDayLabel.setTextColor(
@@ -2436,7 +2340,7 @@ class WorkoutCalendarFragment : Fragment() {
 
 
                                 tvDayLabel.text =
-                                    "Bỏ qua"
+                                    itemView.context.getString(R.string.calendar_skipped)
 
 
                                 tvDayLabel.setTextColor(
@@ -2491,7 +2395,7 @@ class WorkoutCalendarFragment : Fragment() {
 
 
                         tvDayLabel.text =
-                            "Ngày"
+                            itemView.context.getString(R.string.calendar_day)
 
 
                         tvDayLabel.setTextColor(
@@ -2669,7 +2573,7 @@ class WorkoutCalendarFragment : Fragment() {
 
 
                 tvTarget.text =
-                    "Mục tiêu: ${exercise.targetCount} ${exercise.unit}"
+                    ctx.getString(R.string.calendar_target, exercise.targetCount, exercise.unit)
 
 
                 tvDesc.text =
@@ -2687,7 +2591,7 @@ class WorkoutCalendarFragment : Fragment() {
 
 
                     btnStart.text =
-                        "TẬP LẠI"
+                        ctx.getString(R.string.calendar_repeat)
 
 
                     btnStart.backgroundTintList =
@@ -2716,7 +2620,7 @@ class WorkoutCalendarFragment : Fragment() {
 
 
                     btnStart.text =
-                        "BẮT ĐẦU"
+                        ctx.getString(R.string.btn_start_exercise)
 
 
                     btnStart.backgroundTintList =

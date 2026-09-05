@@ -46,7 +46,7 @@
             android:layout_toStartOf="@id/btnFullscreenClose"
             android:layout_marginEnd="16dp"
             android:layout_centerVertical="true"
-            android:text="Video hướng dẫn"
+        android:text="@string/video_tutorial"
             android:textSize="17sp"
             android:textStyle="bold"
             android:textColor="@color/tri_force_white"
@@ -64,7 +64,7 @@
             app:tint="@color/tri_force_white"
             android:background="#33FFFFFF"
             android:padding="8dp"
-            android:contentDescription="@string/profile_title" />
+        android:contentDescription="@string/action_close" />
     </RelativeLayout>
 
     <!-- Center Replay Button (Appears when video completes) -->
@@ -96,13 +96,13 @@
                 android:src="@drawable/ic_chevron_right"
                 android:rotation="180"
                 app:tint="@color/tri_force_white"
-                android:contentDescription="@string/app_name" />
+            android:contentDescription="@string/video_replay" />
         </com.google.android.material.card.MaterialCardView>
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="XEM LẠI"
+            android:text="@string/video_replay"
             android:textSize="14sp"
             android:textStyle="bold"
             android:textColor="@color/tri_force_white"

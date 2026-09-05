@@ -180,7 +180,7 @@
                         android:layout_marginTop="@dimen/space_4"
                         android:layout_marginBottom="@dimen/space_20"
 
-                        android:text="Tiếp tục hành trình luyện tập của bạn"
+                    android:text="@string/login_form_subtitle"
 
                         android:textColor="@color/tri_force_text_secondary"
 

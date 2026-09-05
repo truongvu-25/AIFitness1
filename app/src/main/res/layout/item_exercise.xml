@@ -79,7 +79,7 @@
 
                     android:layout_weight="1"
 
-                    android:text="Hít Đất (Push-up)"
+                    android:text="@string/exercise_name_pushup"
 
                     android:textColor="@color/tri_force_text_primary"
 
@@ -110,7 +110,7 @@
                     android:paddingTop="4dp"
                     android:paddingBottom="4dp"
 
-                    android:text="HOÀN THÀNH"
+                    android:text="@string/calendar_completed"
 
                     android:textColor="@color/tri_force_success"
 
@@ -158,7 +158,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
 
-                    android:text="Mục tiêu: 15 lần"
+                    android:text="@string/camera_target_placeholder"
 
                     android:textColor="@color/tri_force_blue"
 
@@ -182,7 +182,7 @@
 
                 android:layout_marginTop="@dimen/space_8"
 
-                android:text="Giữ thẳng lưng, hạ ngực sát sàn rồi đẩy lên."
+                android:text="@string/exercise_desc_pushup"
 
                 android:textColor="@color/tri_force_text_secondary"
 

@@ -20,6 +20,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.mediapipe.examples.poselandmarker.R
 import com.google.mediapipe.examples.poselandmarker.databinding.FragmentHomeBinding
 import com.google.mediapipe.examples.poselandmarker.databinding.ItemSavedPlanCardBinding
+import com.google.mediapipe.examples.poselandmarker.model.ExerciseCatalog
 import com.google.mediapipe.examples.poselandmarker.model.UserExercise
 import com.google.mediapipe.examples.poselandmarker.model.UserProfile
 import com.google.mediapipe.examples.poselandmarker.model.WorkoutDay
@@ -33,6 +34,13 @@ import kotlin.math.roundToInt
 
 
 class HomeFragment : Fragment() {
+
+    private data class PresetPlan(
+        val id: String,
+        val nameRes: Int,
+        val createdAt: Long,
+        val schedule: List<Pair<String, List<Pair<String, Int>>>>
+    )
 
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
@@ -320,7 +328,7 @@ class HomeFragment : Fragment() {
 
         val formatter =
             NumberFormat.getIntegerInstance(
-                Locale.forLanguageTag("vi-VN")
+                Locale.getDefault()
             )
 
         binding.tvHomeSteps.text =
@@ -394,7 +402,7 @@ class HomeFragment : Fragment() {
                         ?.email
                         ?.substringBefore("@")
                         ?.takeIf { it.isNotBlank() }
-                        ?: "Bạn"
+                        ?: getString(R.string.home_greeting_default)
 
 
                 binding.tvHomeGreetingName.text =
@@ -466,11 +474,11 @@ class HomeFragment : Fragment() {
 
 
                     binding.tvHomePlanDay.text =
-                        "Ngày $currentDayIndex/30"
+                        getString(R.string.home_plan_day_format, currentDayIndex)
 
 
                     binding.tvHomePlanProgress.text =
-                        "$progress%"
+                        getString(R.string.home_percent_format, progress)
 
 
                     binding.progressHomePlan.progress =
@@ -511,7 +519,7 @@ class HomeFragment : Fragment() {
                 ?.email
                 ?.substringBefore("@")
                 ?.takeIf { it.isNotBlank() }
-                ?: "Bạn"
+                ?: getString(R.string.home_greeting_default)
 
 
         binding.tvHomeGreetingName.text =
@@ -527,7 +535,7 @@ class HomeFragment : Fragment() {
 
 
         binding.tvHomeTodayExercises.text =
-            "0/0"
+            getString(R.string.home_count_placeholder)
     }
 
 
@@ -570,13 +578,13 @@ class HomeFragment : Fragment() {
         return when (bmiType) {
 
             "GAY" ->
-                "Tăng Cân & Tăng Cơ"
+                getString(R.string.home_plan_default_underweight)
 
             "CAN DOI" ->
-                "Săn Chắc Thể Hình"
+                getString(R.string.home_plan_default_balanced)
 
             else ->
-                "Đốt Mỡ & Giảm Cân"
+                getString(R.string.home_plan_default_overweight)
         }
     }
 
@@ -611,7 +619,7 @@ class HomeFragment : Fragment() {
                 if (!document.exists()) {
 
                     binding.tvHomeTodayExercises.text =
-                        "0/0"
+                        getString(R.string.home_count_placeholder)
 
                     return@addOnSuccessListener
                 }
@@ -626,7 +634,7 @@ class HomeFragment : Fragment() {
                 if (workoutDay == null) {
 
                     binding.tvHomeTodayExercises.text =
-                        "0/0"
+                        getString(R.string.home_count_placeholder)
 
                     return@addOnSuccessListener
                 }
@@ -635,7 +643,7 @@ class HomeFragment : Fragment() {
                 if (workoutDay.isRestDay) {
 
                     binding.tvHomeTodayExercises.text =
-                        "NGHỈ"
+                        getString(R.string.home_plan_rest)
 
                     return@addOnSuccessListener
                 }
@@ -653,7 +661,7 @@ class HomeFragment : Fragment() {
 
 
                 binding.tvHomeTodayExercises.text =
-                    "$completed/$total"
+                    getString(R.string.home_completed_count_format, completed, total)
             }
 
             .addOnFailureListener {
@@ -661,7 +669,7 @@ class HomeFragment : Fragment() {
                 if (_binding != null) {
 
                     binding.tvHomeTodayExercises.text =
-                        "0/0"
+                        getString(R.string.home_count_placeholder)
                 }
             }
     }
@@ -673,10 +681,6 @@ class HomeFragment : Fragment() {
     // =============================================================
 
     private fun syncPlansFromCloudAndDisplay() {
-
-        val ctx =
-            context ?: return
-
 
         if (
             !isAdded ||
@@ -717,7 +721,7 @@ class HomeFragment : Fragment() {
                 if (!querySnapshot.isEmpty) {
 
                     val plansArray =
-                        JSONArray()
+                        getDefaultSuggestedPlans()
 
 
                     for (
@@ -822,7 +826,7 @@ class HomeFragment : Fragment() {
             }
 
 
-        val activePlanName =
+        val activePlanKey =
             if (
                 activePlanStr
                     .isNullOrEmpty()
@@ -834,12 +838,9 @@ class HomeFragment : Fragment() {
 
                 try {
 
-                    JSONObject(
-                        activePlanStr
-                    ).optString(
-                        "planName",
-                        ""
-                    )
+                    val activePlan = JSONObject(activePlanStr)
+                    activePlan.optString("planId").takeIf { it.isNotEmpty() }
+                        ?: activePlan.optString("planName", "")
 
                 } catch (_: Exception) {
 
@@ -850,192 +851,94 @@ class HomeFragment : Fragment() {
 
         renderSavedPlansList(
             plansArray,
-            activePlanName
+            activePlanKey
         )
     }
 
     private fun getDefaultSuggestedPlans(): JSONArray {
-        val array = JSONArray()
-
-        // 1. Lộ trình Toàn Thân Tinh Gọn (Full-Body)
-        val p1 = JSONObject().apply {
-            put("planId", "preset_fullbody")
-            put("planName", "Lộ trình Toàn Thân Tinh Gọn (Full-Body)")
-            put("createdAt", 1700000000000L)
-            put("isPreset", true)
-            val days = JSONArray()
-            val dayData = listOf(
-                Pair("Thứ Hai", "mon") to listOf(
-                    Triple("pushup", "Hít Đất (Push-up)", 15),
-                    Triple("squat", "Ngồi Xổm (Squats)", 20),
-                    Triple("plank", "Plank Căng Cơ", 45)
-                ),
-                Pair("Thứ Ba", "tue") to listOf(
-                    Triple("splitsquat", "Ngồi Xổm Một Chân (Split Squat)", 15),
-                    Triple("situp", "Gập Bụng (Sit-up)", 20),
-                    Triple("sideplank", "Plank Nghiêng (Side Plank)", 30)
-                ),
-                Pair("Thứ Tư", "wed") to emptyList(),
-                Pair("Thứ Năm", "thu") to listOf(
-                    Triple("pushup", "Hít Đất (Push-up)", 15),
-                    Triple("squat", "Ngồi Xổm (Squats)", 20),
-                    Triple("jumpingjack", "Jumping Jacks", 30),
-                    Triple("plank", "Plank Căng Cơ", 45)
-                ),
-                Pair("Thứ Sáu", "fri") to listOf(
-                    Triple("splitsquat", "Ngồi Xổm Một Chân (Split Squat)", 15),
-                    Triple("situp", "Gập Bụng (Sit-up)", 20),
-                    Triple("sideplank", "Plank Nghiêng (Side Plank)", 30)
-                ),
-                Pair("Thứ Bảy", "sat") to listOf(
-                    Triple("jumpingjack", "Jumping Jacks", 35),
-                    Triple("squat", "Ngồi Xổm (Squats)", 20),
-                    Triple("pushup", "Hít Đất (Push-up)", 15),
-                    Triple("plank", "Plank Căng Cơ", 50)
-                ),
-                Pair("Chủ Nhật", "sun") to emptyList()
+        val plans = listOf(
+            PresetPlan(
+                "preset_fullbody",
+                R.string.preset_fullbody_name,
+                1700000000000L,
+                listOf(
+                    "mon" to listOf("pushup" to 15, "squat" to 20, "plank" to 45),
+                    "tue" to listOf("splitsquat" to 15, "situp" to 20, "sideplank" to 30),
+                    "wed" to emptyList(),
+                    "thu" to listOf("pushup" to 15, "squat" to 20, "jumpingjack" to 30, "plank" to 45),
+                    "fri" to listOf("splitsquat" to 15, "situp" to 20, "sideplank" to 30),
+                    "sat" to listOf("jumpingjack" to 35, "squat" to 20, "pushup" to 15, "plank" to 50),
+                    "sun" to emptyList()
+                )
+            ),
+            PresetPlan(
+                "preset_core",
+                R.string.preset_core_name,
+                1700000001000L,
+                listOf(
+                    "mon" to listOf("situp" to 25, "plank" to 45, "sideplank" to 30, "pushup" to 12),
+                    "tue" to listOf("squat" to 20, "jumpingjack" to 30, "plank" to 45),
+                    "wed" to listOf("situp" to 25, "sideplank" to 40, "plank" to 60),
+                    "thu" to emptyList(),
+                    "fri" to listOf("pushup" to 15, "situp" to 20, "plank" to 45, "jumpingjack" to 30),
+                    "sat" to listOf("sideplank" to 35, "situp" to 25, "squat" to 20, "plank" to 50),
+                    "sun" to emptyList()
+                )
+            ),
+            PresetPlan(
+                "preset_hiit",
+                R.string.preset_hiit_name,
+                1700000002000L,
+                listOf(
+                    "mon" to listOf("jumpingjack" to 35, "squat" to 25, "situp" to 20, "plank" to 45),
+                    "tue" to listOf("jumpingjack" to 35, "splitsquat" to 15, "pushup" to 15, "sideplank" to 35),
+                    "wed" to emptyList(),
+                    "thu" to listOf("jumpingjack" to 40, "squat" to 25, "splitsquat" to 15, "plank" to 50),
+                    "fri" to listOf("jumpingjack" to 35, "situp" to 25, "pushup" to 15, "sideplank" to 35),
+                    "sat" to listOf("jumpingjack" to 40, "squat" to 25, "situp" to 20, "plank" to 45),
+                    "sun" to emptyList()
+                )
             )
-            for ((dayInfo, exercises) in dayData) {
-                val dayObj = JSONObject().apply {
-                    put("dayName", dayInfo.first)
-                    put("dayKey", dayInfo.second)
-                    val exArr = JSONArray()
-                    for (ex in exercises) {
-                        exArr.put(JSONObject().apply {
-                            put("id", ex.first)
-                            put("name", ex.second)
-                            put("targetCount", ex.third)
-                        })
-                    }
-                    put("exercises", exArr)
-                }
-                days.put(dayObj)
-            }
-            put("days", days)
-        }
-        array.put(p1)
+        )
+        val exercisesById = ExerciseCatalog.all(requireContext()).associateBy { it.id }
 
-        // 2. Lộ trình Siết Cơ Bụng & Lõi Cốt (Core & Abs)
-        val p2 = JSONObject().apply {
-            put("planId", "preset_core")
-            put("planName", "Lộ trình Siết Bụng & Core (Abs Pro)")
-            put("createdAt", 1700000001000L)
-            put("isPreset", true)
-            val days = JSONArray()
-            val dayData = listOf(
-                Pair("Thứ Hai", "mon") to listOf(
-                    Triple("situp", "Gập Bụng (Sit-up)", 25),
-                    Triple("plank", "Plank Căng Cơ", 45),
-                    Triple("sideplank", "Plank Nghiêng (Side Plank)", 30),
-                    Triple("pushup", "Hít Đất (Push-up)", 12)
-                ),
-                Pair("Thứ Ba", "tue") to listOf(
-                    Triple("squat", "Ngồi Xổm (Squats)", 20),
-                    Triple("jumpingjack", "Jumping Jacks", 30),
-                    Triple("plank", "Plank Căng Cơ", 45)
-                ),
-                Pair("Thứ Tư", "wed") to listOf(
-                    Triple("situp", "Gập Bụng (Sit-up)", 25),
-                    Triple("sideplank", "Plank Nghiêng (Side Plank)", 40),
-                    Triple("plank", "Plank Căng Cơ", 60)
-                ),
-                Pair("Thứ Năm", "thu") to emptyList(),
-                Pair("Thứ Sáu", "fri") to listOf(
-                    Triple("pushup", "Hít Đất (Push-up)", 15),
-                    Triple("situp", "Gập Bụng (Sit-up)", 20),
-                    Triple("plank", "Plank Căng Cơ", 45),
-                    Triple("jumpingjack", "Jumping Jacks", 30)
-                ),
-                Pair("Thứ Bảy", "sat") to listOf(
-                    Triple("sideplank", "Plank Nghiêng (Side Plank)", 35),
-                    Triple("situp", "Gập Bụng (Sit-up)", 25),
-                    Triple("squat", "Ngồi Xổm (Squats)", 20),
-                    Triple("plank", "Plank Căng Cơ", 50)
-                ),
-                Pair("Chủ Nhật", "sun") to emptyList()
-            )
-            for ((dayInfo, exercises) in dayData) {
-                val dayObj = JSONObject().apply {
-                    put("dayName", dayInfo.first)
-                    put("dayKey", dayInfo.second)
-                    val exArr = JSONArray()
-                    for (ex in exercises) {
-                        exArr.put(JSONObject().apply {
-                            put("id", ex.first)
-                            put("name", ex.second)
-                            put("targetCount", ex.third)
-                        })
-                    }
-                    put("exercises", exArr)
-                }
-                days.put(dayObj)
+        return JSONArray().apply {
+            plans.forEach { plan ->
+                put(JSONObject().apply {
+                    put("planId", plan.id)
+                    put("planName", getString(plan.nameRes))
+                    put("createdAt", plan.createdAt)
+                    put("isPreset", true)
+                    put("days", JSONArray().apply {
+                        plan.schedule.forEach { (dayKey, exercises) ->
+                            put(JSONObject().apply {
+                                put("dayName", getString(weekdayNameRes(dayKey)))
+                                put("dayKey", dayKey)
+                                put("exercises", JSONArray().apply {
+                                    exercises.forEach { (exerciseId, targetCount) ->
+                                        put(JSONObject().apply {
+                                            put("id", exerciseId)
+                                            put("name", exercisesById[exerciseId]?.name ?: exerciseId)
+                                            put("targetCount", targetCount)
+                                        })
+                                    }
+                                })
+                            })
+                        }
+                    })
+                })
             }
-            put("days", days)
         }
-        array.put(p2)
+    }
 
-        // 3. Lộ trình Đốt Mỡ Thần Tốc (HIIT Fat Burn)
-        val p3 = JSONObject().apply {
-            put("planId", "preset_hiit")
-            put("planName", "Lộ trình Đốt Mỡ Thần Tốc (HIIT Fat Burn)")
-            put("createdAt", 1700000002000L)
-            put("isPreset", true)
-            val days = JSONArray()
-            val dayData = listOf(
-                Pair("Thứ Hai", "mon") to listOf(
-                    Triple("jumpingjack", "Jumping Jacks", 35),
-                    Triple("squat", "Ngồi Xổm (Squats)", 25),
-                    Triple("situp", "Gập Bụng (Sit-up)", 20),
-                    Triple("plank", "Plank Căng Cơ", 45)
-                ),
-                Pair("Thứ Ba", "tue") to listOf(
-                    Triple("jumpingjack", "Jumping Jacks", 35),
-                    Triple("splitsquat", "Ngồi Xổm Một Chân (Split Squat)", 15),
-                    Triple("pushup", "Hít Đất (Push-up)", 15),
-                    Triple("sideplank", "Plank Nghiêng (Side Plank)", 35)
-                ),
-                Pair("Thứ Tư", "wed") to emptyList(),
-                Pair("Thứ Năm", "thu") to listOf(
-                    Triple("jumpingjack", "Jumping Jacks", 40),
-                    Triple("squat", "Ngồi Xổm (Squats)", 25),
-                    Triple("splitsquat", "Ngồi Xổm Một Chân (Split Squat)", 15),
-                    Triple("plank", "Plank Căng Cơ", 50)
-                ),
-                Pair("Thứ Sáu", "fri") to listOf(
-                    Triple("jumpingjack", "Jumping Jacks", 35),
-                    Triple("situp", "Gập Bụng (Sit-up)", 25),
-                    Triple("pushup", "Hít Đất (Push-up)", 15),
-                    Triple("sideplank", "Plank Nghiêng (Side Plank)", 35)
-                ),
-                Pair("Thứ Bảy", "sat") to listOf(
-                    Triple("jumpingjack", "Jumping Jacks", 40),
-                    Triple("squat", "Ngồi Xổm (Squats)", 25),
-                    Triple("situp", "Gập Bụng (Sit-up)", 20),
-                    Triple("plank", "Plank Căng Cơ", 45)
-                ),
-                Pair("Chủ Nhật", "sun") to emptyList()
-            )
-            for ((dayInfo, exercises) in dayData) {
-                val dayObj = JSONObject().apply {
-                    put("dayName", dayInfo.first)
-                    put("dayKey", dayInfo.second)
-                    val exArr = JSONArray()
-                    for (ex in exercises) {
-                        exArr.put(JSONObject().apply {
-                            put("id", ex.first)
-                            put("name", ex.second)
-                            put("targetCount", ex.third)
-                        })
-                    }
-                    put("exercises", exArr)
-                }
-                days.put(dayObj)
-            }
-            put("days", days)
-        }
-        array.put(p3)
-
-        return array
+    private fun weekdayNameRes(dayKey: String): Int = when (dayKey) {
+        "mon" -> R.string.weekday_monday
+        "tue" -> R.string.weekday_tuesday
+        "wed" -> R.string.weekday_wednesday
+        "thu" -> R.string.weekday_thursday
+        "fri" -> R.string.weekday_friday
+        "sat" -> R.string.weekday_saturday
+        else -> R.string.weekday_sunday
     }
 
 
@@ -1045,7 +948,7 @@ class HomeFragment : Fragment() {
 
     private fun renderSavedPlansList(
         plansArray: JSONArray,
-        currentActivePlanName: String
+        currentActivePlanKey: String
     ) {
 
         val ctx =
@@ -1078,9 +981,9 @@ class HomeFragment : Fragment() {
             !plansArray.getJSONObject(it).optBoolean("isPreset", false)
         }
         binding.tvSavedPlansHeader.text = if (hasCustom) {
-            "LỊCH TẬP ĐÃ LƯU & GỢI Ý"
+            getString(R.string.home_saved_and_suggested)
         } else {
-            "GỢI Ý LỘ TRÌNH TẬP LUYỆN"
+            getString(R.string.home_suggested_plans)
         }
         binding.tvSavedPlansHeader.visibility =
             View.VISIBLE
@@ -1114,7 +1017,7 @@ class HomeFragment : Fragment() {
             val planName =
                 planObj.optString(
                     "planName",
-                    "Lịch tập ${i + 1}"
+                    getString(R.string.home_plan_fallback_format, i + 1)
                 )
 
 
@@ -1169,14 +1072,14 @@ class HomeFragment : Fragment() {
 
 
             itemBinding.tvSavedPlanDesc.text =
-                "$workoutDaysCount buổi tập/tuần • Lặp lại hàng tuần"
+                getString(R.string.home_workouts_per_week, workoutDaysCount)
 
 
             val isActive =
-                currentActivePlanName
+                currentActivePlanKey
                     .isNotEmpty() &&
-                        planName ==
-                        currentActivePlanName
+                        (planId.takeIf { it.isNotEmpty() } ?: planName) ==
+                        currentActivePlanKey
 
 
             if (isActive) {
@@ -1186,7 +1089,7 @@ class HomeFragment : Fragment() {
 
 
                 itemBinding.btnStartSavedPlan.text =
-                    "ĐANG TẬP"
+                    getString(R.string.home_plan_active)
 
 
                 itemBinding.btnStartSavedPlan
@@ -1208,7 +1111,7 @@ class HomeFragment : Fragment() {
 
 
                 itemBinding.btnStartSavedPlan.text =
-                    "ÁP DỤNG"
+                    getString(R.string.action_apply)
 
 
                 itemBinding.btnStartSavedPlan
@@ -1285,13 +1188,13 @@ class HomeFragment : Fragment() {
 
         AlertDialog.Builder(ctx)
             .setTitle(
-                "Xác nhận xóa tiến trình"
+                R.string.home_delete_plan_title
             )
             .setMessage(
-                "Bạn có chắc chắn muốn xóa tiến trình \"$planName\" không?"
+                getString(R.string.home_delete_plan_message, planName)
             )
             .setPositiveButton(
-                "Xóa"
+                R.string.action_delete
             ) { _, _ ->
 
                 deletePlanLocallyAndCloud(
@@ -1301,7 +1204,7 @@ class HomeFragment : Fragment() {
                 )
             }
             .setNegativeButton(
-                "Hủy",
+                R.string.action_cancel,
                 null
             )
             .show()
@@ -1474,7 +1377,7 @@ class HomeFragment : Fragment() {
 
             Toast.makeText(
                 ctx,
-                "Đã xóa tiến trình \"$planName\"",
+                getString(R.string.home_plan_deleted, planName),
                 Toast.LENGTH_SHORT
             ).show()
 
@@ -1504,13 +1407,13 @@ class HomeFragment : Fragment() {
 
         AlertDialog.Builder(ctx)
             .setTitle(
-                "Xác nhận thay đổi lịch tập"
+                R.string.home_apply_plan_title
             )
             .setMessage(
-                "Bạn có chắc chắn muốn áp dụng tiến trình \"$planName\" vào lịch tập 30 ngày không?"
+                getString(R.string.home_apply_plan_message, planName)
             )
             .setPositiveButton(
-                "Đồng ý đổi"
+                R.string.home_apply_plan_confirm
             ) { _, _ ->
 
                 applyPlanTo30DaySchedule(
@@ -1519,7 +1422,7 @@ class HomeFragment : Fragment() {
                 )
             }
             .setNegativeButton(
-                "Hủy",
+                R.string.action_cancel,
                 null
             )
             .show()
@@ -1770,7 +1673,7 @@ class HomeFragment : Fragment() {
 
                 Toast.makeText(
                     context,
-                    "Đã áp dụng \"$planName\" vào lịch tập 30 ngày!",
+                    getString(R.string.home_plan_applied, planName),
                     Toast.LENGTH_LONG
                 ).show()
 
@@ -1792,7 +1695,7 @@ class HomeFragment : Fragment() {
 
                 Toast.makeText(
                     context,
-                    "Lỗi cập nhật lịch tập: ${e.message}",
+                    getString(R.string.home_plan_apply_error, e.localizedMessage.orEmpty()),
                     Toast.LENGTH_SHORT
                 ).show()
             }

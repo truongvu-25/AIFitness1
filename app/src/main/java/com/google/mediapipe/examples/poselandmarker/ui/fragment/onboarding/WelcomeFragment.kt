@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
@@ -98,9 +99,17 @@ class WelcomeFragment : Fragment() {
                     findNavController().navigate(R.id.action_welcome_to_user_info)
                 }
             }
-            .addOnFailureListener {
+            .addOnFailureListener { error ->
                 if (isAdded) {
                     setLoading(false)
+                    Toast.makeText(
+                        context,
+                        getString(
+                            R.string.calendar_profile_load_error,
+                            error.localizedMessage.orEmpty()
+                        ),
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
             }
     }

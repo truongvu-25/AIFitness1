@@ -43,13 +43,6 @@
 
         <item name="android:navigationBarColor">@color/tri_force_bg</item>
 
-        <!--
-            Navigation bar sáng
-            => icon Android màu tối
-        -->
-        <item name="android:windowLightNavigationBar">true</item>
-
-
         <!-- ================= WINDOW ================= -->
 
         <item name="android:windowNoTitle">true</item>
@@ -306,6 +299,12 @@
             @color/mp_color_primary
         </item>
 
+    </style>
+
+    <style name="TriForceBottomNavigationText" parent="TextAppearance.MaterialComponents.Caption">
+        <item name="android:textSize">@dimen/bottom_nav_label_size</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:letterSpacing">0.02</item>
     </style>
 
 </resources>

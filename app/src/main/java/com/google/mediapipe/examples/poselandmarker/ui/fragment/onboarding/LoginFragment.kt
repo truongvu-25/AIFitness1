@@ -94,11 +94,11 @@ class LoginFragment : Fragment() {
         val password = binding.etPassword.text.toString().trim()
 
         if (email.isEmpty()) {
-            binding.etEmail.error = "Vui lòng nhập email"
+            binding.etEmail.error = getString(R.string.err_empty_email)
             return
         }
         if (password.isEmpty()) {
-            binding.etPassword.error = "Vui lòng nhập mật khẩu"
+            binding.etPassword.error = getString(R.string.err_empty_password)
             return
         }
 
@@ -112,13 +112,16 @@ class LoginFragment : Fragment() {
                         checkUserProfileAndNavigate(user.uid)
                     } else {
                         setLoading(false)
-                        Toast.makeText(context, "Đã xảy ra lỗi hệ thống.", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, R.string.system_error, Toast.LENGTH_SHORT).show()
                     }
                 } else {
                     setLoading(false)
                     Toast.makeText(
                         context,
-                        "Đăng nhập thất bại: ${task.exception?.localizedMessage}",
+                        getString(
+                            R.string.login_failed_detail,
+                            task.exception?.localizedMessage.orEmpty()
+                        ),
                         Toast.LENGTH_LONG
                     ).show()
                 }
@@ -154,9 +157,11 @@ class LoginFragment : Fragment() {
             }
             .addOnFailureListener { e ->
                 setLoading(false)
-                // In case of firestore query failure but auth is successful, default to info collection
-                Toast.makeText(context, "Lỗi tải thông tin: ${e.message}", Toast.LENGTH_SHORT).show()
-                findNavController().navigate(R.id.action_login_to_user_info)
+                Toast.makeText(
+                    context,
+                    getString(R.string.calendar_profile_load_error, e.localizedMessage.orEmpty()),
+                    Toast.LENGTH_SHORT
+                ).show()
             }
     }
 

@@ -12,7 +12,7 @@
         android:id="@+id/tvEditAnswer"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="SỬA"
+        android:text="@string/action_edit"
         android:textSize="11sp"
         android:textStyle="bold"
         android:textColor="@color/tri_force_slate"

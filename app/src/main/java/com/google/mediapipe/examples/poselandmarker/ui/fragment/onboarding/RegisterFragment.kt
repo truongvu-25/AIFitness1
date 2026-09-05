@@ -87,19 +87,19 @@ class RegisterFragment : Fragment() {
         val confirmPassword = binding.etConfirmPassword.text.toString().trim()
 
         if (email.isEmpty()) {
-            binding.etRegisterEmail.error = "Vui lòng nhập email"
+            binding.etRegisterEmail.error = getString(R.string.err_empty_email)
             return
         }
         if (password.isEmpty()) {
-            binding.etRegisterPassword.error = "Vui lòng nhập mật khẩu"
+            binding.etRegisterPassword.error = getString(R.string.err_empty_password)
             return
         }
         if (password.length < 6) {
-            binding.etRegisterPassword.error = "Mật khẩu phải có ít nhất 6 ký tự"
+            binding.etRegisterPassword.error = getString(R.string.err_short_password)
             return
         }
         if (password != confirmPassword) {
-            binding.etConfirmPassword.error = "Mật khẩu xác nhận không khớp"
+            binding.etConfirmPassword.error = getString(R.string.err_password_mismatch)
             return
         }
 
@@ -109,13 +109,16 @@ class RegisterFragment : Fragment() {
             .addOnCompleteListener(requireActivity()) { task ->
                 setLoading(false)
                 if (task.isSuccessful) {
-                    Toast.makeText(context, "Đăng ký tài khoản thành công!", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, R.string.register_success, Toast.LENGTH_SHORT).show()
                     // Redirect to collect profile stats
                     findNavController().navigate(R.id.action_register_to_user_info)
                 } else {
                     Toast.makeText(
                         context,
-                        "Đăng ký thất bại: ${task.exception?.localizedMessage}",
+                        getString(
+                            R.string.register_failed_detail,
+                            task.exception?.localizedMessage.orEmpty()
+                        ),
                         Toast.LENGTH_LONG
                     ).show()
                 }

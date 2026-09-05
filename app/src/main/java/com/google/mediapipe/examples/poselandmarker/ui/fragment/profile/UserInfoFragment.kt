@@ -25,6 +25,7 @@ import com.google.mediapipe.examples.poselandmarker.ui.fragment.profile.chat.Cha
 import com.google.mediapipe.examples.poselandmarker.ui.fragment.profile.chat.ChatFlowController
 import com.google.mediapipe.examples.poselandmarker.ui.fragment.profile.chat.ChatItem
 import com.google.mediapipe.examples.poselandmarker.ui.fragment.profile.chat.ChatQuestion
+import com.google.mediapipe.examples.poselandmarker.ui.fragment.profile.chat.ChatQuestions
 import com.google.mediapipe.examples.poselandmarker.ui.fragment.profile.chat.HeightWheelAdapter
 
 class UserInfoFragment : Fragment() {
@@ -40,22 +41,24 @@ class UserInfoFragment : Fragment() {
     private var isEditMode = false
     private var originalCreatedTime = 0L
 
-    private val controller = ChatFlowController()
+    private lateinit var controller: ChatFlowController
     private lateinit var chatAdapter: ChatAdapter
 
     private val questionStartPos = mutableListOf<Int>()
 
     private var selectedSingleButton: MaterialButton? = null
     private val selectedMultiOptions = mutableSetOf<String>()
+    private var pendingEditAnswer: Pair<String, String>? = null
 
     private var heightWheelAdapter: HeightWheelAdapter? = null
-    private val heightValues = (120..220).toList()
+    private val heightValues = (80..250).toList()
     private val heightItemHeightDp = 48
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         auth = FirebaseAuth.getInstance()
         db = FirebaseFirestore.getInstance()
+        controller = ChatFlowController(ChatQuestions.create(requireContext()))
         isEditMode = arguments?.getBoolean("isEditMode", false) ?: false
     }
 
@@ -77,7 +80,7 @@ class UserInfoFragment : Fragment() {
         binding.btnChatContinue.setOnClickListener { onContinueClicked() }
 
         if (isEditMode) {
-            binding.tvUserInfoTitle.text = "Chỉnh Sửa Hồ Sơ"
+            binding.tvUserInfoTitle.setText(R.string.profile_edit_screen_title)
             binding.tvQuestionProgress.visibility = View.GONE
             binding.progressQuestions.visibility = View.GONE
             loadExistingProfileThenPreload()
@@ -112,7 +115,7 @@ class UserInfoFragment : Fragment() {
     private fun updateProgress() {
         val total = controller.allQuestions().size
         val current = (controller.currentIndex + 1).coerceAtMost(total)
-        binding.tvQuestionProgress.text = "Câu $current/$total"
+        binding.tvQuestionProgress.text = getString(R.string.question_progress, current, total)
         binding.progressQuestions.progress = ((current.toFloat() / total) * 100).toInt()
     }
 
@@ -123,6 +126,10 @@ class UserInfoFragment : Fragment() {
     }
 
     private fun renderInputFor(question: ChatQuestion) {
+        val existingValue = pendingEditAnswer
+            ?.takeIf { it.first == question.id }
+            ?.second
+        pendingEditAnswer = null
         selectedSingleButton = null
         selectedMultiOptions.clear()
         binding.containerChoices.removeAllViews()
@@ -131,7 +138,7 @@ class UserInfoFragment : Fragment() {
         heightWheelAdapter = null
 
         if (question.id == "height") {
-            renderHeightWheel()
+            renderHeightWheel(existingValue?.toDoubleOrNull()?.toInt() ?: 170)
             updateContinueButtonState(question)
             return
         }
@@ -143,7 +150,7 @@ class UserInfoFragment : Fragment() {
                 binding.tilDynamicInput.visibility = View.VISIBLE
                 binding.containerChoices.visibility = View.GONE
                 binding.tilDynamicInput.hint = question.inputHint
-                binding.etDynamicInput.setText("")
+                binding.etDynamicInput.setText(existingValue.orEmpty())
                 binding.etDynamicInput.inputType = when {
                     question.answerType == AnswerType.NUMBER_INPUT && question.allowDecimal ->
                         android.text.InputType.TYPE_CLASS_NUMBER or android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL
@@ -162,10 +169,15 @@ class UserInfoFragment : Fragment() {
             AnswerType.SINGLE_CHOICE -> {
                 binding.tilDynamicInput.visibility = View.GONE
                 binding.containerChoices.visibility = View.VISIBLE
-                question.options.forEach { optionText ->
+                question.options.forEachIndexed { index, optionText ->
                     val btn = LayoutInflater.from(requireContext())
                         .inflate(R.layout.layout_chat_choice_button, binding.containerChoices, false) as MaterialButton
                     btn.text = optionText
+                    btn.tag = question.optionValues.getOrElse(index) { optionText }
+                    if (existingValue == btn.tag?.toString() || existingValue == optionText) {
+                        applySelectedStyle(btn)
+                        selectedSingleButton = btn
+                    }
                     btn.setOnClickListener {
                         selectedSingleButton?.let { resetChoiceStyle(it) }
                         applySelectedStyle(btn)
@@ -178,16 +190,25 @@ class UserInfoFragment : Fragment() {
             AnswerType.MULTI_CHOICE -> {
                 binding.tilDynamicInput.visibility = View.GONE
                 binding.containerChoices.visibility = View.VISIBLE
-                question.options.forEach { optionText ->
+                question.options.forEachIndexed { index, optionText ->
+                    val optionValue = question.optionValues.getOrElse(index) { optionText }
                     val btn = LayoutInflater.from(requireContext())
                         .inflate(R.layout.layout_chat_choice_button, binding.containerChoices, false) as MaterialButton
                     btn.text = optionText
+                    btn.tag = optionValue
+                    val selectedValues = existingValue.orEmpty()
+                        .split(",")
+                        .map { it.trim() }
+                    if (optionValue in selectedValues || optionText in selectedValues) {
+                        selectedMultiOptions.add(optionValue)
+                        applySelectedStyle(btn)
+                    }
                     btn.setOnClickListener {
-                        if (selectedMultiOptions.contains(optionText)) {
-                            selectedMultiOptions.remove(optionText)
+                        if (selectedMultiOptions.contains(optionValue)) {
+                            selectedMultiOptions.remove(optionValue)
                             resetChoiceStyle(btn)
                         } else {
-                            selectedMultiOptions.add(optionText)
+                            selectedMultiOptions.add(optionValue)
                             applySelectedStyle(btn)
                         }
                         updateContinueButtonState(question)
@@ -196,11 +217,12 @@ class UserInfoFragment : Fragment() {
                 }
             }
         }
+        updateContinueButtonState(question)
     }
 
     // ---------- Bánh xe chọn chiều cao ----------
 
-    private fun renderHeightWheel() {
+    private fun renderHeightWheel(defaultValue: Int) {
         binding.tilDynamicInput.visibility = View.GONE
         binding.containerChoices.visibility = View.GONE
         binding.containerHeightWheel.visibility = View.VISIBLE
@@ -210,7 +232,10 @@ class UserInfoFragment : Fragment() {
         )
         _wheelBinding = wheelBinding
 
-        val defaultValue = 170
+        val normalizedDefault = defaultValue.coerceIn(
+            heightValues.first(),
+            heightValues.last()
+        )
         val adapter = HeightWheelAdapter(heightValues)
         heightWheelAdapter = adapter
 
@@ -231,17 +256,17 @@ class UserInfoFragment : Fragment() {
                     val centerView = snapHelper.findSnapView(rv.layoutManager) ?: return
                     val position = rv.getChildAdapterPosition(centerView)
                     if (position in heightValues.indices) {
-                        adapter.setCenterValue(heightValues[position], rv)
+                        adapter.setCenterValue(heightValues[position])
                     }
                 }
             }
         })
 
         wheelBinding.rvHeightWheel.post {
-            val index = heightValues.indexOf(defaultValue)
+            val index = heightValues.indexOf(normalizedDefault)
             if (index >= 0) {
                 wheelBinding.rvHeightWheel.scrollToPosition(index)
-                adapter.setCenterValue(defaultValue, wheelBinding.rvHeightWheel)
+                adapter.setCenterValue(normalizedDefault)
             }
         }
     }
@@ -274,7 +299,11 @@ class UserInfoFragment : Fragment() {
     // ---------- Xử lý bấm TIẾP TỤC ----------
 
     private fun onContinueClicked() {
-        val question = controller.currentQuestion() ?: return
+        val question = controller.currentQuestion()
+        if (question == null) {
+            if (isEditMode) finishAndSave()
+            return
+        }
 
         val rawValue: String
         val displayValue: String
@@ -283,12 +312,12 @@ class UserInfoFragment : Fragment() {
             question.id == "height" -> {
                 val value = heightWheelAdapter?.centerValue ?: 170
                 rawValue = value.toString()
-                displayValue = "$value cm"
+                displayValue = getString(R.string.value_centimeters, value.toString())
             }
             question.answerType == AnswerType.TEXT_INPUT -> {
                 val text = binding.etDynamicInput.text.toString().trim()
                 if (text.isEmpty()) {
-                    binding.tilDynamicInput.error = "Vui lòng nhập thông tin"
+                    binding.tilDynamicInput.error = getString(R.string.input_required)
                     return
                 }
                 binding.tilDynamicInput.error = null
@@ -298,8 +327,13 @@ class UserInfoFragment : Fragment() {
             question.answerType == AnswerType.NUMBER_INPUT -> {
                 val text = binding.etDynamicInput.text.toString().trim()
                 val number = text.toDoubleOrNull()
-                if (number == null || number <= 0) {
-                    binding.tilDynamicInput.error = "Vui lòng nhập số hợp lệ"
+                val isValid = when (question.id) {
+                    "age" -> number != null && number in 5.0..120.0
+                    "weight" -> number != null && number in 20.0..400.0
+                    else -> number != null && number > 0
+                }
+                if (!isValid) {
+                    binding.tilDynamicInput.error = getString(R.string.number_invalid)
                     return
                 }
                 binding.tilDynamicInput.error = null
@@ -307,21 +341,21 @@ class UserInfoFragment : Fragment() {
                 displayValue = text
             }
             question.answerType == AnswerType.SINGLE_CHOICE -> {
-                val selected = selectedSingleButton?.text?.toString()
-                if (selected == null) {
-                    Toast.makeText(context, "Vui lòng chọn 1 đáp án", Toast.LENGTH_SHORT).show()
+                val selectedButton = selectedSingleButton
+                if (selectedButton == null) {
+                    Toast.makeText(context, R.string.choice_required, Toast.LENGTH_SHORT).show()
                     return
                 }
-                rawValue = selected
-                displayValue = selected
+                rawValue = selectedButton.tag?.toString() ?: selectedButton.text.toString()
+                displayValue = selectedButton.text.toString()
             }
             question.answerType == AnswerType.MULTI_CHOICE -> {
                 if (selectedMultiOptions.isEmpty()) {
-                    Toast.makeText(context, "Vui lòng chọn ít nhất 1 đáp án", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, R.string.multi_choice_required, Toast.LENGTH_SHORT).show()
                     return
                 }
                 rawValue = selectedMultiOptions.joinToString(", ")
-                displayValue = rawValue
+                displayValue = question.displayValue(rawValue)
             }
             else -> return
         }
@@ -336,6 +370,8 @@ class UserInfoFragment : Fragment() {
 
     private fun onEditRequested(questionIndex: Int) {
         if (questionIndex >= questionStartPos.size) return
+        val question = controller.allQuestions().getOrNull(questionIndex) ?: return
+        pendingEditAnswer = question.id to controller.getAnswer(question.id).orEmpty()
         val removeFrom = questionStartPos[questionIndex]
         chatAdapter.removeFromIndex(removeFrom)
         while (questionStartPos.size > questionIndex) questionStartPos.removeAt(questionStartPos.size - 1)
@@ -348,7 +384,12 @@ class UserInfoFragment : Fragment() {
     // ---------- Chế độ Chỉnh sửa hồ sơ ----------
 
     private fun loadExistingProfileThenPreload() {
-        val uid = auth.currentUser?.uid ?: return
+        val uid = auth.currentUser?.uid
+        if (uid.isNullOrEmpty()) {
+            Toast.makeText(context, R.string.camera_sign_in_required, Toast.LENGTH_SHORT).show()
+            findNavController().popBackStack()
+            return
+        }
         setLoading(true)
         db.collection("users").document(uid).get()
             .addOnSuccessListener { document ->
@@ -370,12 +411,22 @@ class UserInfoFragment : Fragment() {
                         )
                         controller.preload(existing)
                         renderFullTranscript()
+                    } else {
+                        Toast.makeText(context, R.string.calendar_profile_missing, Toast.LENGTH_SHORT).show()
+                        findNavController().popBackStack()
                     }
+                } else {
+                    Toast.makeText(context, R.string.calendar_profile_missing, Toast.LENGTH_SHORT).show()
+                    findNavController().popBackStack()
                 }
             }
             .addOnFailureListener { e ->
                 setLoading(false)
-                Toast.makeText(context, "Lỗi tải thông tin: ${e.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    context,
+                    getString(R.string.calendar_profile_load_error, e.localizedMessage.orEmpty()),
+                    Toast.LENGTH_SHORT
+                ).show()
             }
     }
 
@@ -383,13 +434,18 @@ class UserInfoFragment : Fragment() {
         controller.allQuestions().forEachIndexed { index, question ->
             questionStartPos.add(chatAdapter.itemCount)
             chatAdapter.addItem(ChatItem.BotMessage(question.botText))
-            val display = controller.getAnswer(question.id) ?: ""
+            val rawValue = controller.getAnswer(question.id).orEmpty()
+            val display = when (question.id) {
+                "height" -> getString(R.string.value_centimeters, rawValue)
+                "weight" -> getString(R.string.value_kilograms, rawValue)
+                else -> question.displayValue(rawValue)
+            }
             chatAdapter.addItem(ChatItem.UserAnswer(display, index))
         }
         binding.tilDynamicInput.visibility = View.GONE
         binding.containerChoices.visibility = View.GONE
         binding.containerHeightWheel.visibility = View.GONE
-        binding.btnChatContinue.text = "LƯU THAY ĐỔI"
+        binding.btnChatContinue.setText(R.string.save_changes)
         binding.btnChatContinue.isEnabled = true
         binding.btnChatContinue.alpha = 1.0f
     }
@@ -397,7 +453,11 @@ class UserInfoFragment : Fragment() {
     // ---------- Lưu dữ liệu ----------
 
     private fun finishAndSave() {
-        val uid = auth.currentUser?.uid ?: return
+        val uid = auth.currentUser?.uid
+        if (uid.isNullOrEmpty()) {
+            Toast.makeText(context, R.string.camera_sign_in_required, Toast.LENGTH_SHORT).show()
+            return
+        }
         val answers = controller.getAllAnswers()
 
         val fullName = answers["name"]?.trim().orEmpty()
@@ -406,7 +466,7 @@ class UserInfoFragment : Fragment() {
         val weight = answers["weight"]?.toDoubleOrNull()
 
         if (fullName.isEmpty() || age == null || height == null || weight == null) {
-            Toast.makeText(context, "Thông tin chưa đầy đủ, vui lòng kiểm tra lại", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, R.string.profile_incomplete, Toast.LENGTH_SHORT).show()
             return
         }
 
@@ -451,7 +511,7 @@ class UserInfoFragment : Fragment() {
             .addOnSuccessListener {
                 if (isEditMode) {
                     setLoading(false)
-                    Toast.makeText(context, "Cập nhật hồ sơ thành công!", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, R.string.profile_update_success, Toast.LENGTH_SHORT).show()
                     findNavController().popBackStack()
                 } else {
                     generateWorkoutPlan(uid, profile)
@@ -459,7 +519,11 @@ class UserInfoFragment : Fragment() {
             }
             .addOnFailureListener { e ->
                 setLoading(false)
-                Toast.makeText(context, "Lỗi lưu thông tin: ${e.message}", Toast.LENGTH_LONG).show()
+                Toast.makeText(
+                    context,
+                    getString(R.string.profile_save_error, e.localizedMessage.orEmpty()),
+                    Toast.LENGTH_LONG
+                ).show()
             }
     }
 
@@ -486,29 +550,48 @@ class UserInfoFragment : Fragment() {
         batch.commit()
             .addOnSuccessListener {
                 setLoading(false)
-                Toast.makeText(context, "Đã tạo lộ trình tập luyện 30 ngày!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, R.string.workout_plan_created, Toast.LENGTH_SHORT).show()
                 NotificationHelper.scheduleDailyReminder(requireContext())
                 findNavController().navigate(R.id.action_user_info_to_workout_calendar)
             }
             .addOnFailureListener { e ->
                 setLoading(false)
-                Toast.makeText(context, "Lỗi tạo lộ trình: ${e.message}", Toast.LENGTH_LONG).show()
+                Toast.makeText(
+                    context,
+                    getString(R.string.workout_plan_create_error, e.localizedMessage.orEmpty()),
+                    Toast.LENGTH_LONG
+                ).show()
             }
     }
 
     private fun fitnessLevelMultiplier(fitnessLevel: String): Double = when {
-        fitnessLevel.contains("Mới bắt đầu") -> 0.8
-        fitnessLevel.contains("Nâng cao") -> 1.3
+        fitnessLevel == "beginner" || fitnessLevel.contains("Mới bắt đầu") ||
+                fitnessLevel.contains("Beginner", ignoreCase = true) -> 0.8
+        fitnessLevel == "advanced" || fitnessLevel.contains("Nâng cao") ||
+                fitnessLevel.contains("Advanced", ignoreCase = true) -> 1.3
         else -> 1.0 // Trung bình hoặc chưa có dữ liệu (user cũ)
     }
 
     /** Chuyển "💪 10 - 30" hoặc "Dưới 5" thành 1 con số trung bình để làm mốc khởi điểm. */
     private fun parseBaselineFromRange(rangeText: String, fallback: Int): Int {
+        when (rangeText) {
+            "under_5" -> return 3
+            "under_10" -> return 7
+            "5_10" -> return 7
+            "10_20" -> return 15
+            "10_30" -> return 20
+            "30_50" -> return 40
+            "over_20" -> return 25
+            "over_50" -> return 55
+        }
         val numbers = Regex("\\d+").findAll(rangeText).map { it.value.toInt() }.toList()
         return when {
             numbers.size >= 2 -> (numbers[0] + numbers[1]) / 2
-            numbers.size == 1 && rangeText.contains("Dưới") -> (numbers[0] - 3).coerceAtLeast(3)
-            numbers.size == 1 && rangeText.contains("Trên") -> numbers[0] + 5
+            numbers.size == 1 && (rangeText.contains("Dưới") ||
+                    rangeText.contains("Under", ignoreCase = true)) ->
+                (numbers[0] - 3).coerceAtLeast(3)
+            numbers.size == 1 && (rangeText.contains("Trên") ||
+                    rangeText.contains("Over", ignoreCase = true)) -> numbers[0] + 5
             numbers.size == 1 -> numbers[0]
             else -> fallback
         }
@@ -516,8 +599,14 @@ class UserInfoFragment : Fragment() {
 
     /** Mục tiêu tăng sức mạnh/cơ bắp -> đẩy pushup/squat lên; giảm mỡ -> đẩy jumpingjack lên. */
     private fun goalsBiasFor(exerciseId: String, goals: List<String>): Double {
-        val wantsStrength = goals.any { it.contains("sức mạnh") || it.contains("cơ bắp") }
-        val wantsFatLoss = goals.any { it.contains("Giảm mỡ") }
+        val wantsStrength = goals.any {
+            it == "strength" || it == "muscle" || it.contains("sức mạnh") ||
+                    it.contains("cơ bắp") || it.contains("strength", ignoreCase = true) ||
+                    it.contains("muscle", ignoreCase = true)
+        }
+        val wantsFatLoss = goals.any {
+            it == "fat_loss" || it.contains("Giảm mỡ") || it.contains("fat", ignoreCase = true)
+        }
         return when (exerciseId) {
             "pushup", "squat", "splitsquat" -> if (wantsStrength) 1.2 else 1.0
             "jumpingjack" -> if (wantsFatLoss) 1.3 else 1.0

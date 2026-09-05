@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.navigation.NavOptions
 import androidx.navigation.fragment.findNavController
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -48,7 +49,10 @@ class UpdateBmiFragment : Fragment() {
     }
 
     private fun loadCurrentStats() {
-        if (uid.isEmpty()) return
+        if (uid.isEmpty()) {
+            Toast.makeText(context, R.string.camera_sign_in_required, Toast.LENGTH_SHORT).show()
+            return
+        }
         setLoading(true)
 
         db.collection("users").document(uid).get()
@@ -59,12 +63,20 @@ class UpdateBmiFragment : Fragment() {
                     if (profile != null) {
                         binding.etUpdateHeight.setText(profile.height.toString())
                         binding.etUpdateWeight.setText(profile.weight.toString())
+                    } else {
+                        Toast.makeText(context, R.string.calendar_profile_missing, Toast.LENGTH_SHORT).show()
                     }
+                } else {
+                    Toast.makeText(context, R.string.calendar_profile_missing, Toast.LENGTH_SHORT).show()
                 }
             }
             .addOnFailureListener { e ->
                 setLoading(false)
-                Toast.makeText(context, "Lỗi tải dữ liệu: ${e.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    context,
+                    getString(R.string.profile_load_error, e.localizedMessage.orEmpty()),
+                    Toast.LENGTH_SHORT
+                ).show()
             }
     }
 
@@ -73,13 +85,13 @@ class UpdateBmiFragment : Fragment() {
         val weightStr = binding.etUpdateWeight.text.toString().trim()
 
         val height = heightStr.toDoubleOrNull()
-        if (height == null || height <= 0) {
-            binding.etUpdateHeight.error = "Vui lòng nhập chiều cao hợp lệ"
+        if (height == null || height !in 80.0..250.0) {
+            binding.etUpdateHeight.error = getString(R.string.bmi_invalid_height)
             return
         }
         val weight = weightStr.toDoubleOrNull()
-        if (weight == null || weight <= 0) {
-            binding.etUpdateWeight.error = "Vui lòng nhập cân nặng hợp lệ"
+        if (weight == null || weight !in 20.0..400.0) {
+            binding.etUpdateWeight.error = getString(R.string.bmi_invalid_weight)
             return
         }
 
@@ -113,25 +125,42 @@ class UpdateBmiFragment : Fragment() {
                         db.collection("users").document(uid).set(updatedProfile)
                             .addOnSuccessListener {
                                 setLoading(false)
-                                Toast.makeText(context, "Cập nhật chỉ số cơ thể thành công!", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, R.string.bmi_update_success, Toast.LENGTH_SHORT).show()
                                 
                                 // Reset / go to calendar
-                                findNavController().navigate(R.id.action_login_to_workout_calendar)
+                                findNavController().navigate(
+                                    R.id.workout_calendar_fragment,
+                                    null,
+                                    NavOptions.Builder()
+                                        .setPopUpTo(R.id.nav_graph, true)
+                                        .setLaunchSingleTop(true)
+                                        .build()
+                                )
                             }
                             .addOnFailureListener { e ->
                                 setLoading(false)
-                                Toast.makeText(context, "Lỗi lưu cập nhật: ${e.message}", Toast.LENGTH_LONG).show()
+                                Toast.makeText(
+                                    context,
+                                    getString(R.string.bmi_update_error, e.localizedMessage.orEmpty()),
+                                    Toast.LENGTH_LONG
+                                ).show()
                             }
                     } else {
                         setLoading(false)
+                        Toast.makeText(context, R.string.calendar_profile_missing, Toast.LENGTH_SHORT).show()
                     }
                 } else {
                     setLoading(false)
+                    Toast.makeText(context, R.string.calendar_profile_missing, Toast.LENGTH_SHORT).show()
                 }
             }
             .addOnFailureListener { e ->
                 setLoading(false)
-                Toast.makeText(context, "Lỗi kết nối database: ${e.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    context,
+                    getString(R.string.database_error_with_detail, e.localizedMessage.orEmpty()),
+                    Toast.LENGTH_SHORT
+                ).show()
             }
     }
 

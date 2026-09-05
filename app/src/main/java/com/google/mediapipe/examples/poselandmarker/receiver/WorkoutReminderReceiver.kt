@@ -1,17 +1,16 @@
 package com.google.mediapipe.examples.poselandmarker.receiver
 
-import android.R
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.os.Build
 import androidx.core.app.NotificationCompat
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.mediapipe.examples.poselandmarker.FitnessApplication
 import com.google.mediapipe.examples.poselandmarker.MainActivity
+import com.google.mediapipe.examples.poselandmarker.R
 import com.google.mediapipe.examples.poselandmarker.notification.NotificationHelper
 import com.google.mediapipe.examples.poselandmarker.model.UserProfile
 import com.google.mediapipe.examples.poselandmarker.model.WorkoutDay
@@ -79,17 +78,13 @@ class WorkoutReminderReceiver : BroadcastReceiver() {
         val mainIntent = Intent(context, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         }
-        val flags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        } else {
-            PendingIntent.FLAG_UPDATE_CURRENT
-        }
+        val flags = PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         val pendingIntent = PendingIntent.getActivity(context, 0, mainIntent, flags)
 
         val notification = NotificationCompat.Builder(context, FitnessApplication.Companion.CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_dialog_info)
-            .setContentTitle("Lịch tập luyện hôm nay (Ngày $dayIndex)")
-            .setContentText("Bạn có bài tập chưa hoàn thành! Hãy mở ứng dụng để tập luyện ngay nhé.")
+            .setSmallIcon(android.R.drawable.ic_dialog_info)
+            .setContentTitle(context.getString(R.string.notification_workout_title, dayIndex))
+            .setContentText(context.getString(R.string.notification_workout_text))
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setContentIntent(pendingIntent)
             .setAutoCancel(true)

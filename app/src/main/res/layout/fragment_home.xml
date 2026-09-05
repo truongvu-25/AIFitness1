@@ -138,7 +138,7 @@
 
                                 android:layout_marginStart="@dimen/space_8"
 
-                                android:text="HÔM NAY"
+                                android:text="@string/home_today_badge"
 
                                 android:textColor="@color/tri_force_blue"
 
@@ -164,7 +164,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
 
-                            android:text="CALISTHENICS"
+                            android:text="@string/brand_calisthenics"
 
                             android:textColor="@color/tri_force_text_on_dark_secondary"
 
@@ -189,7 +189,7 @@
 
                         android:layout_marginTop="@dimen/space_16"
 
-                        android:text="Bạn"
+                        android:text="@string/home_greeting_default"
 
                         android:textColor="@color/tri_force_white"
 
@@ -210,7 +210,7 @@
 
                         android:layout_marginTop="@dimen/space_4"
 
-                        android:text="Sẵn sàng cho buổi tập hôm nay. Giữ nhịp, tập chuẩn và tiến bộ từng ngày."
+                        android:text="@string/home_greeting_subtitle"
 
                         android:textColor="@color/tri_force_text_on_dark_secondary"
 
@@ -276,7 +276,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
 
-                                    android:text="0/0"
+                                    android:text="@string/home_count_placeholder"
 
                                     android:textColor="@color/tri_force_white"
 
@@ -292,7 +292,7 @@
 
                                     android:layout_marginTop="3dp"
 
-                                    android:text="Bài tập"
+                                    android:text="@string/home_stat_exercises"
 
                                     android:textColor="@color/tri_force_text_on_dark_secondary"
 
@@ -332,7 +332,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
 
-                                    android:text="0"
+                                    android:text="@string/home_zero"
 
                                     android:textColor="@color/tri_force_white"
 
@@ -348,7 +348,7 @@
 
                                     android:layout_marginTop="3dp"
 
-                                    android:text="Bước chân"
+                                    android:text="@string/home_stat_steps"
 
                                     android:textColor="@color/tri_force_text_on_dark_secondary"
 
@@ -388,7 +388,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
 
-                                    android:text="0"
+                                    android:text="@string/home_zero"
 
                                     android:textColor="@color/tri_force_blue"
 
@@ -404,7 +404,7 @@
 
                                     android:layout_marginTop="3dp"
 
-                                    android:text="Calo"
+                                    android:text="@string/home_stat_calories"
 
                                     android:textColor="@color/tri_force_text_on_dark_secondary"
 
@@ -448,7 +448,7 @@
 
                     android:layout_weight="1"
 
-                    android:text="Kế hoạch hiện tại"
+                    android:text="@string/home_current_plan"
 
                     android:textColor="@color/tri_force_text_primary"
 
@@ -462,7 +462,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
 
-                    android:text="30-DAY PROGRAM"
+                    android:text="@string/home_program_30_day"
 
                     android:textColor="@color/tri_force_blue"
 
@@ -539,7 +539,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
 
-                            android:text="LỘ TRÌNH 30 NGÀY"
+                            android:text="@string/home_program_30_day"
 
                             android:textColor="@color/tri_force_blue"
 
@@ -570,7 +570,7 @@
 
                                 android:layout_weight="1"
 
-                                android:text="Săn Chắc Thể Hình"
+                                android:text="@string/home_plan_default_balanced"
 
                                 android:textColor="@color/tri_force_text_primary"
 
@@ -597,7 +597,7 @@
 
                                 android:padding="0dp"
 
-                                android:text="›"
+                                android:text="@string/home_chevron"
 
                                 android:textColor="@color/tri_force_white"
 
@@ -630,7 +630,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
 
-                                android:text="Ngày 1/30"
+                                android:text="@string/home_plan_day_placeholder"
 
                                 android:textColor="@color/tri_force_blue"
 
@@ -653,7 +653,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
 
-                                android:text="3%"
+                                android:text="@string/home_progress_placeholder"
 
                                 android:textColor="@color/tri_force_text_secondary"
 
@@ -702,49 +702,49 @@
                                 android:layout_width="0dp"
                                 android:layout_height="36dp"
                                 android:layout_weight="1"
-                                android:text="T2" />
+                                android:text="@string/weekday_mon_short" />
 
                             <TextView
                                 android:id="@+id/bubbleTue"
                                 android:layout_width="0dp"
                                 android:layout_height="36dp"
                                 android:layout_weight="1"
-                                android:text="T3" />
+                                android:text="@string/weekday_tue_short" />
 
                             <TextView
                                 android:id="@+id/bubbleWed"
                                 android:layout_width="0dp"
                                 android:layout_height="36dp"
                                 android:layout_weight="1"
-                                android:text="T4" />
+                                android:text="@string/weekday_wed_short" />
 
                             <TextView
                                 android:id="@+id/bubbleThu"
                                 android:layout_width="0dp"
                                 android:layout_height="36dp"
                                 android:layout_weight="1"
-                                android:text="T5" />
+                                android:text="@string/weekday_thu_short" />
 
                             <TextView
                                 android:id="@+id/bubbleFri"
                                 android:layout_width="0dp"
                                 android:layout_height="36dp"
                                 android:layout_weight="1"
-                                android:text="T6" />
+                                android:text="@string/weekday_fri_short" />
 
                             <TextView
                                 android:id="@+id/bubbleSat"
                                 android:layout_width="0dp"
                                 android:layout_height="36dp"
                                 android:layout_weight="1"
-                                android:text="T7" />
+                                android:text="@string/weekday_sat_short" />
 
                             <TextView
                                 android:id="@+id/bubbleSun"
                                 android:layout_width="0dp"
                                 android:layout_height="36dp"
                                 android:layout_weight="1"
-                                android:text="CN" />
+                                android:text="@string/weekday_sun_short" />
 
 
                         </LinearLayout>
@@ -822,7 +822,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
 
-                            android:text="Tạo lộ trình tập luyện"
+                            android:text="@string/home_empty_title"
 
                             android:textColor="@color/tri_force_white"
 
@@ -840,7 +840,7 @@
 
                             android:layout_marginTop="3dp"
 
-                            android:text="Xây dựng kế hoạch calisthenics phù hợp với mục tiêu của bạn."
+                            android:text="@string/home_empty_subtitle"
 
                             android:textColor="@color/tri_force_text_on_dark_secondary"
 
@@ -862,7 +862,7 @@
 
                         android:minWidth="0dp"
 
-                        android:text="TẠO"
+                        android:text="@string/home_create"
 
                         android:textColor="@color/tri_force_white"
 
@@ -912,7 +912,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
 
-                        android:text="Hành động nhanh"
+                        android:text="@string/home_quick_actions"
 
                         android:textColor="@color/tri_force_text_primary"
 
@@ -928,7 +928,7 @@
 
                         android:layout_marginTop="@dimen/space_4"
 
-                        android:text="TRAIN • TRACK • PROGRESS"
+                        android:text="@string/home_motto"
 
                         android:textColor="@color/tri_force_blue"
 
@@ -1019,7 +1019,7 @@
 
                             android:layout_marginTop="@dimen/space_8"
 
-                            android:text="Lịch tập"
+                            android:text="@string/home_quick_calendar"
 
                             android:textColor="@color/tri_force_white"
 
@@ -1088,7 +1088,7 @@
 
                             android:layout_marginTop="@dimen/space_8"
 
-                            android:text="Thư viện"
+                            android:text="@string/home_quick_library"
 
                             android:textColor="@color/tri_force_text_primary"
 
@@ -1157,7 +1157,7 @@
 
                             android:layout_marginTop="@dimen/space_8"
 
-                            android:text="Tạo lịch"
+                            android:text="@string/home_quick_create"
 
                             android:textColor="@color/tri_force_text_primary"
 
@@ -1225,7 +1225,7 @@
 
                             android:layout_marginTop="@dimen/space_8"
 
-                            android:text="Hồ sơ"
+                            android:text="@string/home_quick_profile"
 
                             android:textColor="@color/tri_force_text_primary"
 
@@ -1256,7 +1256,7 @@
                 android:layout_marginTop="@dimen/space_24"
                 android:layout_marginBottom="@dimen/space_8"
 
-                android:text="Kế hoạch đã lưu"
+                android:text="@string/home_saved_plans"
 
                 android:textColor="@color/tri_force_text_primary"
 
@@ -1289,7 +1289,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
 
-                android:text="Bài tập hôm nay"
+                android:text="@string/home_today_exercises"
 
                 android:visibility="gone" />
 

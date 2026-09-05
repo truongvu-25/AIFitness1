@@ -72,19 +72,19 @@
          BOTTOM NAVIGATION
          ========================================================= -->
 
-    <dimen name="bottom_nav_height">60dp</dimen>
+    <dimen name="bottom_nav_height">68dp</dimen>
 
-    <dimen name="bottom_nav_horizontal_margin">0dp</dimen>
+    <dimen name="bottom_nav_horizontal_margin">16dp</dimen>
 
-    <dimen name="bottom_nav_bottom_margin">0dp</dimen>
+    <dimen name="bottom_nav_bottom_margin">10dp</dimen>
 
-    <dimen name="bottom_nav_corner_radius">0dp</dimen>
+    <dimen name="bottom_nav_corner_radius">22dp</dimen>
 
-    <dimen name="bottom_nav_icon_size">21dp</dimen>
+    <dimen name="bottom_nav_icon_size">23dp</dimen>
 
     <dimen name="bottom_nav_top_divider">1dp</dimen>
 
-    <dimen name="bottom_nav_label_size">10sp</dimen>
+    <dimen name="bottom_nav_label_size">12sp</dimen>
 
 
     <!-- =========================================================

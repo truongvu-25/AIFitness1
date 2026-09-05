@@ -7,46 +7,17 @@
     android:orientation="vertical"
     android:gravity="center_horizontal">
 
-    <!-- Toggle CM / IN -->
-    <LinearLayout
+    <TextView
         android:layout_width="wrap_content"
-        android:layout_height="36dp"
-        android:orientation="horizontal"
-        android:background="@color/tri_force_bg"
-        android:padding="3dp"
-        android:layout_marginBottom="8dp">
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnUnitCm"
-            style="@style/Widget.MaterialComponents.Button"
-            android:layout_width="56dp"
-            android:layout_height="match_parent"
-            android:text="CM"
-            android:textSize="12sp"
-            android:textStyle="bold"
-            android:textColor="@color/tri_force_white"
-            android:insetTop="0dp"
-            android:insetBottom="0dp"
-            app:backgroundTint="@color/mp_color_primary"
-            app:cornerRadius="14dp"
-            app:elevation="0dp" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnUnitIn"
-            style="@style/Widget.MaterialComponents.Button"
-            android:layout_width="56dp"
-            android:layout_height="match_parent"
-            android:text="IN"
-            android:textSize="12sp"
-            android:textStyle="bold"
-            android:textColor="@color/tri_force_slate"
-            android:insetTop="0dp"
-            android:insetBottom="0dp"
-            app:backgroundTint="@android:color/transparent"
-            app:cornerRadius="14dp"
-            app:elevation="0dp" />
-
-    </LinearLayout>
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:background="@drawable/bg_badge_info"
+        android:paddingHorizontal="14dp"
+        android:paddingVertical="6dp"
+        android:text="@string/height_unit_metric"
+        android:textColor="@color/mp_color_primary"
+        android:textSize="12sp"
+        android:textStyle="bold" />
 
     <!-- Bánh xe cuộn số -->
     <FrameLayout

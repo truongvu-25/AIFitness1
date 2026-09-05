@@ -59,7 +59,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
 
-                android:text="KẾ HOẠCH 30 NGÀY"
+                android:text="@string/calendar_header"
 
                 android:textColor="@color/tri_force_blue"
 
@@ -81,7 +81,7 @@
 
                 android:layout_marginTop="@dimen/space_8"
 
-                android:text="Đang tải lộ trình..."
+                android:text="@string/calendar_loading"
 
                 android:textColor="@color/tri_force_text_on_dark"
 
@@ -105,7 +105,7 @@
 
                 android:layout_marginTop="@dimen/space_8"
 
-                android:text="Theo dõi từng ngày, duy trì nhịp tập và hoàn thành mục tiêu của bạn."
+                android:text="@string/calendar_subtitle"
 
                 android:textColor="@color/tri_force_text_on_dark_secondary"
 
@@ -305,7 +305,7 @@
 
                 android:layout_weight="1"
 
-                android:text="Thông báo trạng thái ngày tập"
+                android:text="@string/calendar_status_description"
 
                 android:textColor="@color/tri_force_text_secondary"
 

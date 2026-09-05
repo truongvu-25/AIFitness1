@@ -6,9 +6,9 @@
     android:layout_marginEnd="10dp"
     app:cardCornerRadius="18dp"
     app:cardElevation="4dp"
-    app:cardBackgroundColor="#D90A192F"
-    app:strokeColor="#1E3A8A"
-    app:strokeWidth="1.2dp">
+    app:cardBackgroundColor="@color/tri_force_white"
+    app:strokeColor="@color/tri_force_stroke"
+    app:strokeWidth="1dp">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -21,10 +21,10 @@
             android:id="@+id/tvPickerBadge"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Bodyweight"
+            android:text="@string/bodyweight"
             android:textSize="9sp"
             android:textStyle="bold"
-            android:textColor="@color/mp_color_primary_variant"
+            android:textColor="@color/tri_force_blue"
             android:background="#260066FF"
             android:paddingHorizontal="6dp"
             android:paddingVertical="2dp"
@@ -34,10 +34,10 @@
             android:id="@+id/tvPickerName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Hít Đất (Push-up)"
+            android:text="@string/exercise_name_pushup"
             android:textSize="13sp"
             android:textStyle="bold"
-            android:textColor="@color/tri_force_white"
+            android:textColor="@color/tri_force_text_primary"
             android:maxLines="2"
             android:ellipsize="end"/>
 
@@ -45,7 +45,7 @@
             android:id="@+id/tvPickerTarget"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="15 lần"
+            android:text="@string/value_not_available"
             android:textSize="11sp"
             android:textColor="@color/mp_color_primary_variant"
             android:textStyle="bold"
@@ -55,7 +55,7 @@
             android:id="@+id/btnAddToDay"
             android:layout_width="match_parent"
             android:layout_height="32dp"
-            android:text="+ THÊM"
+            android:text="@string/custom_plan_add"
             android:textSize="10sp"
             android:textStyle="bold"
             android:textColor="@color/tri_force_white"

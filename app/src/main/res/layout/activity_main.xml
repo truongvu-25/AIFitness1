@@ -106,7 +106,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
 
-                    android:text="AI WORKOUT"
+                    android:text="@string/brand_ai_workout"
 
                     android:textColor="@color/tri_force_blue"
 
@@ -124,7 +124,7 @@
 
                     android:layout_marginTop="2dp"
 
-                    android:text="CALISTHENICS"
+                    android:text="@string/brand_calisthenics"
 
                     android:textColor="@color/tri_force_text_on_dark_secondary"
 
@@ -168,8 +168,6 @@
             android:layout_width="0dp"
             android:layout_height="0dp"
 
-            android:text=""
-
             android:visibility="gone"
 
             android:importantForAccessibility="no" />
@@ -187,23 +185,27 @@
 
             android:layout_alignParentBottom="true"
 
+            android:layout_marginHorizontal="@dimen/bottom_nav_horizontal_margin"
+            android:layout_marginBottom="@dimen/bottom_nav_bottom_margin"
+
             android:background="@android:color/transparent"
 
-            android:elevation="0dp"
+            android:elevation="10dp"
 
             android:stateListAnimator="@null"
 
             app:cardBackgroundColor="@color/nav_background"
 
-            app:cardCornerRadius="0dp"
+            app:cardCornerRadius="@dimen/bottom_nav_corner_radius"
 
-            app:cardElevation="0dp"
+            app:cardElevation="10dp"
 
             app:cardUseCompatPadding="false"
 
             app:cardPreventCornerOverlap="false"
 
-            app:strokeWidth="0dp">
+            app:strokeColor="@color/white_16"
+            app:strokeWidth="1dp">
 
 
             <com.google.android.material.bottomnavigation.BottomNavigationView
@@ -228,6 +230,9 @@
 
                 app:itemIconSize="@dimen/bottom_nav_icon_size"
 
+                app:itemTextAppearanceActive="@style/TriForceBottomNavigationText"
+                app:itemTextAppearanceInactive="@style/TriForceBottomNavigationText"
+
                 app:itemRippleColor="@color/white_12"
 
                 app:itemHorizontalTranslationEnabled="false"
@@ -248,6 +253,7 @@
 
             android:layout_above="@id/bottomNavCard"
 
+            android:visibility="gone"
             android:background="@color/white_08" />
 
 

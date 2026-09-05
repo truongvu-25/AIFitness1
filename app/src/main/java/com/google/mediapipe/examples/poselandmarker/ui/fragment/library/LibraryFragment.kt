@@ -25,13 +25,16 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.mediapipe.examples.poselandmarker.R
 import com.google.mediapipe.examples.poselandmarker.databinding.FragmentLibraryBinding
 import com.google.mediapipe.examples.poselandmarker.databinding.ItemLibraryExerciseBinding
+import com.google.mediapipe.examples.poselandmarker.model.ExerciseCatalog
+import com.google.mediapipe.examples.poselandmarker.model.ExerciseCategory
 
 data class LibraryExercise(
     val id: String,
     val name: String,
     val target: String,
     val desc: String,
-    val category: String, // "Không dụng cụ", "Tại nhà", "Phòng gym"
+    val category: ExerciseCategory,
+    val categoryLabel: String,
     val equipment: String,
     val targetCount: Int,
     val videoUrl: String = "",
@@ -69,91 +72,19 @@ class LibraryFragment : Fragment() {
 
     private fun initExerciseDatabase() {
         allExercises.clear()
-        // Chính xác 7 bài tập tương ứng với 7 video trong thư mục assets/videos/
-        allExercises.add(
+        allExercises += ExerciseCatalog.all(requireContext()).map { exercise ->
             LibraryExercise(
-                "pushup",
-                "Hít Đất (Push-up)",
-                "Mục tiêu: 15 lần",
-                "Phát triển cơ ngực, vai và bắp tay sau toàn diện.",
-                "Thân trên & Core",
-                "Bodyweight",
-                15,
-                videoUrl = "asset:///videos/push_up.mp4"
+                id = exercise.id,
+                name = exercise.name,
+                target = exercise.targetLabel,
+                desc = exercise.libraryDescription,
+                category = exercise.category,
+                categoryLabel = exercise.categoryLabel,
+                equipment = exercise.equipment,
+                targetCount = exercise.defaultTarget,
+                videoUrl = exercise.videoUrl
             )
-        )
-        allExercises.add(
-            LibraryExercise(
-                "situp",
-                "Gập Bụng (Sit-up)",
-                "Mục tiêu: 20 lần",
-                "Tăng cường sức mạnh nhóm cơ bụng và core cốt lõi.",
-                "Thân trên & Core",
-                "Bodyweight",
-                20,
-                videoUrl = "asset:///videos/sit_up.mp4"
-            )
-        )
-        allExercises.add(
-            LibraryExercise(
-                "squat",
-                "Ngồi Xổm (Squats)",
-                "Mục tiêu: 20 lần",
-                "Xây dựng cơ đùi trước, đùi sau và cơ mông săn chắc.",
-                "Thân dưới & Cardio",
-                "Bodyweight",
-                20,
-                videoUrl = "asset:///videos/squat.mp4"
-            )
-        )
-        allExercises.add(
-            LibraryExercise(
-                "plank",
-                "Plank Căng Cơ",
-                "Mục tiêu: 45 giây",
-                "Cố định cơ thể thẳng hàng giúp siết chặt cơ bụng và lưng dưới.",
-                "Thân trên & Core",
-                "Bodyweight",
-                45,
-                videoUrl = "asset:///videos/plank.mp4"
-            )
-        )
-        allExercises.add(
-            LibraryExercise(
-                "sideplank",
-                "Plank Nghiêng (Side Plank)",
-                "Mục tiêu: 30 giây",
-                "Nằm nghiêng nâng hông giữ thẳng thân để siết cơ liên sườn và eo.",
-                "Thân trên & Core",
-                "Bodyweight",
-                30,
-                videoUrl = "asset:///videos/side_plank.mp4"
-            )
-        )
-        allExercises.add(
-            LibraryExercise(
-                "jumpingjack",
-                "Jumping Jacks",
-                "Mục tiêu: 30 lần",
-                "Đốt mỡ toàn thân và kích hoạt nhịp tim cực hiệu quả.",
-                "Thân dưới & Cardio",
-                "Bodyweight",
-                30,
-                videoUrl = "asset:///videos/jumping_jack.mp4"
-            )
-        )
-        allExercises.add(
-            LibraryExercise(
-                "splitsquat",
-                "Ngồi Xổm Một Chân (Split Squat)",
-                "Mục tiêu: 15 lần/bên",
-                "Tăng thăng bằng, độ linh hoạt và phát triển cơ đùi săn chắc.",
-                "Thân dưới & Cardio",
-                "Bodyweight",
-                15,
-                videoUrl = "asset:///videos/split_squat.mp4"
-            )
-        )
+        }
     }
 
     private fun setupRecyclerView() {
@@ -167,7 +98,11 @@ class LibraryFragment : Fragment() {
     private fun showVideoTutorialDialog(exercise: LibraryExercise) {
         val url = exercise.videoUrl
         if (url.isEmpty()) {
-            Toast.makeText(requireContext(), "Video hướng dẫn cho ${exercise.name} đang được cập nhật.", Toast.LENGTH_SHORT).show()
+            Toast.makeText(
+                requireContext(),
+                getString(R.string.video_unavailable, exercise.name),
+                Toast.LENGTH_SHORT
+            ).show()
             return
         }
 
@@ -176,7 +111,7 @@ class LibraryFragment : Fragment() {
                 val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
                 startActivity(intent)
             } catch (e: Exception) {
-                Toast.makeText(context, "Không thể mở ứng dụng YouTube.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, R.string.video_youtube_unavailable, Toast.LENGTH_SHORT).show()
             }
             return
         }
@@ -196,7 +131,7 @@ class LibraryFragment : Fragment() {
         val layoutCenterReplay = dialog.findViewById<View>(R.id.layoutCenterReplay)
         val cardReplayButton = dialog.findViewById<View>(R.id.cardReplayButton)
 
-        tvTitle.text = "Hướng dẫn: ${exercise.name}"
+        tvTitle.text = getString(R.string.video_tutorial_for, exercise.name)
 
         var mediaPlayer: MediaPlayer? = MediaPlayer()
 
@@ -239,14 +174,18 @@ class LibraryFragment : Fragment() {
 
                 mediaPlayer?.setOnErrorListener { _, _, _ ->
                     progressBar.visibility = View.GONE
-                    Toast.makeText(context, "Lỗi khi phát video bài tập.", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, R.string.video_play_error, Toast.LENGTH_SHORT).show()
                     true
                 }
 
                 mediaPlayer?.prepareAsync()
             } catch (e: Exception) {
                 progressBar.visibility = View.GONE
-                Toast.makeText(context, "Lỗi mở video: ${e.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    context,
+                    getString(R.string.video_open_error, e.localizedMessage.orEmpty()),
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         }
 
@@ -292,10 +231,10 @@ class LibraryFragment : Fragment() {
     }
 
     private fun setupSegmentedControls() {
-        binding.btnTabNoEquipment.text = "TẤT CẢ (7)"
-        binding.btnTabWithEquipment.text = "THEO NHÓM CƠ"
-        binding.btnSubTabHome.text = "Thân trên & Core (4)"
-        binding.btnSubTabGym.text = "Thân dưới & Cardio (3)"
+        binding.btnTabNoEquipment.setText(R.string.tab_no_equipment)
+        binding.btnTabWithEquipment.setText(R.string.tab_with_equipment)
+        binding.btnSubTabHome.setText(R.string.library_upper_count)
+        binding.btnSubTabGym.setText(R.string.library_lower_count)
 
         binding.btnTabNoEquipment.setOnClickListener {
             isEquipmentMode = false
@@ -329,7 +268,7 @@ class LibraryFragment : Fragment() {
         val activeSecondaryColor = ContextCompat.getColor(requireContext(), R.color.mp_color_primary_variant)
         val transparentColor = Color.TRANSPARENT
         val whiteColor = ContextCompat.getColor(requireContext(), R.color.tri_force_white)
-        val silverColor = ContextCompat.getColor(requireContext(), R.color.tri_force_silver)
+        val inactiveTextColor = ContextCompat.getColor(requireContext(), R.color.tri_force_text_secondary)
 
         if (!isEquipmentMode) {
             // "Tất cả" Active -> Solid Blue Background
@@ -338,7 +277,7 @@ class LibraryFragment : Fragment() {
 
             // "Theo Nhóm Cơ" Inactive -> Transparent Background
             binding.btnTabWithEquipment.backgroundTintList = ColorStateList.valueOf(transparentColor)
-            binding.btnTabWithEquipment.setTextColor(silverColor)
+            binding.btnTabWithEquipment.setTextColor(inactiveTextColor)
 
             binding.layoutSubTabs.visibility = View.GONE
 
@@ -346,7 +285,7 @@ class LibraryFragment : Fragment() {
         } else {
             // "Tất cả" Inactive -> Transparent Background
             binding.btnTabNoEquipment.backgroundTintList = ColorStateList.valueOf(transparentColor)
-            binding.btnTabNoEquipment.setTextColor(silverColor)
+            binding.btnTabNoEquipment.setTextColor(inactiveTextColor)
 
             // "Theo Nhóm Cơ" Active -> Solid Blue Background
             binding.btnTabWithEquipment.backgroundTintList = ColorStateList.valueOf(activePrimaryColor)
@@ -361,20 +300,20 @@ class LibraryFragment : Fragment() {
 
                 // "Thân dưới & Cardio" Inactive -> Transparent Background
                 binding.btnSubTabGym.backgroundTintList = ColorStateList.valueOf(transparentColor)
-                binding.btnSubTabGym.setTextColor(silverColor)
+                binding.btnSubTabGym.setTextColor(inactiveTextColor)
 
-                val filtered = allExercises.filter { it.category == "Thân trên & Core" }
+                val filtered = allExercises.filter { it.category == ExerciseCategory.UPPER_CORE }
                 adapter.submitList(filtered)
             } else {
                 // "Thân trên & Core" Inactive -> Transparent Background
                 binding.btnSubTabHome.backgroundTintList = ColorStateList.valueOf(transparentColor)
-                binding.btnSubTabHome.setTextColor(silverColor)
+                binding.btnSubTabHome.setTextColor(inactiveTextColor)
 
                 // "Thân dưới & Cardio" Active -> Solid Cyan Background
                 binding.btnSubTabGym.backgroundTintList = ColorStateList.valueOf(activeSecondaryColor)
                 binding.btnSubTabGym.setTextColor(whiteColor)
 
-                val filtered = allExercises.filter { it.category == "Thân dưới & Cardio" }
+                val filtered = allExercises.filter { it.category == ExerciseCategory.LOWER_CARDIO }
                 adapter.submitList(filtered)
             }
         }
@@ -416,11 +355,11 @@ class LibraryFragment : Fragment() {
 
             fun bind(item: LibraryExercise) {
                 if (item.isCustom) {
-                    binding.tvLibCategoryBadge.text = "⭐ Tự tạo"
+                    binding.tvLibCategoryBadge.setText(R.string.library_custom_badge)
                     binding.tvLibCategoryBadge.setTextColor(Color.parseColor("#F59E0B"))
                     binding.tvLibCategoryBadge.setBackgroundColor(Color.parseColor("#26F59E0B"))
                 } else {
-                    binding.tvLibCategoryBadge.text = item.category
+                    binding.tvLibCategoryBadge.text = item.categoryLabel
                     binding.tvLibCategoryBadge.setTextColor(ContextCompat.getColor(binding.root.context, R.color.mp_color_primary_variant))
                     binding.tvLibCategoryBadge.setBackgroundColor(Color.parseColor("#260066FF"))
                 }

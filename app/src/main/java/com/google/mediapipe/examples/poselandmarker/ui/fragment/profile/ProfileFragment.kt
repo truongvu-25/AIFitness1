@@ -21,6 +21,8 @@ import com.google.mediapipe.examples.poselandmarker.R
 import com.google.mediapipe.examples.poselandmarker.service.StepCounterService
 import com.google.mediapipe.examples.poselandmarker.model.UserProfile
 import com.google.mediapipe.examples.poselandmarker.databinding.FragmentProfileBinding
+import com.google.mediapipe.examples.poselandmarker.utils.LocaleHelper
+import java.text.NumberFormat
 import java.util.Locale
 
 class ProfileFragment : Fragment() {
@@ -76,6 +78,24 @@ class ProfileFragment : Fragment() {
         binding.btnLogout.setOnClickListener {
             performLogout()
         }
+
+        val currentLanguage = LocaleHelper.getLanguage(requireContext())
+        binding.tvCurrentLanguage.setText(
+            if (currentLanguage == LocaleHelper.LANG_VI) {
+                R.string.profile_language_vi
+            } else {
+                R.string.profile_language_en
+            }
+        )
+        binding.btnLanguage.setOnClickListener {
+            val newLanguage = if (currentLanguage == LocaleHelper.LANG_VI) {
+                LocaleHelper.LANG_EN
+            } else {
+                LocaleHelper.LANG_VI
+            }
+            LocaleHelper.setLocale(requireContext(), newLanguage)
+            requireActivity().recreate()
+        }
     }
 
     @SuppressLint("UnspecifiedRegisterReceiverFlag")
@@ -106,12 +126,20 @@ class ProfileFragment : Fragment() {
     }
 
     private fun displayStepData(steps: Int, calories: Float) {
-        binding.tvProfileSteps.text = "$steps bước"
-        binding.tvProfileCalories.text = String.format(Locale.US, "%.1f kcal", calories)
+        val numberFormat = NumberFormat.getNumberInstance(Locale.getDefault()).apply {
+            maximumFractionDigits = 1
+        }
+        binding.tvProfileSteps.text = getString(R.string.value_steps, steps)
+        binding.tvProfileCalories.text =
+            getString(R.string.value_calories, numberFormat.format(calories))
     }
 
     private fun loadUserProfile() {
-        val uid = auth.currentUser?.uid ?: return
+        val uid = auth.currentUser?.uid
+        if (uid.isNullOrEmpty()) {
+            Toast.makeText(context, R.string.camera_sign_in_required, Toast.LENGTH_SHORT).show()
+            return
+        }
         val email = auth.currentUser?.email ?: ""
         binding.tvProfileEmail.text = email
 
@@ -126,21 +154,30 @@ class ProfileFragment : Fragment() {
                 }
             }
             .addOnFailureListener { e ->
-                Toast.makeText(context, "Lỗi tải hồ sơ: ${e.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    context,
+                    getString(R.string.profile_load_error, e.localizedMessage.orEmpty()),
+                    Toast.LENGTH_SHORT
+                ).show()
             }
     }
 
     private fun displayProfileData(profile: UserProfile) {
         binding.tvProfileName.text = profile.fullName
         binding.tvProfileAge.text = profile.age.toString()
-        binding.tvProfileHeight.text = "${profile.height} cm"
-        binding.tvProfileWeight.text = "${profile.weight} kg"
-        binding.tvProfileBmi.text = profile.bmi.toString()
+        val numberFormat = NumberFormat.getNumberInstance(Locale.getDefault()).apply {
+            maximumFractionDigits = 1
+        }
+        binding.tvProfileHeight.text =
+            getString(R.string.value_centimeters, numberFormat.format(profile.height))
+        binding.tvProfileWeight.text =
+            getString(R.string.value_kilograms, numberFormat.format(profile.weight))
+        binding.tvProfileBmi.text = numberFormat.format(profile.bmi)
 
         val (bmiLabel, bmiColor) = when (profile.bmiType) {
-            "GAY" -> Pair("GẦY", "#F57C00")        // Orange
-            "CAN DOI" -> Pair("CÂN ĐỐI", "#388E3C") // Green
-            else -> Pair("THỪA CÂN", "#D32F2F")     // Red
+            "GAY" -> Pair(getString(R.string.bmi_type_underweight), "#F57C00")
+            "CAN DOI" -> Pair(getString(R.string.bmi_type_balanced), "#388E3C")
+            else -> Pair(getString(R.string.bmi_type_overweight), "#D32F2F")
         }
 
         binding.tvProfileBmiType.text = bmiLabel
@@ -153,8 +190,9 @@ class ProfileFragment : Fragment() {
 
         // Cancel scheduled reminders upon sign out
         NotificationHelper.cancelReminder(requireContext())
+        StepCounterService.stopService(requireContext())
 
-        Toast.makeText(context, "Đã đăng xuất tài khoản", Toast.LENGTH_SHORT).show()
+        Toast.makeText(context, R.string.profile_logged_out, Toast.LENGTH_SHORT).show()
 
         // Navigate back to Login fragment
         findNavController().navigate(R.id.action_profile_to_login)

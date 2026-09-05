@@ -18,7 +18,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="TỰ TẠO BÀI TẬP MỚI"
+        android:text="@string/custom_exercise_title"
             android:textSize="18sp"
             android:textStyle="bold"
             android:textColor="@color/tri_force_white"
@@ -27,7 +27,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Tùy chỉnh bài tập theo ý muốn và lưu vào thư viện"
+        android:text="@string/custom_exercise_subtitle"
             android:textSize="12sp"
             android:textColor="@color/tri_force_silver"
             android:layout_marginTop="2dp"
@@ -37,7 +37,7 @@
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Tên bài tập (vd: Hít đất kim cương)"
+        android:hint="@string/custom_exercise_name_hint"
             android:textColorHint="#94A3B8"
             app:hintTextColor="@color/mp_color_primary_variant"
             android:layout_marginBottom="12dp"
@@ -60,7 +60,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Hình thức tập luyện:"
+        android:text="@string/custom_exercise_mode"
             android:textSize="13sp"
             android:textStyle="bold"
             android:textColor="@color/tri_force_white"
@@ -77,7 +77,7 @@
                 android:id="@+id/rbNoEquipment"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Không dụng cụ"
+        android:text="@string/custom_exercise_no_equipment"
                 android:textSize="12sp"
                 android:textColor="@color/tri_force_white"
                 android:checked="true"
@@ -87,7 +87,7 @@
                 android:id="@+id/rbHome"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Tại nhà"
+        android:text="@string/custom_exercise_home"
                 android:textSize="12sp"
                 android:textColor="@color/tri_force_white"
                 android:layout_marginStart="8dp"
@@ -97,7 +97,7 @@
                 android:id="@+id/rbGym"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Phòng gym"
+        android:text="@string/custom_exercise_gym"
                 android:textSize="12sp"
                 android:textColor="@color/tri_force_white"
                 android:layout_marginStart="8dp"
@@ -108,7 +108,7 @@
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Dụng cụ yêu cầu (vd: Bodyweight, Tạ đơn 5kg...)"
+        android:hint="@string/custom_exercise_equipment_hint"
             android:textColorHint="#94A3B8"
             app:hintTextColor="@color/mp_color_primary_variant"
             android:layout_marginBottom="12dp"
@@ -123,7 +123,7 @@
                 android:id="@+id/etCustomEquipment"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Bodyweight"
+        android:text="@string/bodyweight"
                 android:textColor="@color/tri_force_white"
                 android:inputType="text"/>
         </com.google.android.material.textfield.TextInputLayout>
@@ -132,7 +132,7 @@
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Mục tiêu (vd: 15 lần hoặc 45 giây)"
+        android:hint="@string/custom_exercise_target_hint"
             android:textColorHint="#94A3B8"
             app:hintTextColor="@color/mp_color_primary_variant"
             android:layout_marginBottom="12dp"
@@ -147,7 +147,7 @@
                 android:id="@+id/etCustomTarget"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Mục tiêu: 15 lần"
+        android:text="@string/camera_target_placeholder"
                 android:textColor="@color/tri_force_white"
                 android:inputType="text"/>
         </com.google.android.material.textfield.TextInputLayout>
@@ -156,7 +156,7 @@
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Mô tả kỹ thuật / nhóm cơ tác động"
+        android:hint="@string/custom_exercise_description_hint"
             android:textColorHint="#94A3B8"
             app:hintTextColor="@color/mp_color_primary_variant"
             android:layout_marginBottom="18dp"
@@ -187,7 +187,7 @@
                 android:layout_width="0dp"
                 android:layout_height="48dp"
                 android:layout_weight="1"
-                android:text="HỦY"
+        android:text="@string/action_cancel"
                 android:textSize="13sp"
                 android:textStyle="bold"
                 android:textColor="@color/tri_force_silver"
@@ -200,7 +200,7 @@
                 android:layout_width="0dp"
                 android:layout_height="48dp"
                 android:layout_weight="1"
-                android:text="LƯU BÀI TẬP"
+        android:text="@string/action_save_exercise"
                 android:textSize="13sp"
                 android:textStyle="bold"
                 android:textColor="@color/tri_force_white"

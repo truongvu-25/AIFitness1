@@ -1,6 +1,6 @@
 package com.google.mediapipe.examples.poselandmarker.ui.fragment.profile.chat
 
-class ChatFlowController(private val questions: List<ChatQuestion> = ChatQuestions.list) {
+class ChatFlowController(private val questions: List<ChatQuestion>) {
 
     private val answers = mutableMapOf<String, String>()
     var currentIndex = 0

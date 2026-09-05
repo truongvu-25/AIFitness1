@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/tri_force_bg"
@@ -23,7 +24,7 @@
                 android:id="@+id/cardAvatar"
                 android:layout_width="92dp"
                 android:layout_height="92dp"
-                android:layout_marginTop="88dp"
+                android:layout_marginTop="@dimen/main_content_top_offset"
                 app:cardCornerRadius="46dp"
                 app:cardBackgroundColor="@color/tri_force_navy"
                 app:cardElevation="6dp"
@@ -43,7 +44,7 @@
                 android:id="@+id/tvProfileName"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Họ và Tên"
+                android:text="@string/profile_name_placeholder"
                 android:textSize="20sp"
                 android:textStyle="bold"
                 android:textColor="@color/tri_force_text_primary"
@@ -53,7 +54,7 @@
                 android:id="@+id/tvProfileEmail"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="email@example.com"
+                android:text="@string/profile_email_placeholder"
                 android:textSize="13sp"
                 android:textColor="@color/tri_force_text_secondary"
                 android:layout_marginTop="2dp"/>
@@ -79,7 +80,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Chỉ Số Cơ Thể &amp; Thể Trạng"
+                        android:text="@string/profile_body_metrics"
                         android:textSize="15sp"
                         android:textStyle="bold"
                         android:textColor="@color/tri_force_text_primary"
@@ -94,17 +95,17 @@
 
                         <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical" android:gravity="center">
                             <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/metric_age" android:textSize="12sp" android:textColor="@color/tri_force_slate"/>
-                            <TextView android:id="@+id/tvProfileAge" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="--" android:textSize="17sp" android:textStyle="bold" android:textColor="@color/tri_force_text_primary" android:layout_marginTop="2dp"/>
+                            <TextView android:id="@+id/tvProfileAge" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/value_not_available" android:textSize="17sp" android:textStyle="bold" android:textColor="@color/tri_force_text_primary" android:layout_marginTop="2dp"/>
                         </LinearLayout>
 
                         <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical" android:gravity="center">
                             <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/metric_height" android:textSize="12sp" android:textColor="@color/tri_force_slate"/>
-                            <TextView android:id="@+id/tvProfileHeight" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="-- cm" android:textSize="17sp" android:textStyle="bold" android:textColor="@color/mp_color_primary" android:layout_marginTop="2dp"/>
+                            <TextView android:id="@+id/tvProfileHeight" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/value_not_available" android:textSize="17sp" android:textStyle="bold" android:textColor="@color/mp_color_primary" android:layout_marginTop="2dp"/>
                         </LinearLayout>
 
                         <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical" android:gravity="center">
                             <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/metric_weight" android:textSize="12sp" android:textColor="@color/tri_force_slate"/>
-                            <TextView android:id="@+id/tvProfileWeight" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="-- kg" android:textSize="17sp" android:textStyle="bold" android:textColor="@color/mp_color_primary" android:layout_marginTop="2dp"/>
+                            <TextView android:id="@+id/tvProfileWeight" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/value_not_available" android:textSize="17sp" android:textStyle="bold" android:textColor="@color/mp_color_primary" android:layout_marginTop="2dp"/>
                         </LinearLayout>
                     </LinearLayout>
 
@@ -123,12 +124,12 @@
 
                         <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
                             <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/metric_bmi" android:textSize="12sp" android:textColor="@color/tri_force_slate"/>
-                            <TextView android:id="@+id/tvProfileBmi" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="--" android:textSize="22sp" android:textStyle="bold" android:textColor="@color/mp_color_primary" android:layout_marginTop="2dp"/>
+                            <TextView android:id="@+id/tvProfileBmi" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/value_not_available" android:textSize="22sp" android:textStyle="bold" android:textColor="@color/mp_color_primary" android:layout_marginTop="2dp"/>
                         </LinearLayout>
 
                         <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical" android:gravity="end">
-                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Thể trạng" android:textSize="12sp" android:textColor="@color/tri_force_slate"/>
-                            <TextView android:id="@+id/tvProfileBmiType" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="--" android:textSize="12sp" android:textStyle="bold" android:textColor="@color/tri_force_white" android:background="@drawable/bg_bmi_badge" android:paddingHorizontal="12dp" android:paddingVertical="5dp" android:layout_marginTop="2dp"/>
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/profile_fitness_status" android:textSize="12sp" android:textColor="@color/tri_force_slate"/>
+                            <TextView android:id="@+id/tvProfileBmiType" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/value_not_available" android:textSize="12sp" android:textStyle="bold" android:textColor="@color/tri_force_white" android:background="@drawable/bg_bmi_badge" android:paddingHorizontal="12dp" android:paddingVertical="5dp" android:layout_marginTop="2dp"/>
                         </LinearLayout>
                     </LinearLayout>
                 </LinearLayout>
@@ -164,6 +165,7 @@
                             android:layout_width="20dp"
                             android:layout_height="20dp"
                             android:src="@android:drawable/ic_menu_directions"
+                            android:contentDescription="@null"
                             app:tint="@color/mp_color_primary"
                             android:layout_marginEnd="8dp"/>
 
@@ -192,8 +194,8 @@
                             android:background="@color/tri_force_success_bg"
                             android:padding="14dp">
 
-                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Số bước" android:textSize="12sp" android:textColor="@color/tri_force_success" android:textStyle="bold"/>
-                            <TextView android:id="@+id/tvProfileSteps" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0 bước" android:textSize="18sp" android:textStyle="bold" android:textColor="@color/tri_force_text_primary" android:layout_marginTop="2dp"/>
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/profile_steps_label" android:textSize="12sp" android:textColor="@color/tri_force_success" android:textStyle="bold"/>
+                            <TextView android:id="@+id/tvProfileSteps" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/value_not_available" android:textSize="18sp" android:textStyle="bold" android:textColor="@color/tri_force_text_primary" android:layout_marginTop="2dp" tools:text="0 bước"/>
                         </LinearLayout>
 
                         <Space
@@ -210,7 +212,7 @@
                             android:padding="14dp">
 
                             <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/calorie_burned_title" android:textSize="12sp" android:textColor="@color/tri_force_warning" android:textStyle="bold"/>
-                            <TextView android:id="@+id/tvProfileCalories" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0.0 kcal" android:textSize="18sp" android:textStyle="bold" android:textColor="@color/tri_force_text_primary" android:layout_marginTop="2dp"/>
+                            <TextView android:id="@+id/tvProfileCalories" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/value_not_available" android:textSize="18sp" android:textStyle="bold" android:textColor="@color/tri_force_text_primary" android:layout_marginTop="2dp" tools:text="0.0 kcal"/>
                         </LinearLayout>
                     </LinearLayout>
 
@@ -262,7 +264,7 @@
                                 android:layout_gravity="center"
                                 android:src="@drawable/ic_profile_edit"
                                 app:tint="@color/mp_color_primary"
-                                android:contentDescription="@string/profile_title"/>
+                                android:contentDescription="@string/profile_edit_title"/>
                         </com.google.android.material.card.MaterialCardView>
 
                         <LinearLayout
@@ -272,8 +274,8 @@
                             android:orientation="vertical"
                             android:layout_marginStart="14dp">
 
-                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Chỉnh sửa thông tin hồ sơ" android:textSize="15sp" android:textStyle="bold" android:textColor="@color/tri_force_text_primary"/>
-                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Cập nhật chiều cao, cân nặng, tuổi" android:textSize="12sp" android:textColor="@color/tri_force_text_secondary" android:layout_marginTop="2dp"/>
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/profile_edit_title" android:textSize="15sp" android:textStyle="bold" android:textColor="@color/tri_force_text_primary"/>
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/profile_edit_subtitle" android:textSize="12sp" android:textColor="@color/tri_force_text_secondary" android:layout_marginTop="2dp"/>
                         </LinearLayout>
 
                         <ImageView
@@ -281,7 +283,68 @@
                             android:layout_height="18dp"
                             android:src="@drawable/ic_chevron_right"
                             app:tint="@color/tri_force_slate"
-                            android:contentDescription="@string/profile_title"/>
+                            android:contentDescription="@string/profile_edit_title"/>
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="@color/tri_force_silver"
+                        android:layout_marginStart="70dp" />
+
+                    <!-- Language Action Row -->
+                    <LinearLayout
+                        android:id="@+id/btnLanguage"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:paddingHorizontal="18dp"
+                        android:paddingVertical="15dp"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:background="?attr/selectableItemBackground">
+
+                        <TextView
+                            android:layout_width="38dp"
+                            android:layout_height="38dp"
+                            android:gravity="center"
+                            android:text="@string/profile_language_icon"
+                            android:textSize="20sp"
+                            android:contentDescription="@string/profile_language_title" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:layout_marginStart="14dp">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/profile_language_title"
+                                android:textSize="15sp"
+                                android:textStyle="bold"
+                                android:textColor="@color/tri_force_text_primary" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:text="@string/profile_language_subtitle"
+                                android:textSize="12sp"
+                                android:textColor="@color/tri_force_text_secondary" />
+                        </LinearLayout>
+
+                        <TextView
+                            android:id="@+id/tvCurrentLanguage"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/profile_language_vi"
+                            android:textSize="11sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/mp_color_primary" />
                     </LinearLayout>
 
                     <View
@@ -327,8 +390,8 @@
                             android:orientation="vertical"
                             android:layout_marginStart="14dp">
 
-                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Đăng xuất tài khoản" android:textSize="15sp" android:textStyle="bold" android:textColor="@color/tri_force_error"/>
-                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Thoát phiên đăng nhập an toàn" android:textSize="12sp" android:textColor="@color/tri_force_text_secondary" android:layout_marginTop="2dp"/>
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/profile_logout_title" android:textSize="15sp" android:textStyle="bold" android:textColor="@color/tri_force_error"/>
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/profile_logout_subtitle" android:textSize="12sp" android:textColor="@color/tri_force_text_secondary" android:layout_marginTop="2dp"/>
                         </LinearLayout>
 
                         <ImageView

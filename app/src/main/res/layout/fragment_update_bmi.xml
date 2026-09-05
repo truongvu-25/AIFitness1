@@ -38,7 +38,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Cập Nhật Chỉ Số Cơ Thể"
+                android:text="@string/bmi_update_title"
                 android:textSize="22sp"
                 android:textStyle="bold"
                 android:textColor="@color/tri_force_text_primary"
@@ -48,7 +48,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Đã hơn 7 ngày kể từ lần cập nhật chỉ số gần nhất. Vui lòng nhập chiều cao và cân nặng hiện tại để Tri Force tính toán lại chỉ số BMI tối ưu nhất cho bạn."
+                android:text="@string/bmi_update_description"
                 android:textSize="13sp"
                 android:textColor="@color/tri_force_text_secondary"
                 android:gravity="center"
@@ -74,7 +74,7 @@
                     <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="Chiều cao mới (cm)"
+                        android:hint="@string/bmi_height_hint"
                         android:layout_marginBottom="16dp"
                         app:boxStrokeColor="@color/mp_color_primary"
                         app:boxCornerRadiusTopStart="12dp"
@@ -94,7 +94,7 @@
                     <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="Cân nặng mới (kg)"
+                        android:hint="@string/bmi_weight_hint"
                         android:layout_marginBottom="24dp"
                         app:boxStrokeColor="@color/mp_color_primary"
                         app:boxCornerRadiusTopStart="12dp"
@@ -115,7 +115,7 @@
                         android:id="@+id/btnUpdateBmi"
                         android:layout_width="match_parent"
                         android:layout_height="52dp"
-                        android:text="CẬP NHẬT CHỈ SỐ BMI"
+                        android:text="@string/bmi_update_button"
                         android:textSize="15sp"
                         android:textStyle="bold"
                         android:textColor="@color/tri_force_white"

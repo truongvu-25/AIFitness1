@@ -6,9 +6,9 @@
     android:layout_marginVertical="5dp"
     app:cardCornerRadius="18dp"
     app:cardElevation="3dp"
-    app:cardBackgroundColor="#CC0A192F"
-    app:strokeColor="#1E3A8A"
-    app:strokeWidth="1.2dp">
+    app:cardBackgroundColor="@color/tri_force_white"
+    app:strokeColor="@color/tri_force_stroke"
+    app:strokeWidth="1dp">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -21,27 +21,30 @@
             android:layout_height="wrap_content">
 
             <LinearLayout
+                android:id="@+id/dayTitleContainer"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
                 android:layout_alignParentStart="true"
+                android:layout_toStartOf="@id/tvExerciseCount"
+                android:layout_marginEnd="8dp"
                 android:layout_centerVertical="true">
 
                 <TextView
                     android:id="@+id/tvDayTitle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Thứ Hai"
+                    android:text="@string/weekday_monday"
                     android:textSize="15sp"
                     android:textStyle="bold"
-                    android:textColor="@color/tri_force_white"/>
+                    android:textColor="@color/tri_force_text_primary"/>
 
                 <TextView
                     android:id="@+id/tvDayStatusBadge"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Nghỉ ngơi"
+                    android:text="@string/custom_plan_rest"
                     android:textSize="10sp"
                     android:textStyle="bold"
                     android:textColor="@color/tri_force_slate"
@@ -55,9 +58,9 @@
                 android:id="@+id/tvExerciseCount"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="0 bài tập"
+                android:text="@string/home_zero"
                 android:textSize="12sp"
-                android:textColor="@color/tri_force_silver"
+                android:textColor="@color/tri_force_text_secondary"
                 android:layout_alignParentEnd="true"
                 android:layout_centerVertical="true"/>
         </RelativeLayout>
@@ -75,7 +78,7 @@
             android:id="@+id/tvEmptyDayPrompt"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Chưa có bài tập. Chọn bài tập từ hàng trên để gán vào ngày này."
+            android:text="@string/custom_plan_empty_day"
             android:textSize="11sp"
             android:textColor="@color/tri_force_slate"
             android:layout_marginTop="4dp"/>

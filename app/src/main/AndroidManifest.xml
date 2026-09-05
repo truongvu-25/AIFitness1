@@ -28,9 +28,6 @@
     <!-- Khởi động lại reminder/service sau reboot -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
-    <!-- Workout reminder chính xác -->
-    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
-
     <!-- Step counter / physical activity -->
     <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
 
@@ -128,7 +125,7 @@
             android:enabled="true"
             android:exported="false"
 
-            android:foregroundServiceType="dataSync"
+            android:foregroundServiceType="health"
 
             tools:ignore="ForegroundServicePermission" />
 

@@ -45,7 +45,7 @@ class HeightWheelAdapter(
     }
 
     /** Gọi mỗi khi cuộn dừng lại, để cập nhật số nào đang là "trung tâm". */
-    fun setCenterValue(newCenterValue: Int, recyclerView: RecyclerView) {
+    fun setCenterValue(newCenterValue: Int) {
         if (newCenterValue == centerValue) return
         centerValue = newCenterValue
         notifyDataSetChanged()

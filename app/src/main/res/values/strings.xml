@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:locale="vi">
     <string name="app_name">Tri Force</string>
     <string name="media_pipe">Tri Force</string>
 

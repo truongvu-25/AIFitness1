@@ -73,7 +73,7 @@
                     android:paddingTop="5dp"
                     android:paddingBottom="5dp"
 
-                    android:text="Lịch mẫu"
+                    android:text="@string/saved_plan_badge"
 
                     android:textColor="@color/mp_color_primary"
 
@@ -100,7 +100,7 @@
                     android:paddingTop="5dp"
                     android:paddingBottom="5dp"
 
-                    android:text="ĐANG ÁP DỤNG"
+                    android:text="@string/home_plan_active"
 
                     android:textColor="@color/tri_force_success"
 
@@ -135,7 +135,7 @@
                 android:clickable="true"
                 android:focusable="true"
 
-                android:contentDescription="@string/profile_title" />
+                android:contentDescription="@string/action_delete" />
 
         </LinearLayout>
 
@@ -152,7 +152,7 @@
 
             android:layout_marginTop="@dimen/space_12"
 
-            android:text="Lịch tập tăng cơ 6 ngày"
+            android:text="@string/saved_plan_title_placeholder"
 
             android:textColor="@color/tri_force_text_primary"
 
@@ -176,7 +176,7 @@
 
             android:layout_marginTop="@dimen/space_4"
 
-            android:text="6 buổi tập/tuần • Lặp lại hàng tuần"
+            android:text="@string/saved_plan_schedule_placeholder"
 
             android:textColor="@color/tri_force_text_secondary"
 
@@ -199,7 +199,7 @@
 
             android:layout_marginTop="@dimen/space_16"
 
-            android:text="Áp dụng lịch tập"
+            android:text="@string/action_apply_plan"
 
             android:textSize="14sp"
 

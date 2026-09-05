@@ -174,7 +174,7 @@
                         android:layout_marginTop="@dimen/space_4"
                         android:layout_marginBottom="@dimen/space_20"
 
-                        android:text="Thiết lập tài khoản để bắt đầu hành trình luyện tập"
+                    android:text="@string/register_form_subtitle"
 
                         android:textColor="@color/tri_force_text_secondary"
 

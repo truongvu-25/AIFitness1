@@ -21,6 +21,8 @@ import com.google.mediapipe.examples.poselandmarker.R
 import com.google.mediapipe.examples.poselandmarker.databinding.FragmentCreateCustomPlanBinding
 import com.google.mediapipe.examples.poselandmarker.databinding.ItemDayScheduleCardBinding
 import com.google.mediapipe.examples.poselandmarker.databinding.ItemHorizontalPickerExerciseBinding
+import com.google.mediapipe.examples.poselandmarker.model.ExerciseCatalog
+import com.google.mediapipe.examples.poselandmarker.model.ExerciseCategory
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -40,18 +42,20 @@ class CreateCustomPlanFragment : Fragment() {
         showAssignDayDialog(exercise)
     }
 
-    private val weeklySchedule = mutableListOf(
-        DaySchedule("Thứ Hai", "mon"),
-        DaySchedule("Thứ Ba", "tue"),
-        DaySchedule("Thứ Tư", "wed"),
-        DaySchedule("Thứ Năm", "thu"),
-        DaySchedule("Thứ Sáu", "fri"),
-        DaySchedule("Thứ Bảy", "sat"),
-        DaySchedule("Chủ Nhật", "sun")
-    )
+    private val weeklySchedule by lazy {
+        mutableListOf(
+            DaySchedule(getString(R.string.weekday_monday), "mon"),
+            DaySchedule(getString(R.string.weekday_tuesday), "tue"),
+            DaySchedule(getString(R.string.weekday_wednesday), "wed"),
+            DaySchedule(getString(R.string.weekday_thursday), "thu"),
+            DaySchedule(getString(R.string.weekday_friday), "fri"),
+            DaySchedule(getString(R.string.weekday_saturday), "sat"),
+            DaySchedule(getString(R.string.weekday_sunday), "sun")
+        )
+    }
     private lateinit var weeklyAdapter: WeeklyScheduleAdapter
 
-    private var currentCategory = "Tất cả"
+    private var currentCategory: ExerciseCategory? = null
 
     private lateinit var auth: FirebaseAuth
     private lateinit var db: FirebaseFirestore
@@ -83,14 +87,19 @@ class CreateCustomPlanFragment : Fragment() {
 
     private fun initExerciseDatabase() {
         allExercises.clear()
-        // Chính xác 7 bài tập tương ứng với 7 video trong thư mục assets/videos/
-        allExercises.add(LibraryExercise("pushup", "Hít Đất (Push-up)", "15 lần", "Ngực & vai", "Thân trên & Core", "Bodyweight", 15))
-        allExercises.add(LibraryExercise("situp", "Gập Bụng (Sit-up)", "20 lần", "Cơ bụng", "Thân trên & Core", "Bodyweight", 20))
-        allExercises.add(LibraryExercise("squat", "Ngồi Xổm (Squats)", "20 lần", "Cơ đùi & mông", "Thân dưới & Cardio", "Bodyweight", 20))
-        allExercises.add(LibraryExercise("plank", "Plank Căng Cơ", "45 giây", "Cơ lõi Core", "Thân trên & Core", "Bodyweight", 45))
-        allExercises.add(LibraryExercise("sideplank", "Plank Nghiêng (Side Plank)", "30 giây", "Cơ liên sườn & eo", "Thân trên & Core", "Bodyweight", 30))
-        allExercises.add(LibraryExercise("jumpingjack", "Jumping Jacks", "30 lần", "Cardio đốt mỡ", "Thân dưới & Cardio", "Bodyweight", 30))
-        allExercises.add(LibraryExercise("splitsquat", "Ngồi Xổm Một Chân (Split Squat)", "15 lần", "Đùi & khớp gối", "Thân dưới & Cardio", "Bodyweight", 15))
+        allExercises += ExerciseCatalog.all(requireContext()).map { exercise ->
+            LibraryExercise(
+                id = exercise.id,
+                name = exercise.name,
+                target = exercise.targetText,
+                desc = exercise.summary,
+                category = exercise.category,
+                categoryLabel = exercise.categoryLabel,
+                equipment = exercise.equipment,
+                targetCount = exercise.defaultTarget,
+                videoUrl = exercise.videoUrl
+            )
+        }
     }
 
     private fun setupUpperPicker() {
@@ -109,20 +118,20 @@ class CreateCustomPlanFragment : Fragment() {
     }
 
     private fun setupFilterButtons() {
-        binding.btnPickerNoEquip.text = "Tất cả (7)"
-        binding.btnPickerHome.text = "Thân trên & Core"
-        binding.btnPickerGym.text = "Thân dưới & Cardio"
+        binding.btnPickerNoEquip.setText(R.string.tab_no_equipment)
+        binding.btnPickerHome.setText(R.string.subtab_home)
+        binding.btnPickerGym.setText(R.string.subtab_gym)
 
         binding.btnPickerNoEquip.setOnClickListener {
-            currentCategory = "Tất cả"
+            currentCategory = null
             updatePickerFilter()
         }
         binding.btnPickerHome.setOnClickListener {
-            currentCategory = "Thân trên & Core"
+            currentCategory = ExerciseCategory.UPPER_CORE
             updatePickerFilter()
         }
         binding.btnPickerGym.setOnClickListener {
-            currentCategory = "Thân dưới & Cardio"
+            currentCategory = ExerciseCategory.LOWER_CARDIO
             updatePickerFilter()
         }
     }
@@ -131,42 +140,49 @@ class CreateCustomPlanFragment : Fragment() {
         val activeColor = ContextCompat.getColor(requireContext(), R.color.mp_color_primary)
         val transparentColor = Color.TRANSPARENT
         val white = ContextCompat.getColor(requireContext(), R.color.tri_force_white)
-        val silver = ContextCompat.getColor(requireContext(), R.color.tri_force_silver)
+        val inactiveText = ContextCompat.getColor(requireContext(), R.color.tri_force_text_secondary)
 
         binding.btnPickerNoEquip.backgroundTintList =
-            ColorStateList.valueOf(if (currentCategory == "Tất cả") activeColor else transparentColor)
-        binding.btnPickerNoEquip.setTextColor(if (currentCategory == "Tất cả") white else silver)
+            ColorStateList.valueOf(if (currentCategory == null) activeColor else transparentColor)
+        binding.btnPickerNoEquip.setTextColor(if (currentCategory == null) white else inactiveText)
 
         binding.btnPickerHome.backgroundTintList =
-            ColorStateList.valueOf(if (currentCategory == "Thân trên & Core") activeColor else transparentColor)
-        binding.btnPickerHome.setTextColor(if (currentCategory == "Thân trên & Core") white else silver)
+            ColorStateList.valueOf(if (currentCategory == ExerciseCategory.UPPER_CORE) activeColor else transparentColor)
+        binding.btnPickerHome.setTextColor(if (currentCategory == ExerciseCategory.UPPER_CORE) white else inactiveText)
 
         binding.btnPickerGym.backgroundTintList =
-            ColorStateList.valueOf(if (currentCategory == "Thân dưới & Cardio") activeColor else transparentColor)
-        binding.btnPickerGym.setTextColor(if (currentCategory == "Thân dưới & Cardio") white else silver)
+            ColorStateList.valueOf(if (currentCategory == ExerciseCategory.LOWER_CARDIO) activeColor else transparentColor)
+        binding.btnPickerGym.setTextColor(if (currentCategory == ExerciseCategory.LOWER_CARDIO) white else inactiveText)
 
-        val filtered = if (currentCategory == "Tất cả") {
-            allExercises
-        } else {
-            allExercises.filter { it.category == currentCategory }
-        }
+        val filtered = currentCategory?.let { category ->
+            allExercises.filter { it.category == category }
+        } ?: allExercises
         horizontalPickerAdapter.submitList(filtered)
     }
 
     private fun showAssignDayDialog(exercise: LibraryExercise) {
         val dayNames = weeklySchedule.map { it.dayName }.toTypedArray()
         AlertDialog.Builder(requireContext(), android.R.style.Theme_DeviceDefault_Dialog_Alert)
-            .setTitle("Gán \"${exercise.name}\" vào ngày nào?")
+            .setTitle(getString(R.string.custom_plan_assign_title, exercise.name))
             .setItems(dayNames) { _, which ->
-                weeklySchedule[which].exercises.add(exercise)
+                val selectedDay = weeklySchedule[which]
+                if (selectedDay.exercises.any { it.id == exercise.id }) {
+                    Toast.makeText(
+                        requireContext(),
+                        getString(R.string.custom_plan_already_added, dayNames[which]),
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    return@setItems
+                }
+                selectedDay.exercises.add(exercise)
                 weeklyAdapter.notifyItemChanged(which)
                 Toast.makeText(
                     requireContext(),
-                    "Đã thêm vào ${dayNames[which]}",
+                    getString(R.string.custom_plan_added, dayNames[which]),
                     Toast.LENGTH_SHORT
                 ).show()
             }
-            .setNegativeButton("Hủy", null)
+            .setNegativeButton(R.string.action_cancel, null)
             .show()
     }
 
@@ -186,12 +202,12 @@ class CreateCustomPlanFragment : Fragment() {
 
     private fun savePlanAndNavigateHome() {
         val planName = binding.etPlanName.text?.toString()?.trim().let {
-            if (it.isNullOrEmpty()) "Lịch tập tùy chỉnh hàng tuần" else it
+            if (it.isNullOrEmpty()) getString(R.string.custom_plan_default_name) else it
         }
 
         val totalAssigned = weeklySchedule.sumOf { it.exercises.size }
         if (totalAssigned == 0) {
-            Toast.makeText(requireContext(), "Vui lòng gán ít nhất 1 bài tập vào lịch tuần!", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), R.string.custom_plan_empty_error, Toast.LENGTH_SHORT).show()
             return
         }
 
@@ -216,7 +232,7 @@ class CreateCustomPlanFragment : Fragment() {
                     exObj.put("name", ex.name)
                     exObj.put("target", ex.target)
                     exObj.put("desc", ex.desc)
-                    exObj.put("category", ex.category)
+                    exObj.put("category", ex.category.name)
                     exObj.put("equipment", ex.equipment)
                     exObj.put("targetCount", ex.targetCount)
                     exercisesArray.put(exObj)
@@ -256,13 +272,21 @@ class CreateCustomPlanFragment : Fragment() {
                     }
             }
 
-            Toast.makeText(requireContext(), "Đã lưu tiến trình mẫu \"$planName\"!", Toast.LENGTH_LONG).show()
+            Toast.makeText(
+                requireContext(),
+                getString(R.string.custom_plan_saved, planName),
+                Toast.LENGTH_LONG
+            ).show()
 
             // Navigate to Home Fragment
             findNavController().navigate(R.id.home_fragment)
         } catch (e: Exception) {
             e.printStackTrace()
-            Toast.makeText(requireContext(), "Lỗi lưu lịch tập: ${e.message}", Toast.LENGTH_SHORT).show()
+            Toast.makeText(
+                requireContext(),
+                getString(R.string.custom_plan_save_error, e.localizedMessage.orEmpty()),
+                Toast.LENGTH_SHORT
+            ).show()
         }
     }
 
@@ -339,23 +363,35 @@ class CreateCustomPlanFragment : Fragment() {
                 val count = day.exercises.size
 
                 if (count == 0) {
-                    binding.tvDayStatusBadge.text = "Nghỉ ngơi"
+                    binding.tvDayStatusBadge.setText(R.string.custom_plan_rest)
                     binding.tvDayStatusBadge.setTextColor(Color.parseColor("#94A3B8"))
                     binding.tvDayStatusBadge.setBackgroundColor(Color.parseColor("#2664748B"))
-                    binding.tvExerciseCount.text = "0 bài tập"
+                    binding.tvExerciseCount.text = binding.root.resources.getQuantityString(
+                        R.plurals.custom_plan_exercise_count,
+                        0,
+                        0
+                    )
                     binding.tvEmptyDayPrompt.visibility = View.VISIBLE
                     binding.chipGroupExercises.removeAllViews()
                 } else {
-                    binding.tvDayStatusBadge.text = "Có lịch tập"
+                    binding.tvDayStatusBadge.setText(R.string.custom_plan_scheduled)
                     binding.tvDayStatusBadge.setTextColor(ContextCompat.getColor(binding.root.context, R.color.mp_color_primary_variant))
                     binding.tvDayStatusBadge.setBackgroundColor(Color.parseColor("#260066FF"))
-                    binding.tvExerciseCount.text = "$count bài tập"
+                    binding.tvExerciseCount.text = binding.root.resources.getQuantityString(
+                        R.plurals.custom_plan_exercise_count,
+                        count,
+                        count
+                    )
                     binding.tvEmptyDayPrompt.visibility = View.GONE
 
                     binding.chipGroupExercises.removeAllViews()
                     day.exercises.forEachIndexed { exIndex, ex ->
                         val chip = Chip(binding.root.context).apply {
-                            text = "${ex.name} (${ex.target})"
+                            text = binding.root.context.getString(
+                                R.string.exercise_with_target,
+                                ex.name,
+                                ex.target
+                            )
                             isCloseIconVisible = true
                             setChipBackgroundColorResource(R.color.tri_force_navy)
                             setTextColor(Color.WHITE)

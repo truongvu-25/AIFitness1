@@ -4,7 +4,6 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import android.os.Build
 import com.google.mediapipe.examples.poselandmarker.receiver.WorkoutReminderReceiver
 import java.util.Calendar
 
@@ -16,11 +15,7 @@ object NotificationHelper {
             val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as? AlarmManager ?: return
             val intent = Intent(context, WorkoutReminderReceiver::class.java)
 
-            val flags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-            } else {
-                PendingIntent.FLAG_UPDATE_CURRENT
-            }
+            val flags = PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             val pendingIntent = PendingIntent.getBroadcast(context, ALARM_REQ_CODE, intent, flags)
 
             val calendar = Calendar.getInstance().apply {
@@ -34,19 +29,11 @@ object NotificationHelper {
                 }
             }
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                alarmManager.setAndAllowWhileIdle(
-                    AlarmManager.RTC_WAKEUP,
-                    calendar.timeInMillis,
-                    pendingIntent
-                )
-            } else {
-                alarmManager.set(
-                    AlarmManager.RTC_WAKEUP,
-                    calendar.timeInMillis,
-                    pendingIntent
-                )
-            }
+            alarmManager.setAndAllowWhileIdle(
+                AlarmManager.RTC_WAKEUP,
+                calendar.timeInMillis,
+                pendingIntent
+            )
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -56,11 +43,7 @@ object NotificationHelper {
         try {
             val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as? AlarmManager ?: return
             val intent = Intent(context, WorkoutReminderReceiver::class.java)
-            val flags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE
-            } else {
-                PendingIntent.FLAG_NO_CREATE
-            }
+            val flags = PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE
             val pendingIntent = PendingIntent.getBroadcast(context, ALARM_REQ_CODE, intent, flags)
             if (pendingIntent != null) {
                 alarmManager.cancel(pendingIntent)

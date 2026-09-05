@@ -16,12 +16,12 @@
 package com.google.mediapipe.examples.poselandmarker.ui.fragment.camera
 
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.ImageDecoder
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.SystemClock
-import android.provider.MediaStore
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -31,6 +31,7 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import com.google.mediapipe.examples.poselandmarker.R
 import com.google.mediapipe.examples.poselandmarker.viewmodel.MainViewModel
 import com.google.mediapipe.examples.poselandmarker.analysis.PoseLandmarkerHelper
 import com.google.mediapipe.examples.poselandmarker.databinding.FragmentGalleryBinding
@@ -68,7 +69,7 @@ class GalleryFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
                         updateDisplayView(mediaType)
                         Toast.makeText(
                             requireContext(),
-                            "Unsupported data type.",
+                            getString(R.string.gallery_unsupported_type),
                             Toast.LENGTH_SHORT
                         ).show()
                     }
@@ -213,7 +214,7 @@ class GalleryFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
                     p2: Int,
                     p3: Long
                 ) {
-                    poseLandmarkerHelper.currentModel = p2
+                    viewModel.setModel(p2)
                     updateControlsUi()
                 }
 
@@ -260,12 +261,11 @@ class GalleryFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
             )
             ImageDecoder.decodeBitmap(source)
         } else {
-            MediaStore.Images.Media.getBitmap(
-                requireActivity().contentResolver,
-                uri
-            )
+            requireActivity().contentResolver.openInputStream(uri)?.use { input ->
+                BitmapFactory.decodeStream(input)
+            }
         }
-            .copy(Bitmap.Config.ARGB_8888, true)
+            ?.copy(Bitmap.Config.ARGB_8888, true)
             ?.let { bitmap ->
                 fragmentGalleryBinding.imageResult.setImageBitmap(bitmap)
 
@@ -293,13 +293,16 @@ class GalleryFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
 
                             setUiEnabled(true)
                             fragmentGalleryBinding.bottomSheetLayout.inferenceTimeVal.text =
-                                String.format("%d ms", result.inferenceTime)
+                                String.format(Locale.getDefault(), "%d ms", result.inferenceTime)
                         }
-                    } ?: run { Log.e(TAG, "Error running pose landmarker.") }
+                    } ?: run {
+                        Log.e(TAG, "Error running pose landmarker.")
+                        classifyingError()
+                    }
 
                     poseLandmarkerHelper.clearPoseLandmarker()
                 }
-            }
+            } ?: classifyingError()
     }
 
     private fun runDetectionOnVideo(uri: Uri) {
@@ -372,7 +375,7 @@ class GalleryFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
                         setUiEnabled(true)
 
                         fragmentGalleryBinding.bottomSheetLayout.inferenceTimeVal.text =
-                            String.format("%d ms", result.inferenceTime)
+                            String.format(Locale.getDefault(), "%d ms", result.inferenceTime)
                     }
                 }
             },
@@ -443,6 +446,18 @@ class GalleryFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
 
     override fun onResults(resultBundle: PoseLandmarkerHelper.ResultBundle) {
         // no-op
+    }
+
+    override fun onDestroyView() {
+        if (this::backgroundExecutor.isInitialized) {
+            backgroundExecutor.shutdownNow()
+        }
+        if (this::poseLandmarkerHelper.isInitialized) {
+            poseLandmarkerHelper.clearPoseLandmarker()
+        }
+        _fragmentGalleryBinding?.videoView?.stopPlayback()
+        _fragmentGalleryBinding = null
+        super.onDestroyView()
     }
 
     companion object {

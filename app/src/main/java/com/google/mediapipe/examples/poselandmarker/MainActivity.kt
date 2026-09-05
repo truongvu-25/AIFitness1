@@ -16,15 +16,21 @@
 
 package com.google.mediapipe.examples.poselandmarker
 
+import android.Manifest
 import android.content.Context
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.view.View
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
 import com.google.mediapipe.examples.poselandmarker.databinding.ActivityMainBinding
 import com.google.mediapipe.examples.poselandmarker.notification.NotificationHelper
+import com.google.mediapipe.examples.poselandmarker.service.StepCounterService
 import com.google.mediapipe.examples.poselandmarker.utils.LocaleHelper
 import com.google.mediapipe.examples.poselandmarker.viewmodel.MainViewModel
 
@@ -34,6 +40,15 @@ class MainActivity : AppCompatActivity() {
     private lateinit var activityMainBinding: ActivityMainBinding
 
     private val viewModel: MainViewModel by viewModels()
+    private var requestedRuntimePermissions = false
+
+    private val runtimePermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) {
+        if (StepCounterService.hasActivityRecognitionPermission(this)) {
+            StepCounterService.startService(this)
+        }
+    }
 
 
     override fun attachBaseContext(newBase: Context) {
@@ -80,13 +95,6 @@ class MainActivity : AppCompatActivity() {
             .setupWithNavController(navController)
 
 
-        // Ignore re-selecting the current BottomNavigation item.
-        activityMainBinding.navigation
-            .setOnNavigationItemReselectedListener {
-                // Intentionally empty.
-            }
-
-
         // =========================================================
         // APP CHROME VISIBILITY
         //
@@ -107,45 +115,14 @@ class MainActivity : AppCompatActivity() {
                 _ ->
 
 
-            val hideMainChrome =
-                when (destination.id) {
+            val showMainChrome = destination.id in setOf(
+                R.id.home_fragment,
+                R.id.workout_calendar_fragment,
+                R.id.library_fragment,
+                R.id.profile_fragment
+            )
 
-                    // ---------------------------------------------
-                    // ONBOARDING / AUTH
-                    // ---------------------------------------------
-
-                    R.id.welcome_fragment,
-                    R.id.login_fragment,
-                    R.id.register_fragment,
-                    R.id.user_info_fragment,
-
-
-                        // ---------------------------------------------
-                        // CAMERA / MEDIA
-                        // ---------------------------------------------
-
-                    R.id.camera_fragment,
-                    R.id.permissions_fragment,
-                    R.id.gallery_fragment,
-
-
-                        // ---------------------------------------------
-                        // FULLSCREEN UTILITY
-                        // ---------------------------------------------
-
-                    R.id.update_bmi_fragment,
-                    R.id.create_custom_plan_fragment -> true
-
-
-                    // ---------------------------------------------
-                    // MAIN APP DESTINATIONS
-                    // ---------------------------------------------
-
-                    else -> false
-                }
-
-
-            if (hideMainChrome) {
+            if (!showMainChrome) {
 
                 activityMainBinding
                     .headerBrandBar
@@ -164,26 +141,39 @@ class MainActivity : AppCompatActivity() {
                 activityMainBinding
                     .bottomNavCard
                     .visibility = View.VISIBLE
+
+                requestRuntimePermissionsOnce()
             }
         }
     }
 
+    private fun requestRuntimePermissionsOnce() {
+        if (requestedRuntimePermissions) return
+        requestedRuntimePermissions = true
 
-    @Deprecated("Deprecated in Java")
-    override fun onBackPressed() {
+        val missingPermissions = buildList {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q &&
+                ContextCompat.checkSelfPermission(
+                    this@MainActivity,
+                    Manifest.permission.ACTIVITY_RECOGNITION
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                add(Manifest.permission.ACTIVITY_RECOGNITION)
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+                ContextCompat.checkSelfPermission(
+                    this@MainActivity,
+                    Manifest.permission.POST_NOTIFICATIONS
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                add(Manifest.permission.POST_NOTIFICATIONS)
+            }
+        }
 
-        val navHostFragment =
-            supportFragmentManager.findFragmentById(
-                R.id.fragment_container
-            ) as NavHostFragment
-
-        val navController =
-            navHostFragment.navController
-
-
-        if (!navController.navigateUp()) {
-
-            super.onBackPressed()
+        if (missingPermissions.isEmpty()) {
+            StepCounterService.startService(this)
+        } else {
+            runtimePermissionLauncher.launch(missingPermissions.toTypedArray())
         }
     }
 }

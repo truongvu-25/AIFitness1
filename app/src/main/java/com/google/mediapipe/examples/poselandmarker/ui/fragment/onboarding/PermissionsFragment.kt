@@ -24,7 +24,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation.Navigation
+import androidx.navigation.fragment.findNavController
 import com.google.mediapipe.examples.poselandmarker.R
 
 private val PERMISSIONS_REQUIRED = arrayOf(Manifest.permission.CAMERA)
@@ -38,16 +38,19 @@ class PermissionsFragment : Fragment() {
             if (isGranted) {
                 Toast.makeText(
                     context,
-                    "Permission request granted",
-                    Toast.LENGTH_LONG
+                    R.string.permission_camera_granted,
+                    Toast.LENGTH_SHORT
                 ).show()
-                navigateToCamera()
+                returnToCamera()
             } else {
                 Toast.makeText(
                     context,
-                    "Permission request denied",
+                    R.string.permission_camera_denied,
                     Toast.LENGTH_LONG
                 ).show()
+                // Leave both the permission screen and the camera screen. Returning to an
+                // unprivileged camera would immediately request the same permission again.
+                findNavController().popBackStack(R.id.camera_fragment, true)
             }
         }
 
@@ -58,7 +61,7 @@ class PermissionsFragment : Fragment() {
                 requireContext(),
                 Manifest.permission.CAMERA
             ) -> {
-                navigateToCamera()
+                returnToCamera()
             }
             else -> {
                 requestPermissionLauncher.launch(
@@ -68,14 +71,9 @@ class PermissionsFragment : Fragment() {
         }
     }
 
-    private fun navigateToCamera() {
+    private fun returnToCamera() {
         lifecycleScope.launchWhenStarted {
-            Navigation.findNavController(
-                requireActivity(),
-                R.id.fragment_container
-            ).navigate(
-                R.id.action_permissions_to_camera
-            )
+            findNavController().popBackStack()
         }
     }
 

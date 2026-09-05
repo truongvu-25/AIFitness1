@@ -28,6 +28,7 @@
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:src="@android:drawable/ic_menu_revert"
+            android:contentDescription="@string/action_back"
             app:tint="@color/tri_force_white"
             android:background="?attr/selectableItemBackgroundBorderless"
             app:layout_constraintStart_toStartOf="parent"
@@ -49,7 +50,7 @@
                 android:id="@+id/tvWorkoutTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Tên bài tập"
+                android:text="@string/camera_exercise_placeholder"
                 android:textSize="18sp"
                 android:textStyle="bold"
                 android:textColor="@color/tri_force_white"/>
@@ -58,7 +59,7 @@
                 android:id="@+id/tvWorkoutTarget"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Mục tiêu: --"
+                android:text="@string/camera_target_placeholder"
                 android:textSize="14sp"
                 android:textColor="@color/mp_color_primary_variant"
                 android:textStyle="bold"/>
@@ -69,6 +70,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@android:drawable/ic_menu_camera"
+            android:contentDescription="@string/action_switch_camera"
             app:tint="@color/tri_force_white"
             app:fabSize="mini"
             app:backgroundTint="@color/mp_color_primary"
@@ -109,7 +111,7 @@
                     android:id="@+id/tvCounterLabel"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Thời gian giữ chuẩn tư thế"
+                    android:text="@string/camera_counter_timed"
                     android:textSize="13sp"
                     android:textColor="@color/mp_color_primary_variant"
                     android:textStyle="bold"/>
@@ -118,7 +120,7 @@
                     android:id="@+id/tvCounterValue"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="0 / 30 giây"
+                    android:text="@string/value_not_available"
                     android:textSize="32sp"
                     android:textStyle="bold"
                     android:textColor="@color/tri_force_white"
@@ -128,7 +130,7 @@
                     android:id="@+id/tvFormFeedback"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Đang nhận diện khung xương..."
+                    android:text="@string/camera_detecting"
                     android:textSize="12sp"
                     android:textColor="@color/tri_force_warning"
                     android:textStyle="italic"/>
@@ -139,7 +141,7 @@
             android:id="@+id/btnFinishWorkout"
             android:layout_width="match_parent"
             android:layout_height="52dp"
-            android:text="HOÀN THÀNH BÀI TẬP"
+            android:text="@string/camera_complete"
             android:textSize="16sp"
             android:textStyle="bold"
             android:textColor="@color/tri_force_white"
@@ -147,9 +149,5 @@
             app:cornerRadius="14dp"
             app:elevation="8dp"/>
     </LinearLayout>
-
-    <include
-        android:id="@+id/bottom_sheet_layout"
-        layout="@layout/info_bottom_sheet" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

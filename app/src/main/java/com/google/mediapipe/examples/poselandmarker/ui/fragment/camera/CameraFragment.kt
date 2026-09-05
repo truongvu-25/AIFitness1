@@ -8,14 +8,14 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.AdapterView
 import android.widget.Toast
-import androidx.camera.core.AspectRatio
 import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
 import androidx.camera.core.Preview
+import androidx.camera.core.resolutionselector.AspectRatioStrategy
+import androidx.camera.core.resolutionselector.ResolutionSelector
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
@@ -29,13 +29,12 @@ import com.google.mediapipe.examples.poselandmarker.analysis.PoseLandmarkerHelpe
 import com.google.mediapipe.examples.poselandmarker.R
 import com.google.mediapipe.examples.poselandmarker.service.RestTimerService
 import com.google.mediapipe.examples.poselandmarker.model.WorkoutDay
+import com.google.mediapipe.examples.poselandmarker.model.ExerciseCatalog
 import com.google.mediapipe.examples.poselandmarker.databinding.FragmentCameraBinding
 import com.google.mediapipe.examples.poselandmarker.ui.fragment.onboarding.PermissionsFragment
 import com.google.mediapipe.tasks.vision.core.RunningMode
-import java.util.Locale
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
-import java.util.concurrent.TimeUnit
 
 class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
 
@@ -67,7 +66,7 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
     private var dayIndex: Int = 1
 
     private var isTimed: Boolean = false
-    private var unitStr: String = "lần"
+    private var unitStr: String = ""
     private var currentProgressCount: Int = 0
 
     private var exerciseAnalyzer: BaseExerciseAnalyzer? = null
@@ -77,13 +76,16 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
         auth = FirebaseAuth.getInstance()
         db = FirebaseFirestore.getInstance()
 
-        exerciseId = arguments?.getString("exerciseId") ?: ""
-        exerciseName = arguments?.getString("exerciseName") ?: ""
-        targetCount = arguments?.getInt("targetCount") ?: 0
+        exerciseId = ExerciseCatalog.canonicalId(arguments?.getString("exerciseId").orEmpty())
+        val catalogExercise = ExerciseCatalog.find(requireContext(), exerciseId)
+        exerciseName = catalogExercise?.name ?: arguments?.getString("exerciseName").orEmpty()
+        targetCount = (arguments?.getInt("targetCount") ?: 0).takeIf { it > 0 }
+            ?: catalogExercise?.defaultTarget
+            ?: 1
         dayIndex = arguments?.getInt("dayIndex") ?: 1
 
-        isTimed = (exerciseId == "plank" || exerciseId == "sideplank")
-        unitStr = if (isTimed) "giây" else "lần"
+        isTimed = catalogExercise?.isTimed ?: (exerciseId == "plank" || exerciseId == "sideplank")
+        unitStr = catalogExercise?.unit ?: getString(if (isTimed) R.string.unit_seconds else R.string.unit_reps)
     }
 
     override fun onResume() {
@@ -91,11 +93,13 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
         if (!PermissionsFragment.hasPermissions(requireContext())) {
             findNavController().navigate(R.id.action_camera_to_permissions)
         }
-        backgroundExecutor.execute {
+        if (this::backgroundExecutor.isInitialized && !backgroundExecutor.isShutdown) {
+            backgroundExecutor.execute {
             if (this::poseLandmarkerHelper.isInitialized) {
                 if (poseLandmarkerHelper.isClose()) {
                     poseLandmarkerHelper.setupPoseLandmarker()
                 }
+            }
             }
         }
     }
@@ -108,15 +112,19 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
             viewModel.setMinPosePresenceConfidence(poseLandmarkerHelper.minPosePresenceConfidence)
             viewModel.setDelegate(poseLandmarkerHelper.currentDelegate)
 
-            backgroundExecutor.execute { poseLandmarkerHelper.clearPoseLandmarker() }
+            if (this::backgroundExecutor.isInitialized && !backgroundExecutor.isShutdown) {
+                backgroundExecutor.execute { poseLandmarkerHelper.clearPoseLandmarker() }
+            }
         }
     }
 
     override fun onDestroyView() {
+        cameraProvider?.unbindAll()
+        if (this::backgroundExecutor.isInitialized) {
+            backgroundExecutor.shutdownNow()
+        }
         _fragmentCameraBinding = null
         super.onDestroyView()
-        backgroundExecutor.shutdown()
-        backgroundExecutor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS)
     }
 
     override fun onCreateView(
@@ -138,11 +146,15 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
         backgroundExecutor = Executors.newSingleThreadExecutor()
 
         fragmentCameraBinding.tvWorkoutTitle.text = exerciseName
-        fragmentCameraBinding.tvWorkoutTarget.text = "Mục tiêu: $targetCount $unitStr"
+        fragmentCameraBinding.tvWorkoutTarget.text =
+            getString(R.string.camera_target_format, targetCount, unitStr)
 
-        fragmentCameraBinding.tvCounterLabel.text = if (isTimed) "Thời gian giữ chuẩn tư thế" else "Số lần hoàn thành"
-        fragmentCameraBinding.tvCounterValue.text = "0 / $targetCount $unitStr"
-        fragmentCameraBinding.tvFormFeedback.text = "Đứng trước camera để hệ thống nhận diện khung xương..."
+        fragmentCameraBinding.tvCounterLabel.setText(
+            if (isTimed) R.string.camera_counter_timed else R.string.camera_counter_reps
+        )
+        fragmentCameraBinding.tvCounterValue.text =
+            getString(R.string.camera_counter_format, 0, targetCount, unitStr)
+        fragmentCameraBinding.tvFormFeedback.setText(R.string.camera_detecting)
 
         exerciseAnalyzer = BaseExerciseAnalyzer.create(
             exerciseId, exerciseName, targetCount, isTimed, unitStr
@@ -181,7 +193,6 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
             )
         }
 
-        initBottomSheetControls()
     }
 
     private var isCompletingWorkout = false
@@ -190,7 +201,12 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
         if (isCompletingWorkout) return
         isCompletingWorkout = true
 
-        val uid = auth.currentUser?.uid ?: return
+        val uid = auth.currentUser?.uid
+        if (uid.isNullOrEmpty()) {
+            isCompletingWorkout = false
+            Toast.makeText(context, R.string.camera_sign_in_required, Toast.LENGTH_SHORT).show()
+            return
+        }
         fragmentCameraBinding.btnFinishWorkout.isEnabled = false
         
         val docRef = db.collection("users").document(uid)
@@ -200,8 +216,12 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
             if (document.exists()) {
                 val workoutDay = document.toObject(WorkoutDay::class.java)
                 if (workoutDay != null) {
+                    var updatedOneExercise = false
                     val updatedExercises = workoutDay.exercises.map {
-                        if (it.exerciseId == exerciseId) {
+                        if (!updatedOneExercise && it.status == 0 &&
+                            ExerciseCatalog.canonicalId(it.exerciseId) == exerciseId
+                        ) {
+                            updatedOneExercise = true
                             it.copy(status = 1)
                         } else {
                             it
@@ -213,10 +233,10 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
                                 val hasRemainingPending = updatedExercises.any { it.status == 0 }
                                 if (hasRemainingPending) {
                                     RestTimerService.startRestTimer(requireContext(), dayIndex)
-                                    Toast.makeText(context, "Chúc mừng! Bạn đã hoàn thành bài tập!", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, R.string.camera_completed_one, Toast.LENGTH_SHORT).show()
                                 } else {
                                     RestTimerService.stopService(requireContext())
-                                    Toast.makeText(context, "Chúc mừng! Bạn đã hoàn thành TẤT CẢ bài tập hôm nay!", Toast.LENGTH_LONG).show()
+                                    Toast.makeText(context, R.string.camera_completed_all, Toast.LENGTH_LONG).show()
                                 }
                                 
                                 // Explicitly pop back to WorkoutCalendarFragment (R.id.workout_calendar_fragment)
@@ -228,113 +248,31 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
                         }
                         .addOnFailureListener { e ->
                             isCompletingWorkout = false
-                            fragmentCameraBinding.btnFinishWorkout.isEnabled = true
-                            Toast.makeText(context, "Lỗi cập nhật: ${e.message}", Toast.LENGTH_SHORT).show()
+                            _fragmentCameraBinding?.btnFinishWorkout?.isEnabled = true
+                            Toast.makeText(
+                                context,
+                                getString(R.string.camera_update_error, e.localizedMessage.orEmpty()),
+                                Toast.LENGTH_SHORT
+                            ).show()
                         }
                 } else {
                     isCompletingWorkout = false
-                    fragmentCameraBinding.btnFinishWorkout.isEnabled = true
+                    _fragmentCameraBinding?.btnFinishWorkout?.isEnabled = true
+                    Toast.makeText(context, R.string.camera_workout_not_found, Toast.LENGTH_SHORT).show()
                 }
             } else {
                 isCompletingWorkout = false
-                fragmentCameraBinding.btnFinishWorkout.isEnabled = true
+                _fragmentCameraBinding?.btnFinishWorkout?.isEnabled = true
+                Toast.makeText(context, R.string.camera_workout_not_found, Toast.LENGTH_SHORT).show()
             }
         }.addOnFailureListener { e ->
             isCompletingWorkout = false
-            fragmentCameraBinding.btnFinishWorkout.isEnabled = true
-            Toast.makeText(context, "Lỗi kết nối database: ${e.message}", Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    private fun initBottomSheetControls() {
-        fragmentCameraBinding.bottomSheetLayout.detectionThresholdValue.text =
-            String.format(Locale.US, "%.2f", viewModel.currentMinPoseDetectionConfidence)
-        fragmentCameraBinding.bottomSheetLayout.trackingThresholdValue.text =
-            String.format(Locale.US, "%.2f", viewModel.currentMinPoseTrackingConfidence)
-        fragmentCameraBinding.bottomSheetLayout.presenceThresholdValue.text =
-            String.format(Locale.US, "%.2f", viewModel.currentMinPosePresenceConfidence)
-
-        fragmentCameraBinding.bottomSheetLayout.detectionThresholdMinus.setOnClickListener {
-            if (poseLandmarkerHelper.minPoseDetectionConfidence >= 0.2) {
-                poseLandmarkerHelper.minPoseDetectionConfidence -= 0.1f
-                updateControlsUi()
-            }
-        }
-
-        fragmentCameraBinding.bottomSheetLayout.detectionThresholdPlus.setOnClickListener {
-            if (poseLandmarkerHelper.minPoseDetectionConfidence <= 0.8) {
-                poseLandmarkerHelper.minPoseDetectionConfidence += 0.1f
-                updateControlsUi()
-            }
-        }
-
-        fragmentCameraBinding.bottomSheetLayout.trackingThresholdMinus.setOnClickListener {
-            if (poseLandmarkerHelper.minPoseTrackingConfidence >= 0.2) {
-                poseLandmarkerHelper.minPoseTrackingConfidence -= 0.1f
-                updateControlsUi()
-            }
-        }
-
-        fragmentCameraBinding.bottomSheetLayout.trackingThresholdPlus.setOnClickListener {
-            if (poseLandmarkerHelper.minPoseTrackingConfidence <= 0.8) {
-                poseLandmarkerHelper.minPoseTrackingConfidence += 0.1f
-                updateControlsUi()
-            }
-        }
-
-        fragmentCameraBinding.bottomSheetLayout.presenceThresholdMinus.setOnClickListener {
-            if (poseLandmarkerHelper.minPosePresenceConfidence >= 0.2) {
-                poseLandmarkerHelper.minPosePresenceConfidence -= 0.1f
-                updateControlsUi()
-            }
-        }
-
-        fragmentCameraBinding.bottomSheetLayout.presenceThresholdPlus.setOnClickListener {
-            if (poseLandmarkerHelper.minPosePresenceConfidence <= 0.8) {
-                poseLandmarkerHelper.minPosePresenceConfidence += 0.1f
-                updateControlsUi()
-            }
-        }
-
-        fragmentCameraBinding.bottomSheetLayout.spinnerDelegate.setSelection(
-            viewModel.currentDelegate, false
-        )
-        fragmentCameraBinding.bottomSheetLayout.spinnerDelegate.onItemSelectedListener =
-            object : AdapterView.OnItemSelectedListener {
-                override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
-                    poseLandmarkerHelper.currentDelegate = p2
-                    updateControlsUi()
-                }
-                override fun onNothingSelected(p0: AdapterView<*>?) {}
-            }
-
-        fragmentCameraBinding.bottomSheetLayout.spinnerModel.setSelection(
-            viewModel.currentModel, false
-        )
-        fragmentCameraBinding.bottomSheetLayout.spinnerModel.onItemSelectedListener =
-            object : AdapterView.OnItemSelectedListener {
-                override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
-                    poseLandmarkerHelper.currentModel = p2
-                    updateControlsUi()
-                }
-                override fun onNothingSelected(p0: AdapterView<*>?) {}
-            }
-    }
-
-    private fun updateControlsUi() {
-        if (this::poseLandmarkerHelper.isInitialized) {
-            fragmentCameraBinding.bottomSheetLayout.detectionThresholdValue.text =
-                String.format(Locale.US, "%.2f", poseLandmarkerHelper.minPoseDetectionConfidence)
-            fragmentCameraBinding.bottomSheetLayout.trackingThresholdValue.text =
-                String.format(Locale.US, "%.2f", poseLandmarkerHelper.minPoseTrackingConfidence)
-            fragmentCameraBinding.bottomSheetLayout.presenceThresholdValue.text =
-                String.format(Locale.US, "%.2f", poseLandmarkerHelper.minPosePresenceConfidence)
-
-            backgroundExecutor.execute {
-                poseLandmarkerHelper.clearPoseLandmarker()
-                poseLandmarkerHelper.setupPoseLandmarker()
-            }
-            fragmentCameraBinding.overlay.clear()
+            _fragmentCameraBinding?.btnFinishWorkout?.isEnabled = true
+            Toast.makeText(
+                context,
+                getString(R.string.database_error_with_detail, e.localizedMessage.orEmpty()),
+                Toast.LENGTH_SHORT
+            ).show()
         }
     }
 
@@ -360,14 +298,17 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
         val display = fragmentCameraBinding.viewFinder.display ?: return
 
         val cameraSelector = CameraSelector.Builder().requireLensFacing(cameraFacing).build()
+        val resolutionSelector = ResolutionSelector.Builder()
+            .setAspectRatioStrategy(AspectRatioStrategy.RATIO_4_3_FALLBACK_AUTO_STRATEGY)
+            .build()
 
         preview = Preview.Builder()
-            .setTargetAspectRatio(AspectRatio.RATIO_4_3)
+            .setResolutionSelector(resolutionSelector)
             .setTargetRotation(display.rotation)
             .build()
 
         imageAnalyzer = ImageAnalysis.Builder()
-            .setTargetAspectRatio(AspectRatio.RATIO_4_3)
+            .setResolutionSelector(resolutionSelector)
             .setTargetRotation(display.rotation)
             .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
             .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_RGBA_8888)
@@ -405,20 +346,21 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
                 imageProxy = imageProxy,
                 isFrontCamera = cameraFacing == CameraSelector.LENS_FACING_FRONT
             )
+        } else {
+            imageProxy.close()
         }
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
-        imageAnalyzer?.targetRotation = fragmentCameraBinding.viewFinder.display.rotation
+        _fragmentCameraBinding?.viewFinder?.display?.let { display ->
+            imageAnalyzer?.targetRotation = display.rotation
+        }
     }
 
     override fun onResults(resultBundle: PoseLandmarkerHelper.ResultBundle) {
         activity?.runOnUiThread {
             if (_fragmentCameraBinding != null) {
-                fragmentCameraBinding.bottomSheetLayout.inferenceTimeVal.text =
-                    String.format("%d ms", resultBundle.inferenceTime)
-
                 // Pose Analysis and Exercise Specific Logic
                 val hasLandmarks = resultBundle.results.first().landmarks().isNotEmpty()
                 if (hasLandmarks) {
@@ -427,8 +369,14 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
                         val result = analyzer.analyze(landmarks)
                         
                         currentProgressCount = result.currentProgress
-                        fragmentCameraBinding.tvCounterValue.text = "$currentProgressCount / $targetCount $unitStr"
-                        fragmentCameraBinding.tvFormFeedback.text = result.feedback
+                        fragmentCameraBinding.tvCounterValue.text = getString(
+                            R.string.camera_counter_format,
+                            currentProgressCount,
+                            targetCount,
+                            unitStr
+                        )
+                        fragmentCameraBinding.tvFormFeedback.text =
+                            ExerciseCatalog.localizeFeedback(requireContext(), result.feedback)
                         fragmentCameraBinding.tvFormFeedback.setTextColor(result.feedbackColor)
 
                         // Update overlay with landmarks and custom lines from analysis
@@ -452,7 +400,7 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
                         RunningMode.LIVE_STREAM,
                         emptyList()
                     )
-                    fragmentCameraBinding.tvFormFeedback.text = "Hãy đứng lùi lại để camera quét được toàn thân"
+                    fragmentCameraBinding.tvFormFeedback.setText(R.string.camera_move_back)
                     fragmentCameraBinding.tvFormFeedback.setTextColor(Color.parseColor("#FFCA28"))
                 }
                 fragmentCameraBinding.overlay.invalidate()
@@ -462,12 +410,7 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
 
     override fun onError(error: String, errorCode: Int) {
         activity?.runOnUiThread {
-            Toast.makeText(requireContext(), error, Toast.LENGTH_SHORT).show()
-            if (errorCode == PoseLandmarkerHelper.GPU_ERROR) {
-                fragmentCameraBinding.bottomSheetLayout.spinnerDelegate.setSelection(
-                    PoseLandmarkerHelper.DELEGATE_CPU, false
-                )
-            }
+            context?.let { Toast.makeText(it, error, Toast.LENGTH_SHORT).show() }
         }
     }
 }

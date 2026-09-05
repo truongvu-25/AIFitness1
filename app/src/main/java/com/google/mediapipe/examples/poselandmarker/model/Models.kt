@@ -10,7 +10,7 @@ data class ExerciseDetails(
     val name: String = "",
     val description: String = "",
     val videoUrl: String = "",
-    @get:PropertyName("isTimed") @set:PropertyName("isTimed")
+    @field:PropertyName("isTimed")
     @field:JvmField
     var isTimed: Boolean = false,
     val unit: String = "lần"
@@ -35,7 +35,7 @@ data class UserExercise(
 data class WorkoutDay(
     val dayIndex: Int = 0,
     val exercises: List<UserExercise> = emptyList(),
-    @get:PropertyName("isRestDay") @set:PropertyName("isRestDay")
+    @field:PropertyName("isRestDay")
     @field:JvmField
     var isRestDay: Boolean = false
 ) {

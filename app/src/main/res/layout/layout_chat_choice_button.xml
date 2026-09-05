@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="52dp"
     android:layout_marginBottom="8dp"
-    android:text="Option"
+    android:text="@string/choice_placeholder"
     android:textSize="14sp"
     android:textStyle="bold"
     android:textColor="@color/tri_force_text_primary"
