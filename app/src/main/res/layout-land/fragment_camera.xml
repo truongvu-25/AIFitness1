@@ -18,19 +18,19 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <!-- UI Overlay inside ConstraintLayout for clean, non-blocking HUD -->
+    <!-- UI Overlay inside ConstraintLayout for Landscape HUD -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/cameraControlsOverlay"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <!-- Top Bar: Sleek, compact translucent scrim -->
+        <!-- Top Bar: Sleek, compact scrim -->
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/topBarLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:paddingHorizontal="16dp"
-            android:paddingVertical="10dp"
+            android:paddingVertical="8dp"
             android:background="#B3061321"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -38,8 +38,8 @@
 
             <ImageButton
                 android:id="@+id/btnBack"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
                 android:src="@android:drawable/ic_menu_revert"
                 android:contentDescription="@string/action_back"
                 app:tint="@color/tri_force_white"
@@ -52,7 +52,8 @@
                 android:id="@+id/layoutWorkoutTitle"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
                 android:layout_marginStart="12dp"
                 android:layout_marginEnd="12dp"
                 app:layout_constraintStart_toEndOf="@id/btnBack"
@@ -65,11 +66,18 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/camera_exercise_placeholder"
-                    android:textSize="16sp"
+                    android:textSize="15sp"
                     android:textStyle="bold"
                     android:textColor="@color/tri_force_white"
                     android:maxLines="1"
                     android:ellipsize="end" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="  •  "
+                    android:textColor="@color/tri_force_steel"
+                    android:textSize="12sp" />
 
                 <TextView
                     android:id="@+id/tvWorkoutTarget"
@@ -103,7 +111,7 @@
             android:id="@+id/cardCounter"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
+            android:layout_marginTop="8dp"
             android:layout_marginEnd="16dp"
             app:cardBackgroundColor="#CC061321"
             app:cardCornerRadius="14dp"
@@ -119,7 +127,7 @@
                 android:orientation="vertical"
                 android:gravity="center"
                 android:paddingHorizontal="14dp"
-                android:paddingVertical="6dp">
+                android:paddingVertical="5dp">
 
                 <TextView
                     android:id="@+id/tvCounterLabel"
@@ -145,52 +153,51 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Form Feedback: Sleek Centered Floating Pill -->
+        <!-- Form Feedback: Sleek Bottom Left Floating Pill -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/cardFeedback"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
-            android:layout_marginHorizontal="20dp"
+            android:layout_marginStart="16dp"
             app:cardBackgroundColor="#CC061321"
             app:cardCornerRadius="18dp"
             app:strokeColor="#33FFFFFF"
             app:strokeWidth="1dp"
             app:cardElevation="4dp"
-            app:layout_constraintBottom_toTopOf="@id/btnFinishWorkout"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent">
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent">
 
             <TextView
                 android:id="@+id/tvFormFeedback"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:maxWidth="320dp"
+                android:maxWidth="360dp"
                 android:text="@string/camera_detecting"
-                android:textSize="13sp"
+                android:textSize="12sp"
                 android:textColor="@color/tri_force_warning"
                 android:textStyle="bold"
                 android:gravity="center"
-                android:paddingHorizontal="16dp"
-                android:paddingVertical="7dp" />
+                android:paddingHorizontal="14dp"
+                android:paddingVertical="6dp" />
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Finish Workout Button: Compact Bottom Pill Button -->
+        <!-- Finish Workout Button: Bottom Right Corner in Landscape -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnFinishWorkout"
             android:layout_width="wrap_content"
-            android:layout_height="44dp"
-            android:minWidth="180dp"
-            android:layout_marginBottom="16dp"
+            android:layout_height="40dp"
+            android:minWidth="150dp"
+            android:layout_marginBottom="12dp"
+            android:layout_marginEnd="16dp"
             android:text="@string/camera_complete"
-            android:textSize="14sp"
+            android:textSize="13sp"
             android:textStyle="bold"
             android:textColor="@color/tri_force_white"
             android:backgroundTint="@color/tri_force_success"
-            app:cornerRadius="22dp"
+            app:cornerRadius="20dp"
             app:elevation="4dp"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>

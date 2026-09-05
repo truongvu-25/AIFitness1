@@ -22,6 +22,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.view.View
+import android.widget.RelativeLayout
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -122,6 +123,8 @@ class MainActivity : AppCompatActivity() {
                 R.id.profile_fragment
             )
 
+            val params = activityMainBinding.fragmentContainer.layoutParams as? RelativeLayout.LayoutParams
+
             if (!showMainChrome) {
 
                 activityMainBinding
@@ -132,6 +135,12 @@ class MainActivity : AppCompatActivity() {
                     .bottomNavCard
                     .visibility = View.GONE
 
+                params?.let {
+                    it.removeRule(RelativeLayout.ABOVE)
+                    it.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM)
+                    activityMainBinding.fragmentContainer.layoutParams = it
+                }
+
             } else {
 
                 activityMainBinding
@@ -141,6 +150,12 @@ class MainActivity : AppCompatActivity() {
                 activityMainBinding
                     .bottomNavCard
                     .visibility = View.VISIBLE
+
+                params?.let {
+                    it.removeRule(RelativeLayout.ALIGN_PARENT_BOTTOM)
+                    it.addRule(RelativeLayout.ABOVE, R.id.bottomNavCard)
+                    activityMainBinding.fragmentContainer.layoutParams = it
+                }
 
                 requestRuntimePermissionsOnce()
             }
