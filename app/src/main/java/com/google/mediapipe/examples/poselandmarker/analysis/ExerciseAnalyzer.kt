@@ -813,8 +813,19 @@ class SidePlankAnalyzer(id: String, name: String, target: Int, timed: Boolean, u
             ankle
         )
 
+        val leftKneeAngle = calculateAngle(
+            landmarks[23], // left hip
+            landmarks[25], // left knee
+            landmarks[27]  // left ankle
+        )
+
+        val rightKneeAngle = calculateAngle(
+            landmarks[24], // right hip
+            landmarks[26], // right knee
+            landmarks[28]  // right ankle
+        )
         // 6. Kiểm tra body có thẳng không
-        val isValid = bodyAngle >= 160
+        val isValid = bodyAngle >= 160 && leftKneeAngle >=160 && rightKneeAngle >= 160
 
         val customLines = mutableListOf<CustomLine>()
 
