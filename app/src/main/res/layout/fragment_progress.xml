@@ -1,0 +1,517 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/tri_force_bg">
+
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/progressScrollView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clipToPadding="false"
+        android:fillViewport="true"
+        android:overScrollMode="never"
+        android:visibility="invisible">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingStart="@dimen/screen_horizontal_padding"
+            android:paddingTop="@dimen/main_content_top_offset"
+            android:paddingEnd="@dimen/screen_horizontal_padding"
+            android:paddingBottom="@dimen/space_24">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <ImageButton
+                    android:id="@+id/btnProgressBack"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="Quay lại"
+                    android:padding="8dp"
+                    android:src="@drawable/ic_arrow_back" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/space_8"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:includeFontPadding="false"
+                        android:letterSpacing="0.12"
+                        android:text="THEO DÕI"
+                        android:textColor="@color/tri_force_blue"
+                        android:textSize="9sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:includeFontPadding="false"
+                        android:text="Tiến độ luyện tập"
+                        android:textColor="@color/tri_force_text_primary"
+                        android:textSize="23sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/tvProgressInsight"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_12"
+                android:includeFontPadding="false"
+                android:lineSpacingExtra="2dp"
+                android:text="Dữ liệu từ các buổi tập bằng AI Camera sẽ xuất hiện tại đây."
+                android:textColor="@color/tri_force_text_secondary"
+                android:textSize="13sp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_16"
+                android:baselineAligned="false"
+                android:orientation="horizontal"
+                android:weightSum="2">
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginEnd="6dp"
+                    android:layout_weight="1"
+                    app:cardBackgroundColor="@color/tri_force_navy"
+                    app:cardCornerRadius="@dimen/card_corner_radius_small"
+                    app:cardElevation="0dp"
+                    app:strokeWidth="0dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="@dimen/space_16">
+
+                        <TextView
+                            android:id="@+id/tvWeeklyWorkoutCount"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:includeFontPadding="false"
+                            android:textColor="@color/tri_force_white"
+                            android:textSize="28sp"
+                            android:textStyle="bold"
+                            tools:text="4" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/space_4"
+                            android:includeFontPadding="false"
+                            android:text="BUỔI TRONG 7 NGÀY"
+                            android:textColor="@color/tri_force_text_on_dark_secondary"
+                            android:textSize="9sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="6dp"
+                    android:layout_weight="1"
+                    app:cardBackgroundColor="@color/tri_force_white"
+                    app:cardCornerRadius="@dimen/card_corner_radius_small"
+                    app:cardElevation="0dp"
+                    app:strokeColor="@color/tri_force_stroke"
+                    app:strokeWidth="@dimen/stroke_thin">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="@dimen/space_16">
+
+                        <TextView
+                            android:id="@+id/tvWeeklyMinutes"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:includeFontPadding="false"
+                            android:textColor="@color/tri_force_text_primary"
+                            android:textSize="28sp"
+                            android:textStyle="bold"
+                            tools:text="68" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/space_4"
+                            android:includeFontPadding="false"
+                            android:text="PHÚT LUYỆN TẬP"
+                            android:textColor="@color/tri_force_text_tertiary"
+                            android:textSize="9sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_12"
+                android:baselineAligned="false"
+                android:orientation="horizontal"
+                android:weightSum="2">
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginEnd="6dp"
+                    android:layout_weight="1"
+                    app:cardBackgroundColor="@color/tri_force_white"
+                    app:cardCornerRadius="@dimen/card_corner_radius_small"
+                    app:cardElevation="0dp"
+                    app:strokeColor="@color/tri_force_stroke"
+                    app:strokeWidth="@dimen/stroke_thin">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="@dimen/space_16">
+
+                        <TextView
+                            android:id="@+id/tvCurrentStreak"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:includeFontPadding="false"
+                            android:textColor="@color/tri_force_text_primary"
+                            android:textSize="28sp"
+                            android:textStyle="bold"
+                            tools:text="3" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/space_4"
+                            android:includeFontPadding="false"
+                            android:text="NGÀY LIÊN TIẾP"
+                            android:textColor="@color/tri_force_text_tertiary"
+                            android:textSize="9sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="6dp"
+                    android:layout_weight="1"
+                    app:cardBackgroundColor="@color/tri_force_white"
+                    app:cardCornerRadius="@dimen/card_corner_radius_small"
+                    app:cardElevation="0dp"
+                    app:strokeColor="@color/tri_force_stroke"
+                    app:strokeWidth="@dimen/stroke_thin">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="@dimen/space_16">
+
+                        <TextView
+                            android:id="@+id/tvAverageFormScore"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:includeFontPadding="false"
+                            android:textColor="@color/tri_force_text_primary"
+                            android:textSize="28sp"
+                            android:textStyle="bold"
+                            tools:text="84" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/space_4"
+                            android:includeFontPadding="false"
+                            android:text="ĐIỂM FORM TB"
+                            android:textColor="@color/tri_force_text_tertiary"
+                            android:textSize="9sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+            </LinearLayout>
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_16"
+                app:cardBackgroundColor="@color/tri_force_white"
+                app:cardCornerRadius="@dimen/card_corner_radius"
+                app:cardElevation="0dp"
+                app:strokeColor="@color/tri_force_stroke"
+                app:strokeWidth="@dimen/stroke_thin">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/space_16">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:includeFontPadding="false"
+                            android:text="Mục tiêu tuần"
+                            android:textColor="@color/tri_force_text_primary"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/btnEditWeeklyGoal"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:includeFontPadding="false"
+                            android:padding="@dimen/space_8"
+                            android:text="ĐIỀU CHỈNH"
+                            android:textColor="@color/tri_force_blue"
+                            android:textSize="9sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/tvWeeklyGoalValue"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_8"
+                        android:includeFontPadding="false"
+                        android:textColor="@color/tri_force_text_primary"
+                        android:textSize="22sp"
+                        android:textStyle="bold"
+                        tools:text="3 / 4 buổi" />
+
+                    <ProgressBar
+                        android:id="@+id/progressWeeklyGoal"
+                        style="?android:attr/progressBarStyleHorizontal"
+                        android:layout_width="match_parent"
+                        android:layout_height="6dp"
+                        android:layout_marginTop="@dimen/space_8"
+                        android:indeterminate="false"
+                        android:max="100"
+                        android:progress="0"
+                        android:progressBackgroundTint="@color/tri_force_surface_soft"
+                        android:progressTint="@color/tri_force_blue"
+                        tools:progress="75" />
+
+                    <TextView
+                        android:id="@+id/tvWeeklyGoalHint"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/space_8"
+                        android:includeFontPadding="false"
+                        android:textColor="@color/tri_force_text_secondary"
+                        android:textSize="11sp"
+                        tools:text="Còn 1 buổi để hoàn thành mục tiêu tuần này." />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_16"
+                app:cardBackgroundColor="@color/tri_force_white"
+                app:cardCornerRadius="@dimen/card_corner_radius"
+                app:cardElevation="0dp"
+                app:strokeColor="@color/tri_force_stroke"
+                app:strokeWidth="@dimen/stroke_thin">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/space_16">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:includeFontPadding="false"
+                        android:text="Hoạt động 7 ngày"
+                        android:textColor="@color/tri_force_text_primary"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+                    <LinearLayout
+                        android:id="@+id/weeklyChartContainer"
+                        android:layout_width="match_parent"
+                        android:layout_height="126dp"
+                        android:layout_marginTop="@dimen/space_12"
+                        android:gravity="bottom"
+                        android:orientation="horizontal" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_20"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:includeFontPadding="false"
+                    android:text="Thành tựu"
+                    android:textColor="@color/tri_force_text_primary"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+                <HorizontalScrollView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_12"
+                    android:clipToPadding="false"
+                    android:overScrollMode="never"
+                    android:scrollbars="none">
+
+                    <LinearLayout
+                        android:id="@+id/achievementContainer"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal" />
+                </HorizontalScrollView>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/recentActivitySection"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_20"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:includeFontPadding="false"
+                        android:text="Hoạt động gần đây"
+                        android:textColor="@color/tri_force_text_primary"
+                        android:textSize="18sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tvRecentActivityCount"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/bg_library_chip"
+                        android:includeFontPadding="false"
+                        android:paddingStart="9dp"
+                        android:paddingTop="5dp"
+                        android:paddingEnd="9dp"
+                        android:paddingBottom="5dp"
+                        android:textColor="@color/tri_force_blue"
+                        android:textSize="9sp"
+                        android:textStyle="bold"
+                        tools:text="5 gần nhất" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/recentWorkoutContainer"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/space_12"
+                    android:orientation="vertical" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_20"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:includeFontPadding="false"
+                    android:text="Tiến độ từng bài"
+                    android:textColor="@color/tri_force_text_primary"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvTrackedExerciseCount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_library_chip"
+                    android:includeFontPadding="false"
+                    android:paddingStart="9dp"
+                    android:paddingTop="5dp"
+                    android:paddingEnd="9dp"
+                    android:paddingBottom="5dp"
+                    android:textColor="@color/tri_force_blue"
+                    android:textSize="9sp"
+                    android:textStyle="bold"
+                    tools:text="4 bài" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/tvProgressEmpty"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_24"
+                android:gravity="center"
+                android:includeFontPadding="false"
+                android:lineSpacingExtra="2dp"
+                android:padding="@dimen/space_20"
+                android:text="Chưa có dữ liệu. Hoàn thành một bài tập bằng AI Camera để bắt đầu theo dõi tiến độ."
+                android:textColor="@color/tri_force_text_secondary"
+                android:textSize="13sp"
+                android:visibility="gone" />
+
+            <LinearLayout
+                android:id="@+id/exerciseProgressContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/space_12"
+                android:orientation="vertical" />
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+    <ProgressBar
+        android:id="@+id/progressDashboardLoading"
+        android:layout_width="44dp"
+        android:layout_height="44dp"
+        android:layout_gravity="center"
+        android:indeterminateTint="@color/tri_force_blue" />
+
+</FrameLayout>

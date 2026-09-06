@@ -100,7 +100,7 @@ abstract class BaseExerciseAnalyzer(
             }
         }
     }
-    protected fun isFullBodyVisible(
+    fun isFullBodyVisible(
         landmarks: List<NormalizedLandmark>
     ): Boolean {
 

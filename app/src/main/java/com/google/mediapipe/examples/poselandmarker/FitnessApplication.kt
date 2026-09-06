@@ -8,6 +8,7 @@ import android.os.Build
 import android.util.Log
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.mediapipe.examples.poselandmarker.config.FirebaseConfig
+import com.google.mediapipe.examples.poselandmarker.data.WorkoutSyncScheduler
 import com.google.mediapipe.examples.poselandmarker.model.ExerciseDetails
 
 class FitnessApplication : Application() {
@@ -23,6 +24,7 @@ class FitnessApplication : Application() {
             FirebaseConfig.initialize(this)
             initializeExerciseDatabase()
             createNotificationChannel()
+            WorkoutSyncScheduler.enqueue(this)
         } catch (e: Exception) {
             Log.e(TAG, "Error initializing application", e)
         }

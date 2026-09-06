@@ -58,6 +58,24 @@ data class Exercise(
     val unit: String = "lần"
 )
 
+// One completed camera workout. Stored in users/{uid}/workout_sessions.
+@IgnoreExtraProperties
+data class WorkoutSession(
+    val id: String = "",
+    val exerciseId: String = "",
+    val exerciseName: String = "",
+    val dayIndex: Int = 0,
+    val targetCount: Int = 0,
+    val actualCount: Int = 0,
+    val unit: String = "lần",
+    val durationSeconds: Int = 0,
+    val formScore: Int = 0,
+    val formIssues: List<String> = emptyList(),
+    val difficulty: String = "",
+    val completedAutomatically: Boolean = false,
+    val completedAt: Long = 0L
+)
+
 // User Profile model stored in 'users' collection
 @IgnoreExtraProperties
 data class UserProfile(

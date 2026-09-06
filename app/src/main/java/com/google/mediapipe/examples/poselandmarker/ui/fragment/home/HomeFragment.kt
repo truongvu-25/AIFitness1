@@ -237,11 +237,11 @@ class HomeFragment : Fragment() {
             }
 
 
-        binding.btnQuickProfile
+        binding.btnQuickProgress
             .setOnClickListener {
 
                 navigateSafely(
-                    R.id.profile_fragment
+                    R.id.action_home_to_progress
                 )
             }
     }

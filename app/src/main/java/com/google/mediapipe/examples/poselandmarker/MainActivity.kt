@@ -125,6 +125,8 @@ class MainActivity : AppCompatActivity() {
                         // ---------------------------------------------
 
                     R.id.camera_fragment,
+                    R.id.workout_summary_fragment,
+                    R.id.progress_fragment,
                     R.id.permissions_fragment,
                     R.id.gallery_fragment,
 

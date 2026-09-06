@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="progress_latest_result">Gần nhất: %1$s</string>
     <string name="app_name">Tri Force</string>
     <string name="media_pipe">Tri Force</string>
 

@@ -17,17 +17,18 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
+    id 'org.jetbrains.kotlin.kapt'
     id 'de.undercouch.download'
     id 'com.google.gms.google-services'
 }
 
 android {
     namespace 'com.google.mediapipe.examples.poselandmarker'
-    compileSdk 34
+    compileSdk 36
 
     defaultConfig {
         applicationId "com.google.mediapipe.examples.poselandmarker"
-        minSdk 24
+        minSdk 26
         targetSdk 34
         versionCode 1
         versionName "1.0"
@@ -94,6 +95,16 @@ dependencies {
     implementation platform('com.google.firebase:firebase-bom:32.8.0')
     implementation 'com.google.firebase:firebase-auth-ktx'
     implementation 'com.google.firebase:firebase-firestore-ktx'
+
+    // Health Connect
+    implementation 'androidx.health.connect:connect-client:1.1.0'
+
+    // Offline-first workout storage and reliable background sync
+    implementation 'androidx.room:room-runtime:2.6.1'
+    implementation 'androidx.room:room-ktx:2.6.1'
+    kapt 'androidx.room:room-compiler:2.6.1'
+    implementation 'androidx.work:work-runtime-ktx:2.9.1'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.8.1'
 
     // Unit testing
     testImplementation 'junit:junit:4.13.2'

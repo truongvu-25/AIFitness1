@@ -1105,10 +1105,10 @@
                 </com.google.android.material.card.MaterialCardView>
 
 
-                <!-- Profile -->
+                <!-- Progress -->
 
                 <com.google.android.material.card.MaterialCardView
-                    android:id="@+id/btnQuickProfile"
+                    android:id="@+id/btnQuickProgress"
 
                     android:layout_width="0dp"
                     android:layout_height="68dp"
@@ -1145,7 +1145,7 @@
                             android:layout_width="21dp"
                             android:layout_height="21dp"
 
-                            android:src="@drawable/ic_nav_profile"
+                            android:src="@drawable/ic_progress_chart"
 
                             app:tint="@color/tri_force_blue"
 
@@ -1158,7 +1158,7 @@
 
                             android:layout_marginTop="@dimen/space_4"
 
-                            android:text="Hồ sơ"
+                            android:text="Tiến độ"
 
                             android:textColor="@color/tri_force_text_primary"
 

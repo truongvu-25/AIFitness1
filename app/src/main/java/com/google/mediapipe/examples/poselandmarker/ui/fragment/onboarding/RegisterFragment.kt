@@ -10,6 +10,7 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.google.firebase.auth.FirebaseAuth
 import com.google.mediapipe.examples.poselandmarker.R
+import com.google.mediapipe.examples.poselandmarker.data.WorkoutSyncScheduler
 import com.google.mediapipe.examples.poselandmarker.databinding.FragmentRegisterBinding
 
 class RegisterFragment : Fragment() {
@@ -109,6 +110,7 @@ class RegisterFragment : Fragment() {
             .addOnCompleteListener(requireActivity()) { task ->
                 setLoading(false)
                 if (task.isSuccessful) {
+                    WorkoutSyncScheduler.enqueue(requireContext())
                     Toast.makeText(context, "Đăng ký tài khoản thành công!", Toast.LENGTH_SHORT).show()
                     // Redirect to collect profile stats
                     findNavController().navigate(R.id.action_register_to_user_info)

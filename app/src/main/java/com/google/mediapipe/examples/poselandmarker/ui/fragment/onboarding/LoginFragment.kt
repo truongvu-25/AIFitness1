@@ -11,6 +11,7 @@ import androidx.navigation.fragment.findNavController
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.mediapipe.examples.poselandmarker.R
+import com.google.mediapipe.examples.poselandmarker.data.WorkoutSyncScheduler
 import com.google.mediapipe.examples.poselandmarker.model.UserProfile
 import com.google.mediapipe.examples.poselandmarker.databinding.FragmentLoginBinding
 
@@ -109,6 +110,7 @@ class LoginFragment : Fragment() {
                 if (task.isSuccessful) {
                     val user = auth.currentUser
                     if (user != null) {
+                        WorkoutSyncScheduler.enqueue(requireContext())
                         checkUserProfileAndNavigate(user.uid)
                     } else {
                         setLoading(false)
