@@ -907,13 +907,15 @@
                     <ImageView
                         android:layout_width="20dp"
                         android:layout_height="20dp"
-                        android:contentDescription="@string/action_details"
+                        android:contentDescription="@null"
                         android:src="@drawable/ic_chevron_right"
                         app:tint="@color/tri_force_steel" />
 
                 </LinearLayout>
 
             </com.google.android.material.card.MaterialCardView>
+
+            <!-- =================================================
                  SAVED PLANS
                  ================================================= -->
 

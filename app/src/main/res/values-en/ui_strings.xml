@@ -344,4 +344,5 @@
     <string name="notification_steps_channel_description">Tracks steps and estimated calorie burn</string>
     <string name="notification_steps_title">Tri Force is counting your steps</string>
     <string name="notification_steps_text">Walked: %1$d steps (~%2$s kcal)</string>
+    <string name="action_details">Details</string>
 </resources>

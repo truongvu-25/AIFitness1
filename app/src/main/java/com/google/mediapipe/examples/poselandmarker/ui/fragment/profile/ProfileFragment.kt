@@ -318,6 +318,7 @@ class ProfileFragment : Fragment() {
         displayStepData(steps, calo)
     }
 
+    private fun displayStepData(steps: Int, calories: Float) {
         localSteps = steps
         localCalories = calories
         renderStepData()

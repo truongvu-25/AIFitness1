@@ -1,19 +1,13 @@
 package com.google.mediapipe.examples.poselandmarker.receiver
 
-<<<<<<< HEAD
-=======
 import android.Manifest
->>>>>>> huy2
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-<<<<<<< HEAD
-=======
 import android.content.pm.PackageManager
 import android.os.Build
->>>>>>> huy2
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import com.google.firebase.auth.FirebaseAuth

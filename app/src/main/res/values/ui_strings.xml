@@ -360,4 +360,5 @@
     <string name="notification_steps_channel_description">Theo dõi số bước chân và lượng calo ước tính</string>
     <string name="notification_steps_title">Tri Force đang đếm bước</string>
     <string name="notification_steps_text">Đã đi: %1$d bước (~%2$s kcal)</string>
+    <string name="action_details">Chi tiết</string>
 </resources>

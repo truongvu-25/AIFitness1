@@ -630,8 +630,6 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
         _fragmentCameraBinding?.btnFinishWorkout?.isEnabled = true
         Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
     }
-        }
-    }
 
     private fun setUpCamera() {
         if (_fragmentCameraBinding == null || !isAdded) return
