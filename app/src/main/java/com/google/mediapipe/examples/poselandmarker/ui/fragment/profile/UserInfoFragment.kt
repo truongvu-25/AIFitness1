@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.button.MaterialButton
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
 import com.google.mediapipe.examples.poselandmarker.R
 import com.google.mediapipe.examples.poselandmarker.databinding.FragmentUserInfoBinding
 import com.google.mediapipe.examples.poselandmarker.databinding.LayoutHeightWheelPickerBinding
@@ -40,7 +41,7 @@ class UserInfoFragment : Fragment() {
 
     private var isEditMode = false
     private var existingProfile: UserProfile? = null
-    private var editingQuestionIndex: Int? = null
+    private val previousAnswers = mutableMapOf<String, String>()
 
     private lateinit var controller: ChatFlowController
     private lateinit var chatAdapter: ChatAdapter
@@ -88,12 +89,14 @@ class UserInfoFragment : Fragment() {
 
         binding.btnChatContinue.setOnClickListener { onContinueClicked() }
 
+        binding.tvQuestionProgress.visibility = View.VISIBLE
+        binding.progressQuestions.visibility = View.VISIBLE
+
         if (isEditMode) {
             binding.tvUserInfoTitle.setText(R.string.profile_edit_screen_title)
-            binding.tvQuestionProgress.visibility = View.GONE
-            binding.progressQuestions.visibility = View.GONE
-            loadExistingProfileThenPreload()
+            loadExistingProfileThenStartFlow()
         } else {
+            binding.tvUserInfoTitle.setText(R.string.profile_setup_title)
             askCurrentQuestion()
         }
     }
@@ -138,6 +141,7 @@ class UserInfoFragment : Fragment() {
         val existingValue = existingAnswer ?: pendingEditAnswer
             ?.takeIf { it.first == question.id }
             ?.second
+            ?: if (isEditMode) previousAnswers[question.id] else null
         pendingEditAnswer = null
 
         selectedSingleButton = null
@@ -313,6 +317,10 @@ class UserInfoFragment : Fragment() {
             question.answerType == AnswerType.MULTI_CHOICE -> selectedMultiOptions.isNotEmpty()
             else -> false
         }
+        val isLastQuestion = controller.currentIndex == controller.allQuestions().size - 1
+        binding.btnChatContinue.setText(
+            if (isLastQuestion && isEditMode) R.string.save_changes else R.string.continue_button
+        )
         binding.btnChatContinue.isEnabled = hasAnswer
         binding.btnChatContinue.alpha = if (hasAnswer) 1.0f else 0.4f
     }
@@ -320,17 +328,7 @@ class UserInfoFragment : Fragment() {
     // ---------- Xử lý bấm TIẾP TỤC ----------
 
     private fun onContinueClicked() {
-        val editIndex = editingQuestionIndex
-        if (isEditMode && editIndex == null) {
-            finishAndSave()
-            return
-        }
-
-        val question = if (editIndex != null) {
-            controller.allQuestions().getOrNull(editIndex)
-        } else {
-            controller.currentQuestion()
-        } ?: return
+        val question = controller.currentQuestion() ?: return
 
         val rawValue: String
         val displayValue: String
@@ -387,13 +385,6 @@ class UserInfoFragment : Fragment() {
             else -> return
         }
 
-        if (isEditMode && editIndex != null) {
-            controller.updateAnswer(editIndex, rawValue)
-            editingQuestionIndex = null
-            renderFullTranscript()
-            return
-        }
-
         val questionIndex = controller.currentIndex
         controller.submitAnswer(rawValue)
         chatAdapter.addItem(ChatItem.UserAnswer(displayValue, questionIndex))
@@ -403,16 +394,6 @@ class UserInfoFragment : Fragment() {
     }
 
     private fun onEditRequested(questionIndex: Int) {
-        if (isEditMode) {
-            val question = controller.allQuestions().getOrNull(questionIndex) ?: return
-            editingQuestionIndex = questionIndex
-            binding.panelInput.visibility = View.VISIBLE
-            binding.btnChatContinue.visibility = View.VISIBLE
-            binding.btnChatContinue.setText(R.string.update_item)
-            renderInputFor(question, controller.getAnswer(question.id))
-            return
-        }
-
         if (questionIndex >= questionStartPos.size) return
         val question = controller.allQuestions().getOrNull(questionIndex) ?: return
         pendingEditAnswer = question.id to controller.getAnswer(question.id).orEmpty()
@@ -428,59 +409,43 @@ class UserInfoFragment : Fragment() {
 
     // ---------- Chế độ Chỉnh sửa hồ sơ ----------
 
-    private fun loadExistingProfileThenPreload() {
-        val uid = auth.currentUser?.uid ?: return
+    private fun loadExistingProfileThenStartFlow() {
+        val uid = auth.currentUser?.uid
+        if (uid.isNullOrEmpty()) {
+            askCurrentQuestion()
+            return
+        }
         setLoading(true)
         db.collection("users").document(uid).get()
             .addOnSuccessListener { document ->
                 setLoading(false)
+                if (_binding == null) return@addOnSuccessListener
                 if (document.exists()) {
                     val profile = document.toObject(UserProfile::class.java)
                     if (profile != null) {
                         existingProfile = profile
-                        val existing = mapOf(
-                            "name" to profile.fullName,
-                            "age" to profile.age.toString(),
-                            "height" to profile.height.toString(),
-                            "weight" to profile.weight.toString(),
-                            "fitness_level" to profile.fitnessLevel,
-                            "goals" to profile.goals.joinToString(", "),
-                            "pullups" to profile.pullupsRange,
-                            "pushups" to profile.pushupsRange,
-                            "squats" to profile.squatsRange
-                        )
-                        controller.preload(existing)
-                        renderFullTranscript()
+                        previousAnswers.clear()
+                        previousAnswers["name"] = profile.fullName
+                        previousAnswers["age"] = if (profile.age > 0) profile.age.toString() else ""
+                        previousAnswers["height"] = if (profile.height > 0) profile.height.toInt().toString() else ""
+                        previousAnswers["weight"] = if (profile.weight > 0) {
+                            if (profile.weight % 1.0 == 0.0) profile.weight.toInt().toString() else profile.weight.toString()
+                        } else ""
+                        previousAnswers["fitness_level"] = profile.fitnessLevel
+                        previousAnswers["goals"] = profile.goals.joinToString(", ")
+                        previousAnswers["pullups"] = profile.pullupsRange
+                        previousAnswers["pushups"] = profile.pushupsRange
+                        previousAnswers["squats"] = profile.squatsRange
                     }
                 }
+                askCurrentQuestion()
             }
             .addOnFailureListener { e ->
                 setLoading(false)
-                Toast.makeText(
-                    context,
-                    getString(R.string.profile_save_error, e.localizedMessage.orEmpty()),
-                    Toast.LENGTH_SHORT
-                ).show()
+                if (_binding != null) {
+                    askCurrentQuestion()
+                }
             }
-    }
-
-    private fun renderFullTranscript() {
-        chatAdapter.clear()
-        questionStartPos.clear()
-        controller.allQuestions().forEachIndexed { index, question ->
-            questionStartPos.add(chatAdapter.itemCount)
-            chatAdapter.addItem(ChatItem.BotMessage(question.botText))
-            val raw = controller.getAnswer(question.id).orEmpty()
-            val display = question.displayValue(raw)
-            chatAdapter.addItem(ChatItem.UserAnswer(display, index))
-        }
-        binding.tilDynamicInput.visibility = View.GONE
-        binding.containerChoices.visibility = View.GONE
-        binding.containerHeightWheel.visibility = View.GONE
-        binding.panelInput.visibility = View.VISIBLE
-        binding.btnChatContinue.setText(R.string.save_changes)
-        binding.btnChatContinue.isEnabled = true
-        binding.btnChatContinue.alpha = 1.0f
     }
     // ---------- Lưu dữ liệu ----------
 
@@ -597,7 +562,7 @@ class UserInfoFragment : Fragment() {
             updates["lastBmiUpdatedTime"] = System.currentTimeMillis()
         }
 
-        db.collection("users").document(uid).update(updates)
+        db.collection("users").document(uid).set(updates, SetOptions.merge())
             .addOnSuccessListener {
                 setLoading(false)
                 Toast.makeText(context, R.string.profile_update_success, Toast.LENGTH_SHORT).show()
