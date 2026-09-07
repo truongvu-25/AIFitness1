@@ -475,64 +475,148 @@ class JumpingJackAnalyzer(id: String, name: String, target: Int, timed: Boolean,
  */
 class SitupAnalyzer(id: String, name: String, target: Int, timed: Boolean, u: String) :
     BaseExerciseAnalyzer(id, name, target, timed, u) {
-    
+
     private var isUp = false
 
     override fun isReadyState(landmarks: List<NormalizedLandmark>): Boolean {
         val orientation = detectBodyOrientation(landmarks)
+
         if (orientation == BodyOrientation.FRONT) return false
-        
-        val (s, h, k) = if (orientation == BodyOrientation.LEFT) {
-            Triple(landmarks[11], landmarks[23], landmarks[25])
-        } else {
-            Triple(landmarks[12], landmarks[24], landmarks[26])
-        }
-        
-        val angle = calculateAngle(s, h, k)
-        return 150 > angle && angle > 90
+
+        val (shoulder, hip, knee, heel) =
+            if (orientation == BodyOrientation.LEFT) {
+                arrayOf(
+                    landmarks[11], // shoulder
+                    landmarks[23], // hip
+                    landmarks[25], // knee
+                    landmarks[29]  // heel
+                )
+            } else {
+                arrayOf(
+                    landmarks[12],
+                    landmarks[24],
+                    landmarks[26],
+                    landmarks[30]
+                )
+            }
+
+        // Góc tại đầu gối: hip - knee - heel
+        val kneeAngle = calculateAngle(
+            hip,
+            knee,
+            heel
+        )
+
+        // Góc thân: shoulder - hip - heel
+        val bodyAngle = calculateAngle(
+            shoulder,
+            hip,
+            heel
+        )
+
+        val kneeBent = kneeAngle <= 120
+        val lyingStraight = bodyAngle >= 165
+
+        return kneeBent && lyingStraight
     }
 
     override fun analyze(landmarks: List<NormalizedLandmark>): AnalysisResult {
         if (!isFullBodyVisible(landmarks)) {
-            return AnalysisResult(currentProgressCount, "Hãy nằm lùi lại để camera quét được toàn thân", Color.parseColor("#FFCA28"), false)
+            return AnalysisResult(
+                currentProgressCount,
+                "Hãy nằm lùi lại để camera quét được toàn thân",
+                Color.parseColor("#FFCA28"),
+                false
+            )
         }
 
         val orientation = detectBodyOrientation(landmarks)
+
         if (orientation == BodyOrientation.FRONT) {
-            return AnalysisResult(currentProgressCount, "Hãy nằm ngang so với camera để đếm gập bụng", Color.parseColor("#FFCA28"), false)
+            return AnalysisResult(
+                currentProgressCount,
+                "Hãy nằm ngang so với camera để đếm gập bụng",
+                Color.parseColor("#FFCA28"),
+                false
+            )
         }
 
         if (!hasStarted) {
             if (isReadyState(landmarks)) {
                 hasStarted = true
             } else {
-                return AnalysisResult(currentProgressCount, "Hãy nằm phẳng để bắt đầu", Color.parseColor("#FFCA28"), false)
+                return AnalysisResult(
+                    currentProgressCount,
+                    "Hãy co gối và nằm thẳng để bắt đầu",
+                    Color.parseColor("#FFCA28"),
+                    false
+                )
             }
         }
 
-        // Points based on orientation
-        val (shoulder, hip, knee) = if (orientation == BodyOrientation.LEFT) {
-            Triple(landmarks[11], landmarks[23], landmarks[25])
-        } else {
-            Triple(landmarks[12], landmarks[24], landmarks[26])
-        }
-        
-        val angle = calculateAngle(shoulder, hip, knee)
-        
-        if (angle < 105) {
+        val (shoulder, hip, knee, heel) =
+            if (orientation == BodyOrientation.LEFT) {
+                arrayOf(
+                    landmarks[11],
+                    landmarks[23],
+                    landmarks[25],
+                    landmarks[29]
+                )
+            } else {
+                arrayOf(
+                    landmarks[12],
+                    landmarks[24],
+                    landmarks[26],
+                    landmarks[30]
+                )
+            }
+
+        val kneeAngle = calculateAngle(
+            hip,
+            knee,
+            heel
+        )
+
+        val bodyAngle = calculateAngle(
+            shoulder,
+            hip,
+            heel
+        )
+
+        val kneeBent = kneeAngle <= 120
+
+        // Người đã gập lên
+        if (!isUp && bodyAngle < 130 && kneeBent) {
             isUp = true
             feedback = "Tốt! Nằm xuống từ từ."
-        } else if (isUp && angle > 120) {
-            currentProgressCount++
-            isUp = false
-            feedback = "Gập bụng mạnh lên!"
-        } else if (!isUp) {
-            feedback = "Kéo người ngồi dậy cao hơn."
         }
 
-        feedbackColor = getFeedbackColor(isUp || angle > 120)
+        // Đã gập lên rồi, sau đó nằm thẳng lại
+        else if (isUp && bodyAngle >= 165 && kneeBent) {
+            currentProgressCount++
+            isUp = false
+            feedback = "Tốt! Tiếp tục."
+        }
 
-        return AnalysisResult(currentProgressCount, feedback, feedbackColor, currentProgressCount >= targetCount)
+        // Gối bị duỗi trong quá trình thực hiện
+        else if (!kneeBent) {
+            feedback = "Hãy giữ đầu gối co lại."
+        }
+
+        // Chưa gập đủ cao
+        else if (!isUp) {
+            feedback = "Gập người lên cao hơn."
+        }
+
+
+        feedbackColor = getFeedbackColor(kneeBent)
+
+        return AnalysisResult(
+            currentProgressCount,
+            feedback,
+            feedbackColor,
+            currentProgressCount >= targetCount
+        )
     }
 }
 
