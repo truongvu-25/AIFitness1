@@ -39,7 +39,8 @@ class UserInfoFragment : Fragment() {
     private lateinit var db: FirebaseFirestore
 
     private var isEditMode = false
-    private var originalCreatedTime = 0L
+    private var existingProfile: UserProfile? = null
+    private var editingQuestionIndex: Int? = null
 
     private lateinit var controller: ChatFlowController
     private lateinit var chatAdapter: ChatAdapter
@@ -49,6 +50,7 @@ class UserInfoFragment : Fragment() {
     private var selectedSingleButton: MaterialButton? = null
     private val selectedMultiOptions = mutableSetOf<String>()
     private var pendingEditAnswer: Pair<String, String>? = null
+    private var dynamicInputWatcher: android.text.TextWatcher? = null
 
     private var heightWheelAdapter: HeightWheelAdapter? = null
     private val heightValues = (80..250).toList()
@@ -88,21 +90,12 @@ class UserInfoFragment : Fragment() {
 
         if (isEditMode) {
             binding.tvUserInfoTitle.setText(R.string.profile_edit_screen_title)
-            val uid = auth.currentUser?.uid
-            if (!uid.isNullOrEmpty()) {
-                db.collection("users").document(uid).get()
-                    .addOnSuccessListener { document ->
-                        if (document.exists()) {
-                            val profile = document.toObject(UserProfile::class.java)
-                            if (profile != null && profile.createdTime > 0L) {
-                                originalCreatedTime = profile.createdTime
-                            }
-                        }
-                    }
-            }
+            binding.tvQuestionProgress.visibility = View.GONE
+            binding.progressQuestions.visibility = View.GONE
+            loadExistingProfileThenPreload()
+        } else {
+            askCurrentQuestion()
         }
-
-        askCurrentQuestion()
     }
 
     // ---------- Luồng hỏi-đáp ----------
@@ -141,32 +134,37 @@ class UserInfoFragment : Fragment() {
         binding.rvChat.scrollToPosition(chatAdapter.itemCount - 1)
     }
 
-    private fun renderInputFor(question: ChatQuestion) {
-        val existingValue = pendingEditAnswer
+    private fun renderInputFor(question: ChatQuestion, existingAnswer: String? = null) {
+        val existingValue = existingAnswer ?: pendingEditAnswer
             ?.takeIf { it.first == question.id }
             ?.second
         pendingEditAnswer = null
+
         selectedSingleButton = null
         selectedMultiOptions.clear()
         binding.containerChoices.removeAllViews()
         binding.containerHeightWheel.visibility = View.GONE
         binding.containerHeightWheel.removeAllViews()
         heightWheelAdapter = null
+        dynamicInputWatcher?.let(binding.etDynamicInput::removeTextChangedListener)
+        dynamicInputWatcher = null
 
         if (question.id == "height") {
-            renderHeightWheel(existingValue?.toDoubleOrNull()?.toInt() ?: 170)
+            val currentHeight = existingValue
+                ?.toDoubleOrNull()
+                ?.toInt()
+                ?.coerceIn(heightValues.first(), heightValues.last())
+                ?: 170
+            renderHeightWheel(currentHeight)
             updateContinueButtonState(question)
             return
         }
-
-        updateContinueButtonState(question)
 
         when (question.answerType) {
             AnswerType.TEXT_INPUT, AnswerType.NUMBER_INPUT -> {
                 binding.tilDynamicInput.visibility = View.VISIBLE
                 binding.containerChoices.visibility = View.GONE
                 binding.tilDynamicInput.hint = question.inputHint
-                binding.etDynamicInput.setText(existingValue.orEmpty())
                 binding.etDynamicInput.inputType = when {
                     question.answerType == AnswerType.NUMBER_INPUT && question.allowDecimal ->
                         android.text.InputType.TYPE_CLASS_NUMBER or android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL
@@ -174,13 +172,16 @@ class UserInfoFragment : Fragment() {
                         android.text.InputType.TYPE_CLASS_NUMBER
                     else -> android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_FLAG_CAP_WORDS
                 }
-                binding.etDynamicInput.addTextChangedListener(object : android.text.TextWatcher {
+                dynamicInputWatcher = object : android.text.TextWatcher {
                     override fun afterTextChanged(s: android.text.Editable?) {
                         updateContinueButtonState(question)
                     }
                     override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
                     override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-                })
+                }
+                binding.etDynamicInput.addTextChangedListener(dynamicInputWatcher)
+                binding.etDynamicInput.setText(existingValue.orEmpty())
+                binding.etDynamicInput.setSelection(binding.etDynamicInput.text?.length ?: 0)
             }
             AnswerType.SINGLE_CHOICE -> {
                 binding.tilDynamicInput.visibility = View.GONE
@@ -189,8 +190,9 @@ class UserInfoFragment : Fragment() {
                     val btn = LayoutInflater.from(requireContext())
                         .inflate(R.layout.layout_chat_choice_button, binding.containerChoices, false) as MaterialButton
                     btn.text = optionText
-                    btn.tag = question.optionValues.getOrElse(index) { optionText }
-                    if (existingValue == btn.tag?.toString() || existingValue == optionText) {
+                    val optionVal = question.optionValues.getOrElse(index) { optionText }
+                    btn.tag = optionVal
+                    if (existingValue == optionVal || existingValue == optionText) {
                         applySelectedStyle(btn)
                         selectedSingleButton = btn
                     }
@@ -206,15 +208,17 @@ class UserInfoFragment : Fragment() {
             AnswerType.MULTI_CHOICE -> {
                 binding.tilDynamicInput.visibility = View.GONE
                 binding.containerChoices.visibility = View.VISIBLE
+                val selectedValues = existingValue.orEmpty()
+                    .split(",")
+                    .map { it.trim() }
+                    .filter { it.isNotEmpty() }
+                    .toSet()
                 question.options.forEachIndexed { index, optionText ->
-                    val optionValue = question.optionValues.getOrElse(index) { optionText }
                     val btn = LayoutInflater.from(requireContext())
                         .inflate(R.layout.layout_chat_choice_button, binding.containerChoices, false) as MaterialButton
+                    val optionValue = question.optionValues.getOrElse(index) { optionText }
                     btn.text = optionText
                     btn.tag = optionValue
-                    val selectedValues = existingValue.orEmpty()
-                        .split(",")
-                        .map { it.trim() }
                     if (optionValue in selectedValues || optionText in selectedValues) {
                         selectedMultiOptions.add(optionValue)
                         applySelectedStyle(btn)
@@ -233,12 +237,13 @@ class UserInfoFragment : Fragment() {
                 }
             }
         }
+
         updateContinueButtonState(question)
     }
 
     // ---------- Bánh xe chọn chiều cao ----------
 
-    private fun renderHeightWheel(defaultValue: Int) {
+    private fun renderHeightWheel(defaultValue: Int = 170) {
         binding.tilDynamicInput.visibility = View.GONE
         binding.containerChoices.visibility = View.GONE
         binding.containerHeightWheel.visibility = View.VISIBLE
@@ -315,11 +320,17 @@ class UserInfoFragment : Fragment() {
     // ---------- Xử lý bấm TIẾP TỤC ----------
 
     private fun onContinueClicked() {
-        val question = controller.currentQuestion()
-        if (question == null) {
-            if (isEditMode) finishAndSave()
+        val editIndex = editingQuestionIndex
+        if (isEditMode && editIndex == null) {
+            finishAndSave()
             return
         }
+
+        val question = if (editIndex != null) {
+            controller.allQuestions().getOrNull(editIndex)
+        } else {
+            controller.currentQuestion()
+        } ?: return
 
         val rawValue: String
         val displayValue: String
@@ -376,6 +387,13 @@ class UserInfoFragment : Fragment() {
             else -> return
         }
 
+        if (isEditMode && editIndex != null) {
+            controller.updateAnswer(editIndex, rawValue)
+            editingQuestionIndex = null
+            renderFullTranscript()
+            return
+        }
+
         val questionIndex = controller.currentIndex
         controller.submitAnswer(rawValue)
         chatAdapter.addItem(ChatItem.UserAnswer(displayValue, questionIndex))
@@ -385,6 +403,16 @@ class UserInfoFragment : Fragment() {
     }
 
     private fun onEditRequested(questionIndex: Int) {
+        if (isEditMode) {
+            val question = controller.allQuestions().getOrNull(questionIndex) ?: return
+            editingQuestionIndex = questionIndex
+            binding.panelInput.visibility = View.VISIBLE
+            binding.btnChatContinue.visibility = View.VISIBLE
+            binding.btnChatContinue.setText(R.string.update_item)
+            renderInputFor(question, controller.getAnswer(question.id))
+            return
+        }
+
         if (questionIndex >= questionStartPos.size) return
         val question = controller.allQuestions().getOrNull(questionIndex) ?: return
         pendingEditAnswer = question.id to controller.getAnswer(question.id).orEmpty()
@@ -394,9 +422,66 @@ class UserInfoFragment : Fragment() {
         controller.editAnswerAt(questionIndex)
         binding.panelInput.visibility = View.VISIBLE
         binding.btnChatContinue.visibility = View.VISIBLE
+        binding.btnChatContinue.setText(R.string.continue_button)
         askCurrentQuestion()
     }
 
+    // ---------- Chế độ Chỉnh sửa hồ sơ ----------
+
+    private fun loadExistingProfileThenPreload() {
+        val uid = auth.currentUser?.uid ?: return
+        setLoading(true)
+        db.collection("users").document(uid).get()
+            .addOnSuccessListener { document ->
+                setLoading(false)
+                if (document.exists()) {
+                    val profile = document.toObject(UserProfile::class.java)
+                    if (profile != null) {
+                        existingProfile = profile
+                        val existing = mapOf(
+                            "name" to profile.fullName,
+                            "age" to profile.age.toString(),
+                            "height" to profile.height.toString(),
+                            "weight" to profile.weight.toString(),
+                            "fitness_level" to profile.fitnessLevel,
+                            "goals" to profile.goals.joinToString(", "),
+                            "pullups" to profile.pullupsRange,
+                            "pushups" to profile.pushupsRange,
+                            "squats" to profile.squatsRange
+                        )
+                        controller.preload(existing)
+                        renderFullTranscript()
+                    }
+                }
+            }
+            .addOnFailureListener { e ->
+                setLoading(false)
+                Toast.makeText(
+                    context,
+                    getString(R.string.profile_save_error, e.localizedMessage.orEmpty()),
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+    }
+
+    private fun renderFullTranscript() {
+        chatAdapter.clear()
+        questionStartPos.clear()
+        controller.allQuestions().forEachIndexed { index, question ->
+            questionStartPos.add(chatAdapter.itemCount)
+            chatAdapter.addItem(ChatItem.BotMessage(question.botText))
+            val raw = controller.getAnswer(question.id).orEmpty()
+            val display = question.displayValue(raw)
+            chatAdapter.addItem(ChatItem.UserAnswer(display, index))
+        }
+        binding.tilDynamicInput.visibility = View.GONE
+        binding.containerChoices.visibility = View.GONE
+        binding.containerHeightWheel.visibility = View.GONE
+        binding.panelInput.visibility = View.VISIBLE
+        binding.btnChatContinue.setText(R.string.save_changes)
+        binding.btnChatContinue.isEnabled = true
+        binding.btnChatContinue.alpha = 1.0f
+    }
     // ---------- Lưu dữ liệu ----------
 
     private fun finishAndSave() {
@@ -430,12 +515,25 @@ class UserInfoFragment : Fragment() {
             else -> "THUA CAN"
         }
 
-        val createdTime = if (isEditMode && originalCreatedTime > 0L) originalCreatedTime else System.currentTimeMillis()
-
         val goalsList = answers["goals"]
             ?.split(", ")
             ?.filter { it.isNotBlank() }
             ?: emptyList()
+
+        if (isEditMode) {
+            updateExistingProfile(
+                uid = uid,
+                fullName = fullName,
+                age = age,
+                height = height,
+                weight = weight,
+                bmi = formattedBmi,
+                bmiType = bmiType,
+                goals = goalsList,
+                answers = answers
+            )
+            return
+        }
 
         val profile = UserProfile(
             uid = uid,
@@ -445,7 +543,7 @@ class UserInfoFragment : Fragment() {
             weight = weight,
             bmi = formattedBmi,
             bmiType = bmiType,
-            createdTime = createdTime,
+            createdTime = System.currentTimeMillis(),
             lastBmiUpdatedTime = System.currentTimeMillis(),
             fitnessLevel = answers["fitness_level"].orEmpty(),
             goals = goalsList,
@@ -456,16 +554,58 @@ class UserInfoFragment : Fragment() {
 
         db.collection("users").document(uid).set(profile)
             .addOnSuccessListener {
-                if (isEditMode) {
-                    setLoading(false)
-                    Toast.makeText(context, R.string.profile_update_success, Toast.LENGTH_SHORT).show()
-                    findNavController().popBackStack()
-                } else {
-                    generateWorkoutPlan(uid, profile)
-                }
+                generateWorkoutPlan(uid, profile)
             }
             .addOnFailureListener { e ->
                 setLoading(false)
+                binding.panelInput.visibility = View.VISIBLE
+                Toast.makeText(
+                    context,
+                    getString(R.string.profile_save_error, e.localizedMessage.orEmpty()),
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+    }
+
+    private fun updateExistingProfile(
+        uid: String,
+        fullName: String,
+        age: Int,
+        height: Double,
+        weight: Double,
+        bmi: Double,
+        bmiType: String,
+        goals: List<String>,
+        answers: Map<String, String>
+    ) {
+        val updates = mutableMapOf<String, Any>(
+            "fullName" to fullName,
+            "age" to age,
+            "height" to height,
+            "weight" to weight,
+            "bmi" to bmi,
+            "bmiType" to bmiType,
+            "fitnessLevel" to answers["fitness_level"].orEmpty(),
+            "goals" to goals,
+            "pullupsRange" to answers["pullups"].orEmpty(),
+            "pushupsRange" to answers["pushups"].orEmpty(),
+            "squatsRange" to answers["squats"].orEmpty()
+        )
+
+        val original = existingProfile
+        if (original == null || original.height != height || original.weight != weight) {
+            updates["lastBmiUpdatedTime"] = System.currentTimeMillis()
+        }
+
+        db.collection("users").document(uid).update(updates)
+            .addOnSuccessListener {
+                setLoading(false)
+                Toast.makeText(context, R.string.profile_update_success, Toast.LENGTH_SHORT).show()
+                findNavController().popBackStack()
+            }
+            .addOnFailureListener { e ->
+                setLoading(false)
+                binding.panelInput.visibility = View.VISIBLE
                 Toast.makeText(
                     context,
                     getString(R.string.profile_save_error, e.localizedMessage.orEmpty()),

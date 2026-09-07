@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<androidx.core.widget.NestedScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/tri_force_bg"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <ImageView
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:contentDescription="@null"
+            android:src="@drawable/tri_force_logo" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="Quyền riêng tư Health Connect"
+            android:textColor="@color/tri_force_text_primary"
+            android:textSize="26sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:lineSpacingExtra="3dp"
+            android:text="TRI FORCE chỉ xin đọc tổng số bước chân trong ngày để hiển thị tiến độ vận động và ghi các buổi calisthenics bạn chủ động hoàn thành vào Health Connect."
+            android:textColor="@color/tri_force_text_secondary"
+            android:textSize="15sp" />
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            app:cardBackgroundColor="@color/tri_force_white"
+            app:cardCornerRadius="@dimen/card_corner_radius"
+            app:cardElevation="0dp"
+            app:strokeColor="@color/tri_force_stroke"
+            app:strokeWidth="@dimen/stroke_thin">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:lineSpacingExtra="4dp"
+                android:padding="20dp"
+                android:text="• Không đọc nhịp tim, giấc ngủ hoặc dữ liệu y tế.\n\n• Không bán hoặc chia sẻ dữ liệu sức khỏe cho quảng cáo.\n\n• Dữ liệu chỉ phục vụ thống kê tập luyện mà bạn nhìn thấy trong ứng dụng.\n\n• Bạn có thể thu hồi quyền hoặc xóa dữ liệu do TRI FORCE ghi bất cứ lúc nào trong Health Connect."
+                android:textColor="@color/tri_force_text_primary"
+                android:textSize="14sp" />
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnCloseHealthRationale"
+            style="@style/TriForceButtonPrimary"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/button_height"
+            android:layout_marginTop="24dp"
+            android:text="ĐÃ HIỂU" />
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>

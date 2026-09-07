@@ -6,15 +6,15 @@
 
     <gradient
         android:angle="315"
-        android:startColor="@color/tri_force_navy_deep"
-        android:centerColor="@color/tri_force_surface_dark"
-        android:endColor="@color/tri_force_hero_blue_dark" />
+        android:startColor="@color/tri_force_white"
+        android:centerColor="@color/tri_force_white"
+        android:endColor="@color/tri_force_blue_soft" />
 
     <corners
         android:radius="@dimen/card_corner_radius" />
 
     <stroke
         android:width="@dimen/stroke_thin"
-        android:color="@color/white_12" />
+        android:color="@color/tri_force_stroke" />
 
 </shape>

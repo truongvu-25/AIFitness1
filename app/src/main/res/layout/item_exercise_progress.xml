@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="@dimen/space_12"
+    app:cardBackgroundColor="@color/tri_force_white"
+    app:cardCornerRadius="@dimen/card_corner_radius_small"
+    app:cardElevation="0dp"
+    app:strokeColor="@color/tri_force_stroke"
+    app:strokeWidth="@dimen/stroke_thin">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/space_16">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/tvExerciseProgressName"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:ellipsize="end"
+                android:includeFontPadding="false"
+                android:maxLines="1"
+                android:textColor="@color/tri_force_text_primary"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                tools:text="Hít Đất (Push-up)" />
+
+            <TextView
+                android:id="@+id/tvExerciseSessionCount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_library_chip"
+                android:includeFontPadding="false"
+                android:paddingStart="8dp"
+                android:paddingTop="4dp"
+                android:paddingEnd="8dp"
+                android:paddingBottom="4dp"
+                android:textColor="@color/tri_force_blue"
+                android:textSize="9sp"
+                android:textStyle="bold"
+                tools:text="4 buổi" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_12"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/tvExerciseLatestResult"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:includeFontPadding="false"
+                android:textColor="@color/tri_force_blue"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                tools:text="Gần nhất: 48/48 lần" />
+
+            <TextView
+                android:id="@+id/tvExerciseFormScore"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:includeFontPadding="false"
+                android:textColor="@color/tri_force_text_secondary"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                tools:text="Form 86" />
+        </LinearLayout>
+
+        <ProgressBar
+            android:id="@+id/progressExerciseTarget"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="5dp"
+            android:layout_marginTop="@dimen/space_8"
+            android:indeterminate="false"
+            android:max="100"
+            android:progress="0"
+            android:progressBackgroundTint="@color/tri_force_surface_soft"
+            android:progressTint="@color/tri_force_blue" />
+
+        <TextView
+            android:id="@+id/tvExerciseTrend"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/space_8"
+            android:includeFontPadding="false"
+            android:textColor="@color/tri_force_text_tertiary"
+            android:textSize="11sp"
+            tools:text="Tăng 3 lần so với buổi trước • Tốt nhất 52 lần" />
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>

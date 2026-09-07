@@ -216,6 +216,14 @@ class HomeFragment : Fragment() {
                     R.id.workout_calendar_fragment
                 )
             }
+
+        binding.cardHomeProgress
+            .setOnClickListener {
+
+                navigateSafely(
+                    R.id.action_home_to_progress
+                )
+            }
     }
 
 

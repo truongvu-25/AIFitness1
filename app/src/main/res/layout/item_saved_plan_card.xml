@@ -14,12 +14,12 @@
 
     app:cardBackgroundColor="@color/tri_force_white"
 
-    app:cardCornerRadius="@dimen/card_corner_radius"
+    app:cardCornerRadius="@dimen/card_corner_radius_small"
 
     app:cardElevation="0dp"
 
     app:strokeColor="@color/tri_force_stroke"
-    app:strokeWidth="1dp">
+    app:strokeWidth="@dimen/stroke_thin">
 
 
     <LinearLayout

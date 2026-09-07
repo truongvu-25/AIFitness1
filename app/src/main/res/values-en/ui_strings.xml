@@ -151,6 +151,7 @@
     <string name="library_upper_count">Upper &amp; Core (4)</string>
     <string name="library_lower_count">Lower &amp; Cardio (3)</string>
     <string name="library_custom_badge">★ Custom</string>
+    <string name="library_exercise_count_format">%1$d exercises</string>
     <string name="video_tutorial">Tutorial video</string>
     <string name="video_tutorial_for">Tutorial: %1$s</string>
     <string name="video_replay">REPLAY</string>
@@ -279,6 +280,7 @@
     <string name="question_progress">Question %1$d/%2$d</string>
     <string name="continue_button">CONTINUE</string>
     <string name="save_changes">SAVE CHANGES</string>
+    <string name="update_item">UPDATE ITEM</string>
     <string name="input_required">Enter the requested information</string>
     <string name="number_invalid">Enter a valid number</string>
     <string name="choice_required">Choose one answer</string>

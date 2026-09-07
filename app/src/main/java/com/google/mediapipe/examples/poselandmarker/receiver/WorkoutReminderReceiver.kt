@@ -1,11 +1,21 @@
 package com.google.mediapipe.examples.poselandmarker.receiver
 
+<<<<<<< HEAD
+=======
+import android.Manifest
+>>>>>>> huy2
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+<<<<<<< HEAD
+=======
+import android.content.pm.PackageManager
+import android.os.Build
+>>>>>>> huy2
 import androidx.core.app.NotificationCompat
+import androidx.core.content.ContextCompat
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.mediapipe.examples.poselandmarker.FitnessApplication
@@ -18,6 +28,11 @@ import com.google.mediapipe.examples.poselandmarker.model.WorkoutDay
 class WorkoutReminderReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
+        if (!NotificationHelper.isReminderEnabled(context)) {
+            NotificationHelper.cancelReminder(context)
+            return
+        }
+
         // Reschedule alarm for the next day
         NotificationHelper.scheduleDailyReminder(context)
 
@@ -42,9 +57,10 @@ class WorkoutReminderReceiver : BroadcastReceiver() {
                                     .addOnSuccessListener { workoutDoc ->
                                         if (workoutDoc.exists()) {
                                             val workoutDay = workoutDoc.toObject(WorkoutDay::class.java)
-                                            val hasPending = workoutDay?.exercises?.any { it.status == 0 } ?: false
-                                            if (hasPending) {
-                                                showNotification(context, dayIndex)
+                                            val pendingCount = workoutDay?.exercises
+                                                ?.count { it.status == 0 } ?: 0
+                                            if (pendingCount > 0) {
+                                                showNotification(context, dayIndex, pendingCount)
                                             }
                                         }
                                         pendingResult.finish()
@@ -70,7 +86,16 @@ class WorkoutReminderReceiver : BroadcastReceiver() {
         }
     }
 
-    private fun showNotification(context: Context, dayIndex: Int) {
+    private fun showNotification(context: Context, dayIndex: Int, pendingCount: Int) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.POST_NOTIFICATIONS
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            return
+        }
+
         val notificationManager =
             context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
@@ -82,7 +107,7 @@ class WorkoutReminderReceiver : BroadcastReceiver() {
         val pendingIntent = PendingIntent.getActivity(context, 0, mainIntent, flags)
 
         val notification = NotificationCompat.Builder(context, FitnessApplication.Companion.CHANNEL_ID)
-            .setSmallIcon(android.R.drawable.ic_dialog_info)
+            .setSmallIcon(R.drawable.ic_notification_outline)
             .setContentTitle(context.getString(R.string.notification_workout_title, dayIndex))
             .setContentText(context.getString(R.string.notification_workout_text))
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)

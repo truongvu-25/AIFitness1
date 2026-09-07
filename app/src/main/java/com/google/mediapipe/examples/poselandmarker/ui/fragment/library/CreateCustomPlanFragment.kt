@@ -3,7 +3,6 @@ package com.google.mediapipe.examples.poselandmarker.ui.fragment.library
 import android.app.AlertDialog
 import android.content.Context
 import android.content.res.ColorStateList
-import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -14,6 +13,7 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.button.MaterialButton
 import com.google.android.material.chip.Chip
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -137,27 +137,27 @@ class CreateCustomPlanFragment : Fragment() {
     }
 
     private fun updatePickerFilter() {
-        val activeColor = ContextCompat.getColor(requireContext(), R.color.mp_color_primary)
-        val transparentColor = Color.TRANSPARENT
-        val white = ContextCompat.getColor(requireContext(), R.color.tri_force_white)
-        val inactiveText = ContextCompat.getColor(requireContext(), R.color.tri_force_text_secondary)
-
-        binding.btnPickerNoEquip.backgroundTintList =
-            ColorStateList.valueOf(if (currentCategory == null) activeColor else transparentColor)
-        binding.btnPickerNoEquip.setTextColor(if (currentCategory == null) white else inactiveText)
-
-        binding.btnPickerHome.backgroundTintList =
-            ColorStateList.valueOf(if (currentCategory == ExerciseCategory.UPPER_CORE) activeColor else transparentColor)
-        binding.btnPickerHome.setTextColor(if (currentCategory == ExerciseCategory.UPPER_CORE) white else inactiveText)
-
-        binding.btnPickerGym.backgroundTintList =
-            ColorStateList.valueOf(if (currentCategory == ExerciseCategory.LOWER_CARDIO) activeColor else transparentColor)
-        binding.btnPickerGym.setTextColor(if (currentCategory == ExerciseCategory.LOWER_CARDIO) white else inactiveText)
+        applyPickerStyle(binding.btnPickerNoEquip, currentCategory == null)
+        applyPickerStyle(binding.btnPickerHome, currentCategory == ExerciseCategory.UPPER_CORE)
+        applyPickerStyle(binding.btnPickerGym, currentCategory == ExerciseCategory.LOWER_CARDIO)
 
         val filtered = currentCategory?.let { category ->
             allExercises.filter { it.category == category }
         } ?: allExercises
         horizontalPickerAdapter.submitList(filtered)
+    }
+
+    private fun applyPickerStyle(button: MaterialButton, active: Boolean) {
+        val context = requireContext()
+        val background = if (active) R.color.tri_force_blue else R.color.tri_force_white
+        val text = if (active) R.color.tri_force_white else R.color.tri_force_text_secondary
+        val stroke = if (active) R.color.tri_force_blue else R.color.tri_force_stroke
+
+        button.backgroundTintList =
+            ColorStateList.valueOf(ContextCompat.getColor(context, background))
+        button.setTextColor(ContextCompat.getColor(context, text))
+        button.strokeColor =
+            ColorStateList.valueOf(ContextCompat.getColor(context, stroke))
     }
 
     private fun showAssignDayDialog(exercise: LibraryExercise) {
@@ -364,8 +364,11 @@ class CreateCustomPlanFragment : Fragment() {
 
                 if (count == 0) {
                     binding.tvDayStatusBadge.setText(R.string.custom_plan_rest)
-                    binding.tvDayStatusBadge.setTextColor(Color.parseColor("#94A3B8"))
-                    binding.tvDayStatusBadge.setBackgroundColor(Color.parseColor("#2664748B"))
+                    binding.tvDayStatusBadge.setTextColor(
+                        ContextCompat.getColor(binding.root.context, R.color.tri_force_text_secondary)
+                    )
+                    binding.tvDayStatusBadge.backgroundTintList =
+                        ContextCompat.getColorStateList(binding.root.context, R.color.tri_force_surface_soft)
                     binding.tvExerciseCount.text = binding.root.resources.getQuantityString(
                         R.plurals.custom_plan_exercise_count,
                         0,
@@ -375,8 +378,11 @@ class CreateCustomPlanFragment : Fragment() {
                     binding.chipGroupExercises.removeAllViews()
                 } else {
                     binding.tvDayStatusBadge.setText(R.string.custom_plan_scheduled)
-                    binding.tvDayStatusBadge.setTextColor(ContextCompat.getColor(binding.root.context, R.color.mp_color_primary_variant))
-                    binding.tvDayStatusBadge.setBackgroundColor(Color.parseColor("#260066FF"))
+                    binding.tvDayStatusBadge.setTextColor(
+                        ContextCompat.getColor(binding.root.context, R.color.tri_force_blue)
+                    )
+                    binding.tvDayStatusBadge.backgroundTintList =
+                        ContextCompat.getColorStateList(binding.root.context, R.color.tri_force_blue_soft)
                     binding.tvExerciseCount.text = binding.root.resources.getQuantityString(
                         R.plurals.custom_plan_exercise_count,
                         count,
@@ -393,8 +399,10 @@ class CreateCustomPlanFragment : Fragment() {
                                 ex.target
                             )
                             isCloseIconVisible = true
-                            setChipBackgroundColorResource(R.color.tri_force_navy)
-                            setTextColor(Color.WHITE)
+                            setChipBackgroundColorResource(R.color.tri_force_blue_soft)
+                            setTextColor(
+                                ContextCompat.getColor(context, R.color.tri_force_text_primary)
+                            )
                             setCloseIconTintResource(R.color.tri_force_error)
                             setOnCloseIconClickListener {
                                 onDeleteExercise(dayIndex, exIndex)

@@ -118,7 +118,17 @@
         <action
             android:id="@+id/action_home_to_camera"
             app:destination="@id/camera_fragment" />
+        <action
+            android:id="@+id/action_home_to_progress"
+            app:destination="@id/progress_fragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left" />
     </fragment>
+
+    <fragment
+        android:id="@+id/progress_fragment"
+        android:name="com.google.mediapipe.examples.poselandmarker.ui.fragment.home.ProgressFragment"
+        android:label="ProgressFragment" />
 
     <fragment
         android:id="@+id/workout_calendar_fragment"
@@ -202,7 +212,29 @@
             app:argType="integer" />
         <action
             android:id="@+id/action_camera_to_permissions"
-            app:destination="@id/permissions_fragment" />
+            app:destination="@id/permissions_fragment"
+            app:popUpTo="@id/camera_fragment"
+            app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_camera_to_workout_summary"
+            app:destination="@id/workout_summary_fragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popUpTo="@id/camera_fragment"
+            app:popUpToInclusive="true" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/workout_summary_fragment"
+        android:name="com.google.mediapipe.examples.poselandmarker.ui.fragment.camera.WorkoutSummaryFragment"
+        android:label="WorkoutSummaryFragment">
+        <action
+            android:id="@+id/action_workout_summary_to_camera"
+            app:destination="@id/camera_fragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popUpTo="@id/workout_summary_fragment"
+            app:popUpToInclusive="true" />
     </fragment>
 
     <fragment

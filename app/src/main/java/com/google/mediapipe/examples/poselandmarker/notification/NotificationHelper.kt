@@ -9,9 +9,20 @@ import java.util.Calendar
 
 object NotificationHelper {
     private const val ALARM_REQ_CODE = 1001
+    private const val PREFERENCES_NAME = "tri_force_reminder"
+    private const val KEY_ENABLED = "enabled"
+    private const val KEY_HOUR = "hour"
+    private const val KEY_MINUTE = "minute"
+    private const val DEFAULT_HOUR = 8
+    private const val DEFAULT_MINUTE = 0
 
     fun scheduleDailyReminder(context: Context) {
         try {
+            if (!isReminderEnabled(context)) {
+                cancelReminder(context)
+                return
+            }
+
             val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as? AlarmManager ?: return
             val intent = Intent(context, WorkoutReminderReceiver::class.java)
 
@@ -20,8 +31,8 @@ object NotificationHelper {
 
             val calendar = Calendar.getInstance().apply {
                 timeInMillis = System.currentTimeMillis()
-                set(Calendar.HOUR_OF_DAY, 8) // 8:00 AM daily reminder
-                set(Calendar.MINUTE, 0)
+                set(Calendar.HOUR_OF_DAY, getReminderHour(context))
+                set(Calendar.MINUTE, getReminderMinute(context))
                 set(Calendar.SECOND, 0)
                 set(Calendar.MILLISECOND, 0)
                 if (timeInMillis <= System.currentTimeMillis()) {
@@ -39,6 +50,32 @@ object NotificationHelper {
         }
     }
 
+    fun isReminderEnabled(context: Context): Boolean {
+        return preferences(context).getBoolean(KEY_ENABLED, true)
+    }
+
+    fun setReminderEnabled(context: Context, enabled: Boolean) {
+        preferences(context).edit().putBoolean(KEY_ENABLED, enabled).apply()
+        if (enabled) scheduleDailyReminder(context) else cancelReminder(context)
+    }
+
+    fun getReminderHour(context: Context): Int {
+        return preferences(context).getInt(KEY_HOUR, DEFAULT_HOUR).coerceIn(0, 23)
+    }
+
+    fun getReminderMinute(context: Context): Int {
+        return preferences(context).getInt(KEY_MINUTE, DEFAULT_MINUTE).coerceIn(0, 59)
+    }
+
+    fun setReminderTime(context: Context, hour: Int, minute: Int) {
+        preferences(context)
+            .edit()
+            .putInt(KEY_HOUR, hour.coerceIn(0, 23))
+            .putInt(KEY_MINUTE, minute.coerceIn(0, 59))
+            .apply()
+        if (isReminderEnabled(context)) scheduleDailyReminder(context)
+    }
+
     fun cancelReminder(context: Context) {
         try {
             val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as? AlarmManager ?: return
@@ -53,4 +90,6 @@ object NotificationHelper {
             e.printStackTrace()
         }
     }
+    private fun preferences(context: Context) =
+        context.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE)
 }

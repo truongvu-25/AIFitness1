@@ -126,5 +126,9 @@ class ChatAdapter(
         }
     }
 
+    fun clearItems() {
+        clear()
+    }
+
     fun getItems(): List<ChatItem> = items
 }

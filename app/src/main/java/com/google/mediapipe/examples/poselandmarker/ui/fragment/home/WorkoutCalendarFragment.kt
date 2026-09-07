@@ -22,7 +22,9 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.LinearSnapHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.card.MaterialCardView
@@ -30,6 +32,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.mediapipe.examples.poselandmarker.R
 import com.google.mediapipe.examples.poselandmarker.databinding.FragmentWorkoutCalendarBinding
+import com.google.mediapipe.examples.poselandmarker.data.local.TriForceDatabase
 import com.google.mediapipe.examples.poselandmarker.model.Exercise
 import com.google.mediapipe.examples.poselandmarker.model.ExerciseCatalog
 import com.google.mediapipe.examples.poselandmarker.model.ExerciseDetails
@@ -41,6 +44,7 @@ import java.io.FileOutputStream
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import kotlinx.coroutines.launch
 
 
 class WorkoutCalendarFragment : Fragment() {
@@ -80,6 +84,8 @@ class WorkoutCalendarFragment : Fragment() {
     // 30-day workout memory cache.
     private val workoutDaysMap =
         HashMap<Int, WorkoutDay>()
+
+    private var localCompletedExercises: Set<String> = emptySet()
 
 
     // =============================================================
@@ -159,7 +165,18 @@ class WorkoutCalendarFragment : Fragment() {
 
         setupRecyclerViews()
 
-        loadMasterExercisesAndInit()
+        viewLifecycleOwner.lifecycleScope.launch {
+            localCompletedExercises = if (uid.isBlank()) {
+                emptySet()
+            } else {
+                TriForceDatabase.getInstance(requireContext())
+                    .workoutSessionDao()
+                    .getRecent(uid, 500)
+                    .map { "${it.dayIndex}|${it.exerciseId}" }
+                    .toSet()
+            }
+            if (_binding != null) loadMasterExercisesAndInit()
+        }
 
 
         binding.btnResetPlan
@@ -193,6 +210,10 @@ class WorkoutCalendarFragment : Fragment() {
 
         binding.rvDays.adapter =
             daysAdapter
+
+        // Settle each date card cleanly after a horizontal fling instead of
+        // leaving a half-cut card at the resting position.
+        LinearSnapHelper().attachToRecyclerView(binding.rvDays)
 
 
         exercisesAdapter =
@@ -495,10 +516,20 @@ class WorkoutCalendarFragment : Fragment() {
 
                 for (doc in snapshot) {
 
-                    val workoutDay =
+                    val remoteWorkoutDay =
                         doc.toObject(
                             WorkoutDay::class.java
                         )
+
+                    val workoutDay = remoteWorkoutDay.copy(
+                        exercises = remoteWorkoutDay.exercises.map { exercise ->
+                            if ("${remoteWorkoutDay.dayIndex}|${exercise.exerciseId}" in localCompletedExercises) {
+                                exercise.copy(status = 1)
+                            } else {
+                                exercise
+                            }
+                        }
+                    )
 
 
                     workoutDaysMap[
@@ -1832,6 +1863,14 @@ class WorkoutCalendarFragment : Fragment() {
                 putInt(
                     "dayIndex",
                     selectedDayIndex
+                )
+
+                putBoolean(
+                    "hasRemainingPending",
+                    workoutDaysMap[selectedDayIndex]
+                        ?.exercises
+                        ?.any { it.exerciseId != exercise.id && it.status == 0 }
+                        ?: false
                 )
             }
 

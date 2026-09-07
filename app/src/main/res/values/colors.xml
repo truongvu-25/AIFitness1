@@ -9,12 +9,12 @@
 
     <!-- MATERIAL / LEGACY -->
 
-    <color name="mp_color_primary">#1769FF</color>
-    <color name="mp_color_primary_variant">#0F56D9</color>
-    <color name="mp_color_primary_dark">#081A30</color>
+    <color name="mp_color_primary">#2563EB</color>
+    <color name="mp_color_primary_variant">#1D4ED8</color>
+    <color name="mp_color_primary_dark">#07182B</color>
 
-    <color name="mp_color_secondary">#1769FF</color>
-    <color name="mp_color_secondary_variant">#3B82FF</color>
+    <color name="mp_color_secondary">#2563EB</color>
+    <color name="mp_color_secondary_variant">#3B82F6</color>
 
     <color name="mp_color_error">#D92D20</color>
 
@@ -23,21 +23,21 @@
          BRAND
          ========================================================= -->
 
-    <color name="tri_force_navy">#081A30</color>
-    <color name="tri_force_navy_deep">#04101F</color>
+    <color name="tri_force_navy">#07182B</color>
+    <color name="tri_force_navy_deep">#03101E</color>
 
-    <color name="tri_force_blue">#1769FF</color>
-    <color name="tri_force_blue_dark">#0F56D9</color>
-    <color name="tri_force_blue_light">#E4EDFF</color>
-    <color name="tri_force_blue_soft">#F1F5FF</color>
+    <color name="tri_force_blue">#2563EB</color>
+    <color name="tri_force_blue_dark">#1D4ED8</color>
+    <color name="tri_force_blue_light">#DBEAFE</color>
+    <color name="tri_force_blue_soft">#EFF6FF</color>
 
     <color name="tri_force_steel">#9AA7B8</color>
 
 
     <!-- DARK / HERO -->
 
-    <color name="tri_force_surface_dark">#0B1D33</color>
-    <color name="tri_force_surface_dark_alt">#102642</color>
+    <color name="tri_force_surface_dark">#0A2038</color>
+    <color name="tri_force_surface_dark_alt">#12304F</color>
 
     <color name="tri_force_hero_blue">#145EEB</color>
     <color name="tri_force_hero_blue_dark">#0A347F</color>
@@ -55,25 +55,25 @@
          APP BACKGROUND
          ========================================================= -->
 
-    <color name="tri_force_bg">#EEF1F5</color>
+    <color name="tri_force_bg">#F3F6FA</color>
 
     <color name="tri_force_white">#FFFFFF</color>
 
     <color name="tri_force_dark_surface">#FFFFFF</color>
     <color name="tri_force_dark_card">#FFFFFF</color>
 
-    <color name="tri_force_surface_soft">#E7EBF0</color>
-    <color name="tri_force_surface_muted">#DDE3EA</color>
-    <color name="tri_force_gray_panel">#F4F5F7</color>
+    <color name="tri_force_surface_soft">#E9EFF6</color>
+    <color name="tri_force_surface_muted">#DDE6EF</color>
+    <color name="tri_force_gray_panel">#F8FAFC</color>
 
 
     <!-- =========================================================
          TEXT
          ========================================================= -->
 
-    <color name="tri_force_text_primary">#101828</color>
-    <color name="tri_force_text_secondary">#5F6B7A</color>
-    <color name="tri_force_text_tertiary">#7B8796</color>
+    <color name="tri_force_text_primary">#0F172A</color>
+    <color name="tri_force_text_secondary">#64748B</color>
+    <color name="tri_force_text_tertiary">#8492A6</color>
     <color name="tri_force_text_disabled">#A5ADBA</color>
 
     <color name="tri_force_text_on_primary">#FFFFFF</color>
@@ -86,21 +86,21 @@
          BORDER / DIVIDER
          ========================================================= -->
 
-    <color name="tri_force_silver">#D9E0E8</color>
-    <color name="tri_force_slate">#667085</color>
+    <color name="tri_force_silver">#D7E0EA</color>
+    <color name="tri_force_slate">#64748B</color>
 
-    <color name="tri_force_stroke">#D9E0E8</color>
-    <color name="tri_force_stroke_medium">#C5CED9</color>
+    <color name="tri_force_stroke">#D7E0EA</color>
+    <color name="tri_force_stroke_medium">#C4D0DD</color>
 
-    <color name="tri_force_divider">#E2E7ED</color>
+    <color name="tri_force_divider">#E4EAF1</color>
 
 
     <!-- =========================================================
          ICON
          ========================================================= -->
 
-    <color name="tri_force_icon_active">#1769FF</color>
-    <color name="tri_force_icon_default">#6F7D8E</color>
+    <color name="tri_force_icon_active">#2563EB</color>
+    <color name="tri_force_icon_default">#708095</color>
     <color name="tri_force_icon_muted">#98A2B3</color>
 
     <color name="tri_force_icon_on_dark">#DCE5F0</color>
@@ -111,13 +111,13 @@
          ========================================================= -->
 
     <!-- Active item -->
-    <color name="nav_active">#2D7CFF</color>
+    <color name="nav_active">#4A8DFF</color>
 
     <!-- Inactive icon/text trên nền navy -->
-    <color name="nav_inactive">#91A1B5</color>
+    <color name="nav_inactive">#93A4B8</color>
 
     <!-- Main dark navigation surface -->
-    <color name="nav_background">#061321</color>
+    <color name="nav_background">#041525</color>
 
     <!-- Reserved for future active indicator -->
     <color name="nav_active_background">#162D4B</color>
@@ -128,8 +128,8 @@
          ========================================================= -->
 
     <color name="card_background">#FFFFFF</color>
-    <color name="card_border">#D9E0E8</color>
-    <color name="card_background_soft">#F5F7F9</color>
+    <color name="card_border">#D7E0EA</color>
+    <color name="card_background_soft">#FFFFFF</color>
 
     <color name="card_background_dark">#0B1D33</color>
 
@@ -140,7 +140,7 @@
 
     <color name="input_background">#F8FAFC</color>
     <color name="input_border">#C5CED9</color>
-    <color name="input_border_focused">#1769FF</color>
+    <color name="input_border_focused">#2563EB</color>
     <color name="input_hint">#98A2B3</color>
 
 
@@ -148,8 +148,8 @@
          PROGRESS
          ========================================================= -->
 
-    <color name="progress_track">#DCE3EC</color>
-    <color name="progress_fill">#1769FF</color>
+    <color name="progress_track">#E2EAF3</color>
+    <color name="progress_fill">#2563EB</color>
 
     <color name="progress_track_dark">#29405D</color>
     <color name="progress_fill_dark">#2D7CFF</color>
@@ -186,8 +186,8 @@
          INFO
          ========================================================= -->
 
-    <color name="tri_force_info">#1769FF</color>
-    <color name="tri_force_info_bg">#E4EDFF</color>
+    <color name="tri_force_info">#2563EB</color>
+    <color name="tri_force_info_bg">#DBEAFE</color>
 
 
     <!-- =========================================================

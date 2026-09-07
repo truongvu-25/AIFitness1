@@ -5,12 +5,15 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/tri_force_bg"
-    android:padding="16dp">
+    android:paddingStart="@dimen/screen_horizontal_padding"
+    android:paddingEnd="@dimen/screen_horizontal_padding">
 
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:clipToPadding="false"
         android:fillViewport="true"
+        android:paddingBottom="@dimen/space_24"
         android:scrollbars="none">
 
         <LinearLayout
@@ -26,10 +29,10 @@
                 android:layout_height="92dp"
                 android:layout_marginTop="@dimen/main_content_top_offset"
                 app:cardCornerRadius="46dp"
-                app:cardBackgroundColor="@color/tri_force_navy"
-                app:cardElevation="6dp"
-                app:strokeColor="@color/mp_color_primary_variant"
-                app:strokeWidth="2.5dp">
+                app:cardBackgroundColor="@color/tri_force_white"
+                app:cardElevation="0dp"
+                app:strokeColor="@color/tri_force_stroke_medium"
+                app:strokeWidth="@dimen/stroke_thin">
 
                 <ImageView
                     android:id="@+id/ivAvatar"
@@ -48,7 +51,7 @@
                 android:textSize="20sp"
                 android:textStyle="bold"
                 android:textColor="@color/tri_force_text_primary"
-                android:layout_marginTop="10dp"/>
+                android:layout_marginTop="@dimen/space_12"/>
 
             <TextView
                 android:id="@+id/tvProfileEmail"
@@ -57,25 +60,24 @@
                 android:text="@string/profile_email_placeholder"
                 android:textSize="13sp"
                 android:textColor="@color/tri_force_text_secondary"
-                android:layout_marginTop="2dp"/>
+                android:layout_marginTop="@dimen/space_4"/>
 
             <!-- BMI Info Card -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                app:cardCornerRadius="22dp"
-                app:cardElevation="2dp"
-                app:cardBackgroundColor="@color/tri_force_dark_card"
-                app:strokeColor="@color/tri_force_silver"
-                app:strokeWidth="1dp"
-                app:cardUseCompatPadding="true">
+                android:layout_marginTop="@dimen/space_16"
+                app:cardCornerRadius="@dimen/card_corner_radius_small"
+                app:cardElevation="0dp"
+                app:cardBackgroundColor="@color/tri_force_white"
+                app:strokeColor="@color/tri_force_stroke"
+                app:strokeWidth="@dimen/stroke_thin">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="18dp">
+                    android:padding="@dimen/card_padding">
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -112,7 +114,7 @@
                     <View
                         android:layout_width="match_parent"
                         android:layout_height="1dp"
-                        android:background="@color/tri_force_silver"
+                        android:background="@color/tri_force_divider"
                         android:layout_marginVertical="8dp"/>
 
                     <LinearLayout
@@ -140,19 +142,18 @@
                 android:id="@+id/cardStepCounter"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                app:cardCornerRadius="22dp"
-                app:cardElevation="2dp"
-                app:cardBackgroundColor="@color/tri_force_dark_card"
-                app:strokeColor="@color/tri_force_silver"
-                app:strokeWidth="1dp"
-                app:cardUseCompatPadding="true">
+                android:layout_marginTop="@dimen/space_12"
+                app:cardCornerRadius="@dimen/card_corner_radius_small"
+                app:cardElevation="0dp"
+                app:cardBackgroundColor="@color/tri_force_white"
+                app:strokeColor="@color/tri_force_stroke"
+                app:strokeWidth="@dimen/stroke_thin">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="18dp">
+                    android:padding="@dimen/card_padding">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -191,10 +192,10 @@
                             android:layout_weight="1"
                             android:orientation="vertical"
                             android:gravity="center"
-                            android:background="@color/tri_force_success_bg"
+                            android:background="@color/tri_force_blue_soft"
                             android:padding="14dp">
 
-                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/profile_steps_label" android:textSize="12sp" android:textColor="@color/tri_force_success" android:textStyle="bold"/>
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/profile_steps_label" android:textSize="12sp" android:textColor="@color/tri_force_blue" android:textStyle="bold"/>
                             <TextView android:id="@+id/tvProfileSteps" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/value_not_available" android:textSize="18sp" android:textStyle="bold" android:textColor="@color/tri_force_text_primary" android:layout_marginTop="2dp" tools:text="0 bước"/>
                         </LinearLayout>
 
@@ -223,14 +224,13 @@
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:layout_marginBottom="40dp"
-                app:cardCornerRadius="22dp"
-                app:cardElevation="2dp"
-                app:cardBackgroundColor="@color/tri_force_dark_card"
-                app:strokeColor="@color/tri_force_silver"
-                app:strokeWidth="1dp"
-                app:cardUseCompatPadding="true">
+                android:layout_marginTop="@dimen/space_12"
+                android:layout_marginBottom="@dimen/space_24"
+                app:cardCornerRadius="@dimen/card_corner_radius_small"
+                app:cardElevation="0dp"
+                app:cardBackgroundColor="@color/tri_force_white"
+                app:strokeColor="@color/tri_force_stroke"
+                app:strokeWidth="@dimen/stroke_thin">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -255,7 +255,7 @@
                             android:layout_height="38dp"
                             app:cardCornerRadius="19dp"
                             app:cardElevation="0dp"
-                            app:cardBackgroundColor="@color/tri_force_success_bg"
+                            app:cardBackgroundColor="@color/tri_force_blue_soft"
                             app:strokeWidth="0dp">
 
                             <ImageView
@@ -350,8 +350,145 @@
                     <View
                         android:layout_width="match_parent"
                         android:layout_height="1dp"
-                        android:background="@color/tri_force_silver"
+                        android:background="@color/tri_force_divider"
                         android:layout_marginStart="70dp" />
+
+                    <!-- Workout reminder row -->
+                    <LinearLayout
+                        android:id="@+id/rowWorkoutReminder"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="?attr/selectableItemBackground"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:paddingHorizontal="18dp"
+                        android:paddingVertical="13dp">
+
+                        <com.google.android.material.card.MaterialCardView
+                            android:layout_width="38dp"
+                            android:layout_height="38dp"
+                            app:cardBackgroundColor="@color/tri_force_blue_soft"
+                            app:cardCornerRadius="19dp"
+                            app:cardElevation="0dp"
+                            app:strokeWidth="0dp">
+
+                            <ImageView
+                                android:layout_width="20dp"
+                                android:layout_height="20dp"
+                                android:layout_gravity="center"
+                                android:contentDescription="@null"
+                                android:src="@drawable/ic_notification_outline"
+                                app:tint="@color/tri_force_blue" />
+                        </com.google.android.material.card.MaterialCardView>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="14dp"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Nhắc lịch tập"
+                                android:textColor="@color/tri_force_text_primary"
+                                android:textSize="15sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:id="@+id/tvWorkoutReminderTime"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:text="Hằng ngày lúc 08:00"
+                                android:textColor="@color/tri_force_text_secondary"
+                                android:textSize="12sp" />
+                        </LinearLayout>
+
+                        <com.google.android.material.switchmaterial.SwitchMaterial
+                            android:id="@+id/switchWorkoutReminder"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:contentDescription="Bật hoặc tắt nhắc lịch tập"
+                            app:useMaterialThemeColors="true" />
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginStart="70dp"
+                        android:background="@color/tri_force_divider" />
+
+                    <!-- Health Connect row -->
+                    <LinearLayout
+                        android:id="@+id/rowHealthConnect"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="?attr/selectableItemBackground"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:paddingHorizontal="18dp"
+                        android:paddingVertical="13dp">
+
+                        <com.google.android.material.card.MaterialCardView
+                            android:layout_width="38dp"
+                            android:layout_height="38dp"
+                            app:cardBackgroundColor="@color/tri_force_blue_soft"
+                            app:cardCornerRadius="19dp"
+                            app:cardElevation="0dp"
+                            app:strokeWidth="0dp">
+
+                            <ImageView
+                                android:layout_width="20dp"
+                                android:layout_height="20dp"
+                                android:layout_gravity="center"
+                                android:contentDescription="Health Connect"
+                                android:src="@drawable/ic_health_connect" />
+                        </com.google.android.material.card.MaterialCardView>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="14dp"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Health Connect"
+                                android:textColor="@color/tri_force_text_primary"
+                                android:textSize="15sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:id="@+id/tvHealthConnectStatus"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:text="Đang kiểm tra trạng thái…"
+                                android:textColor="@color/tri_force_text_secondary"
+                                android:textSize="12sp" />
+                        </LinearLayout>
+
+                        <ImageView
+                            android:layout_width="18dp"
+                            android:layout_height="18dp"
+                            android:contentDescription="Mở cài đặt Health Connect"
+                            android:src="@drawable/ic_chevron_right"
+                            app:tint="@color/tri_force_slate" />
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginStart="70dp"
+                        android:background="@color/tri_force_divider" />
 
                     <!-- Logout Action Row -->
                     <LinearLayout

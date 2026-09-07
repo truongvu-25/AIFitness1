@@ -146,15 +146,6 @@
                 android:layout_weight="1" />
 
 
-            <!-- AI live indicator -->
-
-            <View
-                android:layout_width="6dp"
-                android:layout_height="6dp"
-
-                android:background="@color/tri_force_blue" />
-
-
         </LinearLayout>
 
 
