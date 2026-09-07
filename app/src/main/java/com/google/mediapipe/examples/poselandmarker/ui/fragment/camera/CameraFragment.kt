@@ -453,18 +453,11 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
         if (calibrationStableFrames >= CALIBRATION_STABLE_FRAMES) {
             isCalibrated = true
             workoutStartedAtMs = SystemClock.elapsedRealtime()
-            fragmentCameraBinding.tvCalibrationStep.text = "CAMERA ĐÃ SẴN SÀNG"
-            fragmentCameraBinding.tvCalibrationMessage.text = "Bắt đầu $exerciseName ngay bây giờ."
-            fragmentCameraBinding.progressCalibration.progress = 100
             fragmentCameraBinding.btnFinishWorkout.isEnabled = true
             fragmentCameraBinding.btnFinishWorkout.text = "HOÀN THÀNH BÀI TẬP"
             fragmentCameraBinding.tvFormFeedback.text = "Camera đã sẵn sàng. Bắt đầu bài tập!"
+            fragmentCameraBinding.tvFormFeedback.setTextColor(Color.parseColor("#4CAF50"))
             speakGuidance("Hiệu chỉnh hoàn tất. Bắt đầu $exerciseName.", force = true)
-            fragmentCameraBinding.calibrationCard.postDelayed({
-                if (_fragmentCameraBinding != null && isCalibrated) {
-                    fragmentCameraBinding.calibrationCard.visibility = View.GONE
-                }
-            }, 1_200L)
         }
         return false
     }
@@ -476,14 +469,8 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
     ) {
         val stageChanged = calibrationStage != stage
         calibrationStage = stage
-        fragmentCameraBinding.calibrationCard.visibility = View.VISIBLE
-        fragmentCameraBinding.tvCalibrationStep.text = when (stage) {
-            CalibrationStage.FIND_BODY -> "HIỆU CHỈNH CAMERA • BƯỚC 1/3"
-            CalibrationStage.READY_POSE -> "HIỆU CHỈNH CAMERA • BƯỚC 2/3"
-            CalibrationStage.HOLD_STILL -> "HIỆU CHỈNH CAMERA • BƯỚC 3/3"
-        }
-        fragmentCameraBinding.tvCalibrationMessage.text = message
-        fragmentCameraBinding.progressCalibration.progress = progress.coerceIn(0, 100)
+        fragmentCameraBinding.tvFormFeedback.text = message
+        fragmentCameraBinding.tvFormFeedback.setTextColor(Color.parseColor("#FFCA28"))
         if (stageChanged) speakGuidance(message, force = true)
     }
 
@@ -510,11 +497,9 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
         calibrationStableFrames = 0
         calibrationStage = CalibrationStage.FIND_BODY
         _fragmentCameraBinding?.let { binding ->
-            binding.calibrationCard.visibility = View.VISIBLE
-            binding.tvCalibrationStep.text = "HIỆU CHỈNH CAMERA • BƯỚC 1/3"
-            binding.tvCalibrationMessage.text =
+            binding.tvFormFeedback.text =
                 "Đứng vào khung hình để camera nhìn thấy toàn thân."
-            binding.progressCalibration.progress = 8
+            binding.tvFormFeedback.setTextColor(Color.parseColor("#FFCA28"))
             binding.btnFinishWorkout.isEnabled = false
             binding.btnFinishWorkout.text = "ĐANG HIỆU CHỈNH CAMERA..."
         }
