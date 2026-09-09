@@ -1,0 +1,3 @@
+- [x] Modify `SidePlankAnalyzer` in `ExerciseAnalyzer.kt` to always show the guide line.
+- [x] Modify `PlankAnalyzer` in `ExerciseAnalyzer.kt` to always show the guide line.
+- [x] Verify changes build correctly.

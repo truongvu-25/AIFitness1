@@ -695,19 +695,6 @@ class PlankAnalyzer(id: String, name: String, target: Int, timed: Boolean, u: St
             )
         }
 
-        if (!hasStarted) {
-            if (isReadyState(landmarks)) {
-                hasStarted = true
-            } else {
-                return AnalysisResult(
-                    currentProgressCount,
-                    "Hãy giữ thẳng người để bắt đầu tính giờ",
-                    Color.parseColor("#FFCA28"),
-                    false
-                )
-            }
-        }
-
         val (shoulderIdx, hipIdx, ankleIdx) = if (orientation == BodyOrientation.LEFT) {
             Triple(11, 23, 27)
         } else {
@@ -717,6 +704,24 @@ class PlankAnalyzer(id: String, name: String, target: Int, timed: Boolean, u: St
         val shoulder = landmarks[shoulderIdx]
         val hip = landmarks[hipIdx]
         val ankle = landmarks[ankleIdx]
+
+        val customLines = mutableListOf<CustomLine>()
+
+        if (!hasStarted) {
+            if (isReadyState(landmarks)) {
+                hasStarted = true
+            } else {
+                // Add green reference line as a guide when starting incorrectly
+                customLines.add(CustomLine(shoulderIdx, ankleIdx, Color.GREEN))
+                return AnalysisResult(
+                    currentProgressCount,
+                    "Hãy giữ thẳng người để bắt đầu tính giờ",
+                    Color.parseColor("#FFCA28"),
+                    false,
+                    customLines
+                )
+            }
+        }
 
         // Kiểm tra vai - hông - gót
         val bodyAngle = calculateAngle(shoulder, hip, ankle)
@@ -741,7 +746,6 @@ class PlankAnalyzer(id: String, name: String, target: Int, timed: Boolean, u: St
                     leftKneeAngle >= 160 &&
                     rightKneeAngle >= 160
 
-        val customLines = mutableListOf<CustomLine>()
         if (isValid) {
             val now = System.currentTimeMillis()
 
@@ -756,7 +760,7 @@ class PlankAnalyzer(id: String, name: String, target: Int, timed: Boolean, u: St
             feedback = "Đang giữ chuẩn tư thế!"
         } else {
             feedback = "Hãy giữ thẳng thân và hai chân!"
-            // Add green reference line
+            // Add green reference line when posture is incorrect
             customLines.add(CustomLine(shoulderIdx, ankleIdx, Color.GREEN))
         }
 
@@ -798,10 +802,10 @@ class SidePlankAnalyzer(id: String, name: String, target: Int, timed: Boolean, u
         val rightDiff = kotlin.math.abs(rightAngle - 90)
 
         return when {
-            leftDiff <= 10 && leftDiff < rightDiff ->
+            leftDiff <= 15 && leftDiff < rightDiff ->
                 SupportingSide.LEFT
 
-            rightDiff <= 10 && rightDiff < leftDiff ->
+            rightDiff <= 15 && rightDiff < leftDiff ->
                 SupportingSide.RIGHT
 
             else ->
@@ -850,13 +854,16 @@ class SidePlankAnalyzer(id: String, name: String, target: Int, timed: Boolean, u
     }
 
     override fun analyze(landmarks: List<NormalizedLandmark>): AnalysisResult {
+        val customLines = mutableListOf<CustomLine>()
+        val supportingSide = detectSupportingSide(landmarks)
 
         if (!isFullBodyVisible(landmarks)) {
             return AnalysisResult(
                 currentProgressCount,
                 "Hãy lùi lại để camera quét được toàn thân",
                 Color.parseColor("#FFCA28"),
-                false
+                false,
+                customLines
             )
         }
 
@@ -867,19 +874,19 @@ class SidePlankAnalyzer(id: String, name: String, target: Int, timed: Boolean, u
                 currentProgressCount,
                 "Hãy hướng mặt về phía camera để tập Side Plank",
                 Color.parseColor("#FFCA28"),
-                false
+                false,
+                customLines
             )
         }
 
-        // Xác định tay chống
-        val supportingSide = detectSupportingSide(landmarks)
 
         if (supportingSide == SupportingSide.INVALID) {
             return AnalysisResult(
                 currentProgressCount,
                 "Hãy chống một khuỷu tay xuống đất",
                 Color.parseColor("#FFCA28"),
-                false
+                false,
+                customLines
             )
         }
 
@@ -912,6 +919,8 @@ class SidePlankAnalyzer(id: String, name: String, target: Int, timed: Boolean, u
             }
         }
 
+
+
         val shoulder = landmarks[shoulderIdx]
         val hip = landmarks[hipIdx]
         val ankle = landmarks[ankleIdx]
@@ -934,10 +943,9 @@ class SidePlankAnalyzer(id: String, name: String, target: Int, timed: Boolean, u
             landmarks[26], // right knee
             landmarks[28]  // right ankle
         )
-        // 6. Kiểm tra body có thẳng không
-        val isValid = bodyAngle >= 160 && leftKneeAngle >=160 && rightKneeAngle >= 160
 
-        val customLines = mutableListOf<CustomLine>()
+        // 6. Kiểm tra body có thẳng không
+        val isValid = bodyAngle >= 170 && leftKneeAngle >=160 && rightKneeAngle >= 160
 
         if (isValid) {
 
@@ -957,14 +965,8 @@ class SidePlankAnalyzer(id: String, name: String, target: Int, timed: Boolean, u
         } else {
 
             feedback = "Đẩy hông cao lên một chút!"
-
-            customLines.add(
-                CustomLine(
-                    shoulderIdx,
-                    ankleIdx,
-                    Color.GREEN
-                )
-            )
+            // Add green reference line when posture is incorrect
+            customLines.add(CustomLine(shoulderIdx, ankleIdx, Color.GREEN))
         }
 
         feedbackColor = getFeedbackColor(isValid)
