@@ -1,26 +1,46 @@
-# Implementation Plan - Add Guide Lines for Side Plank and Plank
+# Refactoring Implementation Plan - ExerciseAnalyzer.kt
 
-The user wants to add a green guide line from the shoulder to the ankle on the supporting side for the `SidePlank` exercise. This guide line will help users align their body correctly during the exercise. Currently, the line is only shown when the posture is incorrect in `SidePlankAnalyzer` and `PlankAnalyzer`. I will modify them to show the guide line consistently as a reference.
+The goal is to refactor `ExerciseAnalyzer.kt` to reduce code duplication, improve readability, and maintain all existing exercise logic. We will extract common patterns into the base class and use constants for landmark indices.
+
+## User Review Required
+
+> [!IMPORTANT]
+> This refactoring will centralize visibility and orientation checks. I have categorized the exercises by their required orientation based on your current logic:
+> - **Side Profile (LEFT/RIGHT)**: Pushup, Squat, Situp, Plank, SplitSquat.
+> - **Front Profile (FRONT)**: Jumping Jack, Side Plank.
+>
+> I will ensure that the specific feedback messages for each exercise are preserved.
 
 ## Proposed Changes
 
-### [Component Name]
+### [Core Framework]
 
 #### [MODIFY] [ExerciseAnalyzer.kt](file:///D:/Workspace/nam3_ky2_dot2/mobi/AIfitness/app/src/main/java/com/google/mediapipe/examples/poselandmarker/analysis/ExerciseAnalyzer.kt)
 
-- **SidePlankAnalyzer**:
-    - Move landmark identification (`shoulderIdx`, `hipIdx`, `ankleIdx`) and supporting side check before the `!hasStarted` check.
-    - Initialize `customLines` earlier and add the green guide line (shoulder to ankle) immediately after identifying the supporting side.
-    - Ensure all return paths in `analyze` (except for early failure due to visibility or orientation) return the `customLines`.
-- **PlankAnalyzer**:
-    - Apply similar logic: move landmark identification up and ensure the green guide line is always returned in `AnalysisResult` once the exercise starts or is being analyzed.
+1. **Define Landmark Constants**: Add a companion object to `BaseExerciseAnalyzer` with named constants for landmarks (e.g., `L_SHOULDER = 11`, `R_HIP = 24`, etc.).
+2. **Template Method Pattern**:
+    - Introduce `analyze(landmarks: List<NormalizedLandmark>)` as a final method in the base class (or a common wrapper).
+    - It will handle:
+        - `isFullBodyVisible` check.
+        - `detectBodyOrientation` and validation against a `requiredOrientation` property.
+        - `hasStarted` / `isReadyState` logic.
+    - It will then call a new abstract method `doAnalyze(landmarks, orientation)` which subclasses will implement.
+3. **Helper Methods**:
+    - `getSideLandmark(landmarks, orientation, leftIdx, rightIdx)`: Returns the landmark corresponding to the visible side.
+    - `updateTimedProgress()`: Centralizes the second-counting logic used in Plank and Side Plank.
+    - `createResult(...)`: A helper to create `AnalysisResult` using current state.
+
+### [Exercise Analyzers]
+
+- Each subclass will be simplified to only contain its core movement detection logic inside `doAnalyze`.
+- `JumpingJackAnalyzer` and `SidePlankAnalyzer` will override the `requiredOrientation` to `FRONT`.
+- The landmark index magic numbers will be replaced with constants.
 
 ## Verification Plan
 
 ### Automated Tests
-- Run `gradle build` to ensure no syntax errors were introduced.
+- Build the project to ensure no syntax errors.
+- Verify that the `create` factory method still works correctly for all 7 IDs.
 
 ### Manual Verification
-- Deploy the app and test the Side Plank exercise.
-- Verify that a green line appears from the shoulder to the ankle of the supporting arm as soon as the body is correctly oriented toward the camera.
-- Verify the line remains visible both when the posture is valid and invalid.
+- I will verify each exercise's specific logic (angles, thresholds, feedback strings) against the original code to ensure 100% fidelity.

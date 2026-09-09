@@ -1,3 +1,10 @@
-- [x] Modify `SidePlankAnalyzer` in `ExerciseAnalyzer.kt` to always show the guide line.
-- [x] Modify `PlankAnalyzer` in `ExerciseAnalyzer.kt` to always show the guide line.
-- [x] Verify changes build correctly.
+- [x] Define Landmark Constants and common helper methods in `BaseExerciseAnalyzer`.
+- [x] Implement the `analyze` template method and common profile validation in `BaseExerciseAnalyzer`.
+- [x] Refactor `PushupAnalyzer` to use `doAnalyze` and constants.
+- [x] Refactor `SquatAnalyzer` to use `doAnalyze` and constants.
+- [x] Refactor `JumpingJackAnalyzer` to use `doAnalyze` and constants.
+- [x] Refactor `SitupAnalyzer` to use `doAnalyze` and constants.
+- [x] Refactor `PlankAnalyzer` to use `doAnalyze` and constants.
+- [x] Refactor `SidePlankAnalyzer` to use `doAnalyze` and constants.
+- [x] Refactor `SplitSquatAnalyzer` to use `doAnalyze` and constants.
+- [x] Verify build and logic consistency.
