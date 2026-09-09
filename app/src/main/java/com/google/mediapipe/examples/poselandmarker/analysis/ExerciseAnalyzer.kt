@@ -289,64 +289,90 @@ class PushupAnalyzer(id: String, name: String, target: Int, timed: Boolean, u: S
  */
 class SquatAnalyzer(id: String, name: String, target: Int, timed: Boolean, u: String) :
     BaseExerciseAnalyzer(id, name, target, timed, u) {
-    
+
     private var isDown = false
 
     override fun isReadyState(landmarks: List<NormalizedLandmark>): Boolean {
         val orientation = detectBodyOrientation(landmarks)
         if (orientation == BodyOrientation.FRONT) return false
-        
+
         val (h, k, a) = if (orientation == BodyOrientation.LEFT) {
             Triple(landmarks[23], landmarks[25], landmarks[27])
         } else {
             Triple(landmarks[24], landmarks[26], landmarks[28])
         }
-        
+
         val angle = calculateAngle(h, k, a)
         return angle > 160
     }
-
     override fun analyze(landmarks: List<NormalizedLandmark>): AnalysisResult {
         if (!isFullBodyVisible(landmarks)) {
-            return AnalysisResult(currentProgressCount, "Hãy đứng lùi lại để camera quét được toàn thân", Color.parseColor("#FFCA28"), false)
+            return AnalysisResult(
+                currentProgressCount,
+                "Hãy đứng lùi lại để camera quét được toàn thân",
+                Color.parseColor("#FFCA28"),
+                false
+            )
         }
 
         val orientation = detectBodyOrientation(landmarks)
         if (orientation == BodyOrientation.FRONT) {
-            return AnalysisResult(currentProgressCount, "Hãy quay ngang người để đếm Squat chính xác hơn", Color.parseColor("#FFCA28"), false)
+            return AnalysisResult(
+                currentProgressCount,
+                "Hãy quay ngang người để đếm Squat chính xác hơn",
+                Color.parseColor("#FFCA28"),
+                false
+            )
         }
 
         if (!hasStarted) {
             if (isReadyState(landmarks)) {
                 hasStarted = true
             } else {
-                return AnalysisResult(currentProgressCount, "Hãy đứng thẳng để bắt đầu", Color.parseColor("#FFCA28"), false)
+                return AnalysisResult(
+                    currentProgressCount,
+                    "Hãy đứng thẳng để bắt đầu",
+                    Color.parseColor("#FFCA28"),
+                    false
+                )
             }
         }
 
-        // Points based on orientation
-        val (hip, knee, ankle) = if (orientation == BodyOrientation.LEFT) {
-            Triple(landmarks[23], landmarks[25], landmarks[27])
-        } else {
-            Triple(landmarks[24], landmarks[26], landmarks[28])
-        }
-        
-        val angle = calculateAngle(hip, knee, ankle)
-        
-        if (angle < 100) {
+        // Góc chân trái
+        val leftHip = landmarks[23]
+        val leftKnee = landmarks[25]
+        val leftAnkle = landmarks[27]
+        val leftAngle = calculateAngle(leftHip, leftKnee, leftAnkle)
+
+        // Góc chân phải
+        val rightHip = landmarks[24]
+        val rightKnee = landmarks[26]
+        val rightAnkle = landmarks[28]
+        val rightAngle = calculateAngle(rightHip, rightKnee, rightAnkle)
+
+        // 2 chân co
+        if (leftAngle < 100 && rightAngle < 100) {
             isDown = true
             feedback = "Đã xuống đủ sâu! Đứng dậy nào."
-        } else if (isDown && angle > 160) {
+
+        } else if (isDown && leftAngle > 160 && rightAngle > 160) {
             currentProgressCount++
             isDown = false
             feedback = "Tuyệt vời! Tiếp tục squat."
+
         } else if (!isDown) {
             feedback = "Hạ thấp mông xuống chút nữa."
         }
 
-        feedbackColor = getFeedbackColor(isDown || angle > 160)
+        val isStanding = leftAngle > 160 && rightAngle > 160
+        feedbackColor = getFeedbackColor(isDown || isStanding)
 
-        return AnalysisResult(currentProgressCount, feedback, feedbackColor, currentProgressCount >= targetCount)
+        return AnalysisResult(
+            currentProgressCount,
+            feedback,
+            feedbackColor,
+            currentProgressCount >= targetCount
+        )
     }
 }
 
@@ -959,63 +985,132 @@ class SidePlankAnalyzer(id: String, name: String, target: Int, timed: Boolean, u
  */
 class SplitSquatAnalyzer(id: String, name: String, target: Int, timed: Boolean, u: String) :
     BaseExerciseAnalyzer(id, name, target, timed, u) {
-    
+
     private var isDown = false
+    private fun calculateDistance(
+        p1: NormalizedLandmark,
+        p2: NormalizedLandmark
+    ): Float {
+        val dx = p1.x() - p2.x()
+        val dy = p1.y() - p2.y()
+
+        return kotlin.math.sqrt(
+            dx * dx + dy * dy
+        )
+    }
 
     override fun isReadyState(landmarks: List<NormalizedLandmark>): Boolean {
         val orientation = detectBodyOrientation(landmarks)
         if (orientation == BodyOrientation.FRONT) return false
-        
-        val (h, k, a) = if (orientation == BodyOrientation.LEFT) {
-            Triple(landmarks[23], landmarks[25], landmarks[27])
-        } else {
-            Triple(landmarks[24], landmarks[26], landmarks[28])
-        }
-        
-        val angle = calculateAngle(h, k, a)
-        return angle > 160
-    }
 
+        // Góc gối chân trái
+        val leftAngle = calculateAngle(
+            landmarks[23],
+            landmarks[25],
+            landmarks[27]
+        )
+
+        // Góc gối chân phải
+        val rightAngle = calculateAngle(
+            landmarks[24],
+            landmarks[26],
+            landmarks[28]
+        )
+
+        // Hai chân có độ gập khác nhau
+        val angleDifference = kotlin.math.abs(leftAngle - rightAngle)
+        val oneLegMoreBent = angleDifference >= 20
+
+        // Không đứng thẳng hoàn toàn cả hai chân
+        val bothLegsBent =
+            leftAngle < 175 &&
+                    rightAngle < 175
+
+        // Khoảng cách giữa hai gót chân đủ lớn
+        val heelDistance = calculateDistance(
+            landmarks[29],
+            landmarks[30]
+        )
+
+        val legsSeparated = heelDistance > 0.15f
+
+        return bothLegsBent &&
+                oneLegMoreBent &&
+                legsSeparated
+    }
     override fun analyze(landmarks: List<NormalizedLandmark>): AnalysisResult {
         if (!isFullBodyVisible(landmarks)) {
-            return AnalysisResult(currentProgressCount, "Hãy đứng lùi lại để camera quét được toàn thân", Color.parseColor("#FFCA28"), false)
+            return AnalysisResult(
+                currentProgressCount,
+                "Hãy đứng lùi lại để camera quét được toàn thân",
+                Color.parseColor("#FFCA28"),
+                false
+            )
         }
 
         val orientation = detectBodyOrientation(landmarks)
         if (orientation == BodyOrientation.FRONT) {
-            return AnalysisResult(currentProgressCount, "Hãy quay ngang người để tập Split Squat", Color.parseColor("#FFCA28"), false)
+            return AnalysisResult(
+                currentProgressCount,
+                "Hãy quay ngang người để tập Split Squat",
+                Color.parseColor("#FFCA28"),
+                false
+            )
         }
 
         if (!hasStarted) {
             if (isReadyState(landmarks)) {
                 hasStarted = true
             } else {
-                return AnalysisResult(currentProgressCount, "Hãy đứng thẳng để bắt đầu", Color.parseColor("#FFCA28"), false)
+                return AnalysisResult(
+                    currentProgressCount,
+                    "Hãy đứng vào tư thế Split Squat để bắt đầu",
+                    Color.parseColor("#FFCA28"),
+                    false
+                )
             }
         }
 
-        // Points based on orientation
-        val (hip, knee, ankle) = if (orientation == BodyOrientation.LEFT) {
-            Triple(landmarks[23], landmarks[25], landmarks[27])
-        } else {
-            Triple(landmarks[24], landmarks[26], landmarks[28])
-        }
-        
-        val kneeAngle = calculateAngle(hip, knee, ankle)
-        
-        if (kneeAngle < 100) {
+        // Calculate both knee angles
+        val leftKneeAngle = calculateAngle(
+            landmarks[23],
+            landmarks[25],
+            landmarks[27]
+        )
+
+        val rightKneeAngle = calculateAngle(
+            landmarks[24],
+            landmarks[26],
+            landmarks[28]
+        )
+
+
+        val isBothLegsDown = leftKneeAngle < 90 && rightKneeAngle < 90
+
+        if (isBothLegsDown) {
             isDown = true
             feedback = "Tốt! Đẩy người lên."
-        } else if (isDown && kneeAngle > 150) {
+
+        } else if (isDown && leftKneeAngle > 150 && rightKneeAngle > 150) {
             currentProgressCount++
             isDown = false
             feedback = "Giữ thăng bằng tốt!"
+
         } else if (!isDown) {
             feedback = "Hạ gối chân sau sâu xuống."
         }
 
-        feedbackColor = getFeedbackColor(isDown || kneeAngle > 150)
+        val isStanding = leftKneeAngle > 150 && rightKneeAngle > 150
 
-        return AnalysisResult(currentProgressCount, feedback, feedbackColor, currentProgressCount >= targetCount)
+        feedbackColor = getFeedbackColor(
+            isDown || isStanding
+        )
+
+        return AnalysisResult(
+            currentProgressCount,
+            feedback,
+            feedbackColor,
+            currentProgressCount >= targetCount
+        )
     }
 }
