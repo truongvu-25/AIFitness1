@@ -1,13 +1,12 @@
 package com.google.mediapipe.examples.poselandmarker.ui.fragment.camera
 
 import android.annotation.SuppressLint
-import android.content.Context
 import android.content.res.Configuration
 import android.graphics.Color
 import android.os.Bundle
 import android.os.SystemClock
-import android.speech.tts.TextToSpeech
 import android.util.Log
+import android.util.Size
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -19,6 +18,8 @@ import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
 import androidx.camera.core.Preview
+import androidx.camera.core.resolutionselector.ResolutionSelector
+import androidx.camera.core.resolutionselector.ResolutionStrategy
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
@@ -28,6 +29,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.google.firebase.auth.FirebaseAuth
 import com.google.mediapipe.examples.poselandmarker.analysis.BaseExerciseAnalyzer
+import com.google.mediapipe.examples.poselandmarker.analysis.CustomLine
 import com.google.mediapipe.examples.poselandmarker.data.WorkoutSyncScheduler
 import com.google.mediapipe.examples.poselandmarker.data.local.TriForceDatabase
 import com.google.mediapipe.examples.poselandmarker.data.local.toLocalEntity
@@ -38,6 +40,7 @@ import com.google.mediapipe.examples.poselandmarker.service.RestTimerService
 import com.google.mediapipe.examples.poselandmarker.model.WorkoutSession
 import com.google.mediapipe.examples.poselandmarker.databinding.FragmentCameraBinding
 import com.google.mediapipe.examples.poselandmarker.ui.fragment.onboarding.PermissionsFragment
+import com.google.mediapipe.examples.poselandmarker.voice.VoiceCoachManager
 import com.google.mediapipe.tasks.vision.core.RunningMode
 import com.google.mediapipe.tasks.components.containers.NormalizedLandmark
 import java.util.Locale
@@ -52,16 +55,10 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
 
     companion object {
         private const val TAG = "PoseLandmarker"
-        private const val VOICE_MIN_INTERVAL_MS = 2_500L
-        private const val VOICE_REPEAT_INTERVAL_MS = 7_000L
+        private const val VOICE_MIN_INTERVAL_MS = 4_000L
+        private const val VOICE_REPEAT_INTERVAL_MS = 10_000L
         private const val FORM_SAMPLE_INTERVAL_MS = 500L
-        private const val CALIBRATION_STABLE_FRAMES = 24
-        private const val VOICE_PREFERENCES = "tri_force_voice_coach"
-        private const val KEY_VOICE_MODE = "voice_mode"
-        private const val VOICE_OFF = "off"
-        private const val VOICE_FEMALE = "female"
-        private const val VOICE_MALE = "male"
-        private const val VOICE_DEFAULT = "default"
+        private const val CALIBRATION_STABLE_FRAMES = 16
     }
 
     private var _fragmentCameraBinding: FragmentCameraBinding? = null
@@ -93,13 +90,12 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
 
     private var exerciseAnalyzer: BaseExerciseAnalyzer? = null
 
-    private var textToSpeech: TextToSpeech? = null
-    private var isVoiceReady = false
     private var lastSpokenFeedback = ""
     private var lastVoiceTimeMs = 0L
     private var lastSpokenProgress = 0
     private var hasAnnouncedCompletion = false
-    private var voiceMode = VOICE_FEMALE
+    private var voiceMode = VoiceCoachManager.VOICE_FEMALE
+    private var lastInferenceUiUpdateMs = 0L
 
     private var isCalibrated = false
     private var calibrationStableFrames = 0
@@ -121,9 +117,7 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
         dayIndex = arguments?.getInt("dayIndex") ?: 1
         hasRemainingPending = arguments?.getBoolean("hasRemainingPending", true) ?: true
 
-        voiceMode = requireContext()
-            .getSharedPreferences(VOICE_PREFERENCES, Context.MODE_PRIVATE)
-            .getString(KEY_VOICE_MODE, VOICE_FEMALE) ?: VOICE_FEMALE
+        voiceMode = VoiceCoachManager.currentMode(requireContext())
 
         isTimed = (exerciseId == "plank" || exerciseId == "sideplank")
         unitStr = if (isTimed) "giây" else "lần"
@@ -146,7 +140,7 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
 
     override fun onPause() {
         super.onPause()
-        textToSpeech?.stop()
+        VoiceCoachManager.stop()
         if (this::poseLandmarkerHelper.isInitialized) {
             viewModel.setMinPoseDetectionConfidence(poseLandmarkerHelper.minPoseDetectionConfidence)
             viewModel.setMinPoseTrackingConfidence(poseLandmarkerHelper.minPoseTrackingConfidence)
@@ -158,10 +152,6 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
     }
 
     override fun onDestroyView() {
-        textToSpeech?.stop()
-        textToSpeech?.shutdown()
-        textToSpeech = null
-        isVoiceReady = false
         _fragmentCameraBinding = null
         super.onDestroyView()
         backgroundExecutor.shutdown()
@@ -244,28 +234,12 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
     }
 
     private fun initializeVoiceGuidance() {
-        textToSpeech = TextToSpeech(requireContext().applicationContext) { status ->
-            val engine = textToSpeech ?: return@TextToSpeech
-            if (status != TextToSpeech.SUCCESS) {
-                Log.w(TAG, "Không thể khởi tạo hướng dẫn bằng giọng nói")
-                return@TextToSpeech
-            }
-
-            val languageResult = engine.setLanguage(Locale.forLanguageTag("vi-VN"))
-            isVoiceReady = languageResult != TextToSpeech.LANG_MISSING_DATA &&
-                languageResult != TextToSpeech.LANG_NOT_SUPPORTED
-
-            if (!isVoiceReady) {
-                Log.w(TAG, "Thiết bị không có dữ liệu giọng đọc tiếng Việt")
-                return@TextToSpeech
-            }
-
-            applyVoicePreference()
-
-            if (_fragmentCameraBinding == null) return@TextToSpeech
+        VoiceCoachManager.initialize(requireContext()) { ready ->
+            if (!ready || _fragmentCameraBinding == null) return@initialize
             speakGuidance(
                 "Bắt đầu hiệu chỉnh camera. Đứng vào khung hình để nhìn thấy toàn thân.",
-                force = true
+                force = true,
+                speechRate = VoiceCoachManager.CALIBRATION_SPEECH_RATE
             )
         }
     }
@@ -277,24 +251,24 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
             "Ưu tiên giọng nam",
             "Giọng mặc định của thiết bị"
         )
-        val modes = arrayOf(VOICE_OFF, VOICE_FEMALE, VOICE_MALE, VOICE_DEFAULT)
+        val modes = arrayOf(
+            VoiceCoachManager.VOICE_OFF,
+            VoiceCoachManager.VOICE_FEMALE,
+            VoiceCoachManager.VOICE_MALE,
+            VoiceCoachManager.VOICE_DEFAULT
+        )
         val selected = modes.indexOf(voiceMode).coerceAtLeast(0)
 
         AlertDialog.Builder(requireContext())
             .setTitle("Voice coach")
             .setSingleChoiceItems(labels, selected) { dialog, which ->
                 voiceMode = modes[which]
-                requireContext()
-                    .getSharedPreferences(VOICE_PREFERENCES, Context.MODE_PRIVATE)
-                    .edit()
-                    .putString(KEY_VOICE_MODE, voiceMode)
-                    .apply()
-                applyVoicePreference()
+                VoiceCoachManager.setMode(requireContext(), voiceMode)
                 updateVoiceButtonState()
-                if (voiceMode != VOICE_OFF) {
+                if (voiceMode != VoiceCoachManager.VOICE_OFF) {
                     speakGuidance("Đã cập nhật giọng hướng dẫn.", force = true)
                 } else {
-                    textToSpeech?.stop()
+                    VoiceCoachManager.stop()
                 }
                 dialog.dismiss()
             }
@@ -303,34 +277,9 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
             .show()
     }
 
-    private fun applyVoicePreference() {
-        val engine = textToSpeech ?: return
-        val vietnameseVoices = engine.voices
-            ?.filter { it.locale.language == "vi" }
-            .orEmpty()
-        val hints = when (voiceMode) {
-            VOICE_FEMALE -> listOf("female", "woman", "vif", "viet_female")
-            VOICE_MALE -> listOf("male", "man", "vim", "viet_male")
-            else -> emptyList()
-        }
-        val preferredVoice = vietnameseVoices.firstOrNull { voice ->
-            hints.any { hint -> voice.name.contains(hint, ignoreCase = true) }
-        } ?: vietnameseVoices.firstOrNull()
-        preferredVoice?.let { engine.voice = it }
-
-        engine.setSpeechRate(1.0f)
-        engine.setPitch(
-            when (voiceMode) {
-                VOICE_FEMALE -> 1.06f
-                VOICE_MALE -> 0.94f
-                else -> 1.0f
-            }
-        )
-    }
-
     private fun updateVoiceButtonState() {
         _fragmentCameraBinding?.btnVoiceSettings?.alpha =
-            if (voiceMode == VOICE_OFF) 0.45f else 1f
+            if (voiceMode == VoiceCoachManager.VOICE_OFF) 0.45f else 1f
     }
 
     private fun handleVoiceGuidance(feedback: String, progress: Int, isComplete: Boolean) {
@@ -344,19 +293,28 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
 
         if (progress > lastSpokenProgress) {
             lastSpokenProgress = progress
-            val shouldAnnounceProgress = !isTimed || progress % 5 == 0
+            val shouldAnnounceProgress = if (isTimed) {
+                progress > 0 && progress % 10 == 0
+            } else {
+                progress in 1..3 || progress % 5 == 0
+            }
             if (shouldAnnounceProgress) {
                 val progressText = if (isTimed) "$progress giây" else progress.toString()
                 speakGuidance(progressText, force = true)
-                return
             }
+            // Do not append form feedback in the same frame as a new count.
+            return
         }
 
         speakGuidance(feedback)
     }
 
-    private fun speakGuidance(text: String, force: Boolean = false) {
-        if (!isVoiceReady || voiceMode == VOICE_OFF || text.isBlank()) return
+    private fun speakGuidance(
+        text: String,
+        force: Boolean = false,
+        speechRate: Float = VoiceCoachManager.NORMAL_SPEECH_RATE
+    ) {
+        if (voiceMode == VoiceCoachManager.VOICE_OFF || text.isBlank()) return
 
         val now = System.currentTimeMillis()
         val elapsed = now - lastVoiceTimeMs
@@ -364,12 +322,7 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
         if (!force && elapsed < VOICE_MIN_INTERVAL_MS) return
         if (!force && isRepeatedFeedback && elapsed < VOICE_REPEAT_INTERVAL_MS) return
 
-        textToSpeech?.speak(
-            text,
-            TextToSpeech.QUEUE_FLUSH,
-            null,
-            "tri_force_guidance_${now}"
-        )
+        VoiceCoachManager.speak(text, "tri_force_guidance_${now}", speechRate)
         lastSpokenFeedback = text
         lastVoiceTimeMs = now
     }
@@ -424,15 +377,19 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
         }
 
         calibrationStableFrames++
+        // Timed holds already validate the pose continuously inside their analyzer.
+        // Start them as soon as one ready frame is detected instead of making the
+        // user hold the same pose through the full repetition calibration window.
+        val requiredStableFrames = if (isTimed) 1 else CALIBRATION_STABLE_FRAMES
         val stableProgress = 55 +
-            (calibrationStableFrames * 45 / CALIBRATION_STABLE_FRAMES).coerceAtMost(45)
+            (calibrationStableFrames * 45 / requiredStableFrames).coerceAtMost(45)
         updateCalibration(
             CalibrationStage.HOLD_STILL,
             "Giữ nguyên tư thế chuẩn bị trong giây lát...",
             stableProgress
         )
 
-        if (calibrationStableFrames >= CALIBRATION_STABLE_FRAMES) {
+        if (calibrationStableFrames >= requiredStableFrames) {
             isCalibrated = true
             workoutStartedAtMs = SystemClock.elapsedRealtime()
             fragmentCameraBinding.tvCalibrationStep.text = "CAMERA ĐÃ SẴN SÀNG"
@@ -441,7 +398,11 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
             fragmentCameraBinding.btnFinishWorkout.isEnabled = true
             fragmentCameraBinding.btnFinishWorkout.text = "HOÀN THÀNH BÀI TẬP"
             fragmentCameraBinding.tvFormFeedback.text = "Camera đã sẵn sàng. Bắt đầu bài tập!"
-            speakGuidance("Hiệu chỉnh hoàn tất. Bắt đầu $exerciseName.", force = true)
+            speakGuidance(
+                "Hiệu chỉnh hoàn tất. Bắt đầu $exerciseName.",
+                force = true,
+                speechRate = VoiceCoachManager.CALIBRATION_SPEECH_RATE
+            )
             fragmentCameraBinding.calibrationCard.postDelayed({
                 if (_fragmentCameraBinding != null && isCalibrated) {
                     fragmentCameraBinding.calibrationCard.visibility = View.GONE
@@ -459,14 +420,29 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
         val stageChanged = calibrationStage != stage
         calibrationStage = stage
         fragmentCameraBinding.calibrationCard.visibility = View.VISIBLE
-        fragmentCameraBinding.tvCalibrationStep.text = when (stage) {
+        val stepText = when (stage) {
             CalibrationStage.FIND_BODY -> "HIỆU CHỈNH CAMERA • BƯỚC 1/3"
             CalibrationStage.READY_POSE -> "HIỆU CHỈNH CAMERA • BƯỚC 2/3"
             CalibrationStage.HOLD_STILL -> "HIỆU CHỈNH CAMERA • BƯỚC 3/3"
         }
-        fragmentCameraBinding.tvCalibrationMessage.text = message
-        fragmentCameraBinding.progressCalibration.progress = progress.coerceIn(0, 100)
-        if (stageChanged) speakGuidance(message, force = true)
+        if (fragmentCameraBinding.tvCalibrationStep.text.toString() != stepText) {
+            fragmentCameraBinding.tvCalibrationStep.text = stepText
+        }
+        if (fragmentCameraBinding.tvCalibrationMessage.text.toString() != message) {
+            fragmentCameraBinding.tvCalibrationMessage.text = message
+        }
+        val safeProgress = progress.coerceIn(0, 100)
+        if (fragmentCameraBinding.progressCalibration.progress != safeProgress) {
+            fragmentCameraBinding.progressCalibration.progress = safeProgress
+        }
+        // Keep coaching while the user remains stuck on a calibration step.
+        // speakGuidance() throttles repeated text, so this is audible roughly
+        // every VOICE_REPEAT_INTERVAL_MS instead of once per camera frame.
+        speakGuidance(
+            message,
+            force = stageChanged,
+            speechRate = VoiceCoachManager.CALIBRATION_SPEECH_RATE
+        )
     }
 
     private fun calibrationPoseInstruction(): String {
@@ -500,7 +476,11 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
             binding.btnFinishWorkout.isEnabled = false
             binding.btnFinishWorkout.text = "ĐANG HIỆU CHỈNH CAMERA..."
         }
-        speakGuidance("Bắt đầu hiệu chỉnh lại camera.", force = true)
+        speakGuidance(
+            "Bắt đầu hiệu chỉnh lại camera.",
+            force = true,
+            speechRate = VoiceCoachManager.CALIBRATION_SPEECH_RATE
+        )
     }
 
     private fun calculateFormScore(): Int {
@@ -726,15 +706,58 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
         val cameraProvider = cameraProvider ?: return
         val display = fragmentCameraBinding.viewFinder.display ?: return
 
-        val cameraSelector = CameraSelector.Builder().requireLensFacing(cameraFacing).build()
+        val requestedSelector = CameraSelector.Builder()
+            .requireLensFacing(cameraFacing)
+            .build()
+        val oppositeFacing = if (cameraFacing == CameraSelector.LENS_FACING_FRONT) {
+            CameraSelector.LENS_FACING_BACK
+        } else {
+            CameraSelector.LENS_FACING_FRONT
+        }
+        val oppositeSelector = CameraSelector.Builder()
+            .requireLensFacing(oppositeFacing)
+            .build()
+        val hasRequestedCamera = runCatching {
+            cameraProvider.hasCamera(requestedSelector)
+        }.getOrDefault(false)
+        val hasOppositeCamera = runCatching {
+            cameraProvider.hasCamera(oppositeSelector)
+        }.getOrDefault(false)
+
+        // Emulator webcams and USB cameras may expose LENS_FACING_UNKNOWN/null.
+        // An empty selector intentionally accepts the first available camera.
+        val cameraSelector = when {
+            hasRequestedCamera -> requestedSelector
+            hasOppositeCamera -> {
+                cameraFacing = oppositeFacing
+                oppositeSelector
+            }
+            cameraProvider.availableCameraInfos.isNotEmpty() -> CameraSelector.Builder().build()
+            else -> {
+                showCameraUnavailable("Không tìm thấy camera khả dụng trên thiết bị.")
+                return
+            }
+        }
+        val canSwitchLens = hasRequestedCamera && hasOppositeCamera
+        fragmentCameraBinding.btnSwitchCamera.isEnabled = canSwitchLens
+        fragmentCameraBinding.btnSwitchCamera.alpha = if (canSwitchLens) 1f else 0.45f
 
         preview = Preview.Builder()
             .setTargetAspectRatio(AspectRatio.RATIO_4_3)
             .setTargetRotation(display.rotation)
             .build()
 
+        val analysisResolutionSelector = ResolutionSelector.Builder()
+            .setResolutionStrategy(
+                ResolutionStrategy(
+                    Size(640, 480),
+                    ResolutionStrategy.FALLBACK_RULE_CLOSEST_HIGHER_THEN_LOWER
+                )
+            )
+            .build()
+
         imageAnalyzer = ImageAnalysis.Builder()
-            .setTargetAspectRatio(AspectRatio.RATIO_4_3)
+            .setResolutionSelector(analysisResolutionSelector)
             .setTargetRotation(display.rotation)
             .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
             .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_RGBA_8888)
@@ -750,20 +773,19 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
             camera = cameraProvider.bindToLifecycle(this, cameraSelector, preview, imageAnalyzer)
             preview?.setSurfaceProvider(fragmentCameraBinding.viewFinder.surfaceProvider)
         } catch (exc: Exception) {
-            Log.e(TAG, "Use case binding failed, attempting fallback camera", exc)
-            try {
-                val fallbackSelector = if (cameraFacing == CameraSelector.LENS_FACING_FRONT) {
-                    CameraSelector.DEFAULT_BACK_CAMERA
-                } else {
-                    CameraSelector.DEFAULT_FRONT_CAMERA
-                }
-                cameraProvider.unbindAll()
-                camera = cameraProvider.bindToLifecycle(this, fallbackSelector, preview, imageAnalyzer)
-                preview?.setSurfaceProvider(fragmentCameraBinding.viewFinder.surfaceProvider)
-            } catch (e: Exception) {
-                Log.e(TAG, "Fallback camera binding failed", e)
-            }
+            Log.e(TAG, "Camera use case binding failed", exc)
+            showCameraUnavailable("Không thể mở camera. Hãy đóng ứng dụng khác đang dùng webcam rồi thử lại.")
         }
+    }
+
+    private fun showCameraUnavailable(message: String) {
+        if (_fragmentCameraBinding == null || !isAdded) return
+        fragmentCameraBinding.calibrationCard.visibility = View.VISIBLE
+        fragmentCameraBinding.tvCalibrationStep.text = "CAMERA CHƯA SẴN SÀNG"
+        fragmentCameraBinding.tvCalibrationMessage.text = message
+        fragmentCameraBinding.progressCalibration.progress = 0
+        fragmentCameraBinding.btnFinishWorkout.isEnabled = false
+        Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show()
     }
 
     private fun detectPose(imageProxy: ImageProxy) {
@@ -783,28 +805,33 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
     override fun onResults(resultBundle: PoseLandmarkerHelper.ResultBundle) {
         activity?.runOnUiThread {
             if (_fragmentCameraBinding != null) {
-                fragmentCameraBinding.bottomSheetLayout.inferenceTimeVal.text =
-                    String.format("%d ms", resultBundle.inferenceTime)
+                val now = SystemClock.uptimeMillis()
+                if (now - lastInferenceUiUpdateMs >= 500L) {
+                    fragmentCameraBinding.bottomSheetLayout.inferenceTimeVal.text =
+                        String.format("%d ms", resultBundle.inferenceTime)
+                    lastInferenceUiUpdateMs = now
+                }
 
                 // Pose Analysis and Exercise Specific Logic
                 val hasLandmarks = resultBundle.results.first().landmarks().isNotEmpty()
                 if (hasLandmarks) {
                     val landmarks = resultBundle.results.first().landmarks().first()
-                    fragmentCameraBinding.overlay.setResults(
-                        resultBundle.results.first(),
-                        resultBundle.inputImageHeight,
-                        resultBundle.inputImageWidth,
-                        RunningMode.LIVE_STREAM,
-                        emptyList()
-                    )
+                    var overlayLines: List<CustomLine> = emptyList()
                     exerciseAnalyzer?.let { analyzer ->
                         if (handleCalibration(landmarks)) {
                             val result = analyzer.analyze(landmarks)
-                        
+
                             currentProgressCount = result.currentProgress
-                            fragmentCameraBinding.tvCounterValue.text = "$currentProgressCount / $targetCount $unitStr"
-                            fragmentCameraBinding.tvFormFeedback.text = result.feedback
-                            fragmentCameraBinding.tvFormFeedback.setTextColor(result.feedbackColor)
+                            val counterText = "$currentProgressCount / $targetCount $unitStr"
+                            if (fragmentCameraBinding.tvCounterValue.text.toString() != counterText) {
+                                fragmentCameraBinding.tvCounterValue.text = counterText
+                            }
+                            if (fragmentCameraBinding.tvFormFeedback.text.toString() != result.feedback) {
+                                fragmentCameraBinding.tvFormFeedback.text = result.feedback
+                            }
+                            if (fragmentCameraBinding.tvFormFeedback.currentTextColor != result.feedbackColor) {
+                                fragmentCameraBinding.tvFormFeedback.setTextColor(result.feedbackColor)
+                            }
                             trackFormSample(result.feedback, result.feedbackColor)
                             handleVoiceGuidance(
                                 feedback = result.feedback,
@@ -812,20 +839,21 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
                                 isComplete = result.isComplete
                             )
 
-                            // Update overlay with landmarks and custom lines from analysis
-                            fragmentCameraBinding.overlay.setResults(
-                                resultBundle.results.first(),
-                                resultBundle.inputImageHeight,
-                                resultBundle.inputImageWidth,
-                                RunningMode.LIVE_STREAM,
-                                result.customLines
-                            )
+                            overlayLines = result.customLines
 
                             if (result.isComplete) {
                                 completeWorkout(completedAutomatically = true)
                             }
                         }
                     }
+                    // Draw the skeleton once per result instead of invalidating it twice.
+                    fragmentCameraBinding.overlay.setResults(
+                        resultBundle.results.first(),
+                        resultBundle.inputImageHeight,
+                        resultBundle.inputImageWidth,
+                        RunningMode.LIVE_STREAM,
+                        overlayLines
+                    )
                 } else {
                     fragmentCameraBinding.overlay.setResults(
                         resultBundle.results.first(),
@@ -844,7 +872,6 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
                         speakGuidance(noBodyFeedback)
                     }
                 }
-                fragmentCameraBinding.overlay.invalidate()
             }
         }
     }
