@@ -120,54 +120,21 @@
             android:paddingVertical="7dp" />
     </com.google.android.material.card.MaterialCardView>
 
-    <!-- Bottom Floating Feedback & Action Button -->
-    <LinearLayout
+    <!-- Bottom Finish Action Button -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnFinishWorkout"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:gravity="center_horizontal"
+        android:layout_height="44dp"
+        android:minWidth="200dp"
         android:layout_gravity="bottom|center_horizontal"
-        android:layout_marginBottom="70dp">
-
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/cardFeedback"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="10dp"
-            android:layout_marginHorizontal="20dp"
-            app:cardBackgroundColor="#CC061321"
-            app:cardCornerRadius="18dp"
-            app:strokeColor="#33FFFFFF"
-            app:strokeWidth="1dp"
-            app:cardElevation="4dp">
-
-            <TextView
-                android:id="@+id/tvFormFeedback"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:maxWidth="320dp"
-                android:text="Đang nhận diện khung xương..."
-                android:textSize="13sp"
-                android:textColor="@color/tri_force_warning"
-                android:textStyle="bold"
-                android:gravity="center"
-                android:paddingHorizontal="16dp"
-                android:paddingVertical="7dp" />
-        </com.google.android.material.card.MaterialCardView>
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnFinishWorkout"
-            android:layout_width="wrap_content"
-            android:layout_height="44dp"
-            android:minWidth="200dp"
-            android:text="ĐANG HIỆU CHỈNH CAMERA..."
-            android:textSize="14sp"
-            android:textStyle="bold"
-            android:textColor="@color/tri_force_white"
-            android:backgroundTint="@color/tri_force_success"
-            app:cornerRadius="22dp"
-            app:elevation="4dp" />
-    </LinearLayout>
+        android:layout_marginBottom="70dp"
+        android:text="HOÀN THÀNH BÀI TẬP"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:textColor="@color/tri_force_white"
+        android:backgroundTint="@color/tri_force_success"
+        app:cornerRadius="22dp"
+        app:elevation="4dp" />
 
     <include
         android:id="@+id/bottom_sheet_layout"

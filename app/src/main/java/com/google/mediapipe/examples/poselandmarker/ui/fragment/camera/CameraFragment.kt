@@ -181,9 +181,7 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
         fragmentCameraBinding.tvWorkoutTarget.text = "Mục tiêu: $targetCount $unitStr"
 
         fragmentCameraBinding.tvCounterValue.text = "0/$targetCount"
-        fragmentCameraBinding.tvFormFeedback.text = "Đứng trước camera để hệ thống nhận diện khung xương..."
         fragmentCameraBinding.btnFinishWorkout.isEnabled = false
-        fragmentCameraBinding.btnFinishWorkout.text = "ĐANG HIỆU CHỈNH CAMERA..."
         updateVoiceButtonState()
 
         initializeVoiceGuidance()
@@ -406,9 +404,6 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
             isCalibrated = true
             workoutStartedAtMs = SystemClock.elapsedRealtime()
             fragmentCameraBinding.btnFinishWorkout.isEnabled = true
-            fragmentCameraBinding.btnFinishWorkout.text = "HOÀN THÀNH BÀI TẬP"
-            fragmentCameraBinding.tvFormFeedback.text = "Camera đã sẵn sàng. Bắt đầu bài tập!"
-            fragmentCameraBinding.tvFormFeedback.setTextColor(Color.parseColor("#4CAF50"))
             speakGuidance(
                 "Hiệu chỉnh hoàn tất. Bắt đầu $exerciseName.",
                 force = true,
@@ -425,10 +420,6 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
     ) {
         val stageChanged = calibrationStage != stage
         calibrationStage = stage
-        if (fragmentCameraBinding.tvFormFeedback.text.toString() != message) {
-            fragmentCameraBinding.tvFormFeedback.text = message
-            fragmentCameraBinding.tvFormFeedback.setTextColor(Color.parseColor("#FFCA28"))
-        }
         // Keep coaching while the user remains stuck on a calibration step.
         // speakGuidance() throttles repeated text, so this is audible roughly
         // every VOICE_REPEAT_INTERVAL_MS instead of once per camera frame.
@@ -461,13 +452,7 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
         isCalibrated = false
         calibrationStableFrames = 0
         calibrationStage = CalibrationStage.FIND_BODY
-        _fragmentCameraBinding?.let { binding ->
-            binding.tvFormFeedback.text =
-                "Đứng vào khung hình để camera nhìn thấy toàn thân."
-            binding.tvFormFeedback.setTextColor(Color.parseColor("#FFCA28"))
-            binding.btnFinishWorkout.isEnabled = false
-            binding.btnFinishWorkout.text = "ĐANG HIỆU CHỈNH CAMERA..."
-        }
+        _fragmentCameraBinding?.btnFinishWorkout?.isEnabled = false
         speakGuidance(
             "Bắt đầu hiệu chỉnh lại camera.",
             force = true,
@@ -772,8 +757,6 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
 
     private fun showCameraUnavailable(message: String) {
         if (_fragmentCameraBinding == null || !isAdded) return
-        fragmentCameraBinding.tvFormFeedback.text = message
-        fragmentCameraBinding.tvFormFeedback.setTextColor(Color.parseColor("#F44336"))
         fragmentCameraBinding.btnFinishWorkout.isEnabled = false
         Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show()
     }
@@ -816,12 +799,6 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
                             if (fragmentCameraBinding.tvCounterValue.text.toString() != counterText) {
                                 fragmentCameraBinding.tvCounterValue.text = counterText
                             }
-                            if (fragmentCameraBinding.tvFormFeedback.text.toString() != result.feedback) {
-                                fragmentCameraBinding.tvFormFeedback.text = result.feedback
-                            }
-                            if (fragmentCameraBinding.tvFormFeedback.currentTextColor != result.feedbackColor) {
-                                fragmentCameraBinding.tvFormFeedback.setTextColor(result.feedbackColor)
-                            }
                             trackFormSample(result.feedback, result.feedbackColor)
                             handleVoiceGuidance(
                                 feedback = result.feedback,
@@ -853,8 +830,6 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
                         emptyList()
                     )
                     val noBodyFeedback = "Hãy đứng lùi lại để camera quét được toàn thân"
-                    fragmentCameraBinding.tvFormFeedback.text = noBodyFeedback
-                    fragmentCameraBinding.tvFormFeedback.setTextColor(Color.parseColor("#FFCA28"))
                     if (!isCalibrated) {
                         calibrationStableFrames = 0
                         updateCalibration(CalibrationStage.FIND_BODY, noBodyFeedback, 8)
