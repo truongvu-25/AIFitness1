@@ -47,6 +47,7 @@ class PoseLandmarkerHelper(
     // For this example this needs to be a var so it can be reset on changes.
     // If the Pose Landmarker will not change, a lazy val would be preferable.
     private var poseLandmarker: PoseLandmarker? = null
+    private var bitmapBuffer: Bitmap? = null
 
     init {
         setupPoseLandmarker()
@@ -55,6 +56,8 @@ class PoseLandmarkerHelper(
     fun clearPoseLandmarker() {
         poseLandmarker?.close()
         poseLandmarker = null
+        bitmapBuffer?.recycle()
+        bitmapBuffer = null
     }
 
     // Return running status of PoseLandmarkerHelper
@@ -161,36 +164,48 @@ class PoseLandmarkerHelper(
             )
         }
         val frameTime = SystemClock.uptimeMillis()
+        val imageWidth = imageProxy.width
+        val imageHeight = imageProxy.height
+        val rotationDegrees = imageProxy.imageInfo.rotationDegrees
 
-        // Copy out RGB bits from the frame to a bitmap buffer
-        val bitmapBuffer =
-            Bitmap.createBitmap(
-                imageProxy.width,
-                imageProxy.height,
-                Bitmap.Config.ARGB_8888
-            )
+        // Reuse the RGBA bitmap between frames to avoid continuous large allocations and GC.
+        val frameBuffer = bitmapBuffer
+            ?.takeIf { !it.isRecycled && it.width == imageWidth && it.height == imageHeight }
+            ?: Bitmap.createBitmap(imageWidth, imageHeight, Bitmap.Config.ARGB_8888).also {
+                bitmapBuffer = it
+            }
 
-        imageProxy.use { bitmapBuffer.copyPixelsFromBuffer(imageProxy.planes[0].buffer) }
-        imageProxy.close()
+        imageProxy.use { proxy ->
+            val pixelBuffer = proxy.planes[0].buffer
+            pixelBuffer.rewind()
+            frameBuffer.copyPixelsFromBuffer(pixelBuffer)
+        }
 
         val matrix = Matrix().apply {
             // Rotate the frame received from the camera to be in the same direction as it'll be shown
-            postRotate(imageProxy.imageInfo.rotationDegrees.toFloat())
+            postRotate(rotationDegrees.toFloat())
 
             // flip image if user use front camera
             if (isFrontCamera) {
                 postScale(
                     -1f,
                     1f,
-                    imageProxy.width.toFloat(),
-                    imageProxy.height.toFloat()
+                    imageWidth.toFloat(),
+                    imageHeight.toFloat()
                 )
             }
         }
-        val rotatedBitmap = Bitmap.createBitmap(
-            bitmapBuffer, 0, 0, bitmapBuffer.width, bitmapBuffer.height,
+        val transformedBitmap = Bitmap.createBitmap(
+            frameBuffer, 0, 0, frameBuffer.width, frameBuffer.height,
             matrix, true
         )
+        // createBitmap may return its source when the transform is effectively identity.
+        // The async landmarker must own an immutable frame while frameBuffer is reused.
+        val rotatedBitmap = if (transformedBitmap === frameBuffer) {
+            frameBuffer.copy(Bitmap.Config.ARGB_8888, false)
+        } else {
+            transformedBitmap
+        }
 
         // Convert the input Bitmap object to an MPImage object to run inference
         val mpImage = BitmapImageBuilder(rotatedBitmap).build()
@@ -340,17 +355,21 @@ class PoseLandmarkerHelper(
         result: PoseLandmarkerResult,
         input: MPImage
     ) {
-        val finishTimeMs = SystemClock.uptimeMillis()
-        val inferenceTime = finishTimeMs - result.timestampMs()
+        try {
+            val finishTimeMs = SystemClock.uptimeMillis()
+            val inferenceTime = finishTimeMs - result.timestampMs()
 
-        poseLandmarkerHelperListener?.onResults(
-            ResultBundle(
-                listOf(result),
-                inferenceTime,
-                input.height,
-                input.width
+            poseLandmarkerHelperListener?.onResults(
+                ResultBundle(
+                    listOf(result),
+                    inferenceTime,
+                    input.height,
+                    input.width
+                )
             )
-        )
+        } finally {
+            input.close()
+        }
     }
 
     // Return errors thrown during detection to this PoseLandmarkerHelper's

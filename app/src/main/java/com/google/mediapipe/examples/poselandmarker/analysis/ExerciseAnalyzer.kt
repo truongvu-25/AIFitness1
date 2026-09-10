@@ -54,6 +54,7 @@ abstract class BaseExerciseAnalyzer(
     var lastTimeIncrementMs: Long = 0L
     var hasStarted: Boolean = false
     var hasTrueForm: Boolean = false
+    private var stableBodyOrientation: BodyOrientation? = null
 
     open val requiredOrientation: BodyOrientation = BodyOrientation.LEFT // Default to side view
 
@@ -146,11 +147,29 @@ abstract class BaseExerciseAnalyzer(
         val leftShoulder = landmarks[L_SHOULDER]
         val rightShoulder = landmarks[R_SHOULDER]
         val shoulderWidth = abs(leftShoulder.x() - rightShoulder.x())
-        return if (shoulderWidth >= 0.15) {
+        
+        // Use hysteresis around the front/side boundary. Without it, small landmark
+        // noise can flip orientation every frame and make an otherwise valid rep vanish.
+        val isFront = when (stableBodyOrientation) {
+            BodyOrientation.FRONT -> shoulderWidth >= 0.085f
+            BodyOrientation.LEFT, BodyOrientation.RIGHT -> shoulderWidth >= 0.115f
+            null -> shoulderWidth >= 0.10f
+        }
+
+        stableBodyOrientation = if (isFront) {
             BodyOrientation.FRONT
         } else {
-            if (leftShoulder.visibility().orElse(0f) > rightShoulder.visibility().orElse(0f)) BodyOrientation.LEFT else BodyOrientation.RIGHT
+            // Keep the selected side while landmark visibility is nearly tied.
+            val leftVisibility = leftShoulder.visibility().orElse(0f)
+            val rightVisibility = rightShoulder.visibility().orElse(0f)
+            when {
+                leftVisibility > rightVisibility + 0.08f -> BodyOrientation.LEFT
+                rightVisibility > leftVisibility + 0.08f -> BodyOrientation.RIGHT
+                stableBodyOrientation == BodyOrientation.LEFT -> BodyOrientation.LEFT
+                else -> BodyOrientation.RIGHT
+            }
         }
+        return stableBodyOrientation!!
     }
 
     fun isFullBodyVisible(landmarks: List<NormalizedLandmark>): Boolean {
@@ -170,9 +189,15 @@ abstract class BaseExerciseAnalyzer(
         val now = System.currentTimeMillis()
         if (lastTimeIncrementMs == 0L) {
             lastTimeIncrementMs = now
-        } else if (now - lastTimeIncrementMs >= 1000L) {
-            currentProgressCount++
-            lastTimeIncrementMs = now
+        } else {
+            val elapsedSeconds = ((now - lastTimeIncrementMs) / 1000L).toInt()
+            if (elapsedSeconds > 0) {
+                currentProgressCount += elapsedSeconds
+                if (targetCount > 0) {
+                    currentProgressCount = currentProgressCount.coerceAtMost(targetCount)
+                }
+                lastTimeIncrementMs += elapsedSeconds * 1000L
+            }
         }
     }
 
@@ -245,10 +270,10 @@ class PushupAnalyzer(id: String, name: String, target: Int, timed: Boolean, u: S
         val rightKnee = calculateAngle(landmarks[R_HIP], landmarks[R_KNEE], landmarks[R_ANKLE])
         hasTrueForm = leftKnee > 160 && rightKnee > 160
 
-        if (angle < 90 && hasTrueForm) {
+        if (angle < 100 && hasTrueForm) {
             isDown = true
             feedback = "Tốt! Bây giờ hãy đẩy lên."
-        } else if (isDown && angle > 160) {
+        } else if (isDown && angle > 150) {
             currentProgressCount++
             isDown = false
             feedback = "Đã xong 1 lần! Tiếp tục nào."
@@ -257,7 +282,7 @@ class PushupAnalyzer(id: String, name: String, target: Int, timed: Boolean, u: S
         } else {
             feedback = "Thẳng cái chân đi"
         }
-        return createResult(feedback, getFeedbackColor(isDown || angle > 160))
+        return createResult(feedback, getFeedbackColor(isDown || angle > 150))
     }
 }
 
@@ -279,17 +304,17 @@ class SquatAnalyzer(id: String, name: String, target: Int, timed: Boolean, u: St
         val leftAngle = calculateAngle(landmarks[L_HIP], landmarks[L_KNEE], landmarks[L_ANKLE])
         val rightAngle = calculateAngle(landmarks[R_HIP], landmarks[R_KNEE], landmarks[R_ANKLE])
 
-        if (leftAngle < 100 && rightAngle < 100) {
+        if (leftAngle < 110 && rightAngle < 110) {
             isDown = true
             feedback = "Đã xuống đủ sâu! Đứng dậy nào."
-        } else if (isDown && leftAngle > 160 && rightAngle > 160) {
+        } else if (isDown && leftAngle > 150 && rightAngle > 150) {
             currentProgressCount++
             isDown = false
             feedback = "Tuyệt vời! Tiếp tục squat."
         } else if (!isDown) {
             feedback = "Hạ thấp mông xuống chút nữa."
         }
-        return createResult(feedback, getFeedbackColor(isDown || (leftAngle > 160 && rightAngle > 160)))
+        return createResult(feedback, getFeedbackColor(isDown || (leftAngle > 150 && rightAngle > 150)))
     }
 }
 
@@ -308,8 +333,9 @@ class JumpingJackAnalyzer(id: String, name: String, target: Int, timed: Boolean,
         val handsHigh = landmarks[L_WRIST].y() < landmarks[L_SHOULDER].y() && landmarks[R_WRIST].y() < landmarks[R_SHOULDER].y()
         val handsDown = landmarks[L_WRIST].y() > landmarks[L_SHOULDER].y() && landmarks[R_WRIST].y() > landmarks[R_SHOULDER].y()
         val feetDistance = abs(landmarks[L_ANKLE].x() - landmarks[R_ANKLE].x())
-        val feetOpen = feetDistance > 0.15f
-        val feetClose = feetDistance < 0.12f
+        val bodyScale = abs(landmarks[L_SHOULDER].x() - landmarks[R_SHOULDER].x()).coerceAtLeast(0.08f)
+        val feetOpen = feetDistance > bodyScale * 1.35f
+        val feetClose = feetDistance < bodyScale * 0.95f
 
         if (handsHigh && feetOpen) {
             isUp = true
@@ -399,6 +425,7 @@ class PlankAnalyzer(id: String, name: String, target: Int, timed: Boolean, u: St
             updateTimedProgress()
             feedback = "Đang giữ chuẩn tư thế!"
         } else {
+            lastTimeIncrementMs = 0L
             feedback = "Hãy giữ thẳng thân và hai chân!"
             lines.add(CustomLine(shoulderIdx, ankleIdx, Color.GREEN))
         }
@@ -454,6 +481,7 @@ class SidePlankAnalyzer(id: String, name: String, target: Int, timed: Boolean, u
             updateTimedProgress()
             feedback = "Tuyệt vời, giữ vững nhé!"
         } else {
+            lastTimeIncrementMs = 0L
             feedback = "Đẩy hông cao lên một chút!"
             lines.add(CustomLine(sIdx, aIdx, Color.GREEN))
         }
@@ -480,16 +508,16 @@ class SplitSquatAnalyzer(id: String, name: String, target: Int, timed: Boolean, 
         val leftKnee = calculateAngle(landmarks[L_HIP], landmarks[L_KNEE], landmarks[L_ANKLE])
         val rightKnee = calculateAngle(landmarks[R_HIP], landmarks[R_KNEE], landmarks[R_ANKLE])
 
-        if (leftKnee < 90 && rightKnee < 90) {
+        if (leftKnee < 110 && rightKnee < 110) {
             isDown = true
             feedback = "Tốt! Đẩy người lên."
-        } else if (isDown && leftKnee > 150 && rightKnee > 150) {
+        } else if (isDown && leftKnee > 145 && rightKnee > 145) {
             currentProgressCount++
             isDown = false
             feedback = "Giữ thăng bằng tốt!"
         } else if (!isDown) {
             feedback = "Hạ gối chân sau sâu xuống."
         }
-        return createResult(feedback, getFeedbackColor(isDown || (leftKnee > 150 && rightKnee > 150)))
+        return createResult(feedback, getFeedbackColor(isDown || (leftKnee > 145 && rightKnee > 145)))
     }
 }

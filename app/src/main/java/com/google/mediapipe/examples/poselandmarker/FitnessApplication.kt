@@ -10,6 +10,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.mediapipe.examples.poselandmarker.config.FirebaseConfig
 import com.google.mediapipe.examples.poselandmarker.data.WorkoutSyncScheduler
 import com.google.mediapipe.examples.poselandmarker.model.ExerciseDetails
+import com.google.mediapipe.examples.poselandmarker.voice.VoiceCoachManager
 
 class FitnessApplication : Application() {
 
@@ -20,6 +21,7 @@ class FitnessApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        VoiceCoachManager.initialize(this)
         try {
             FirebaseConfig.initialize(this)
             initializeExerciseDatabase()
