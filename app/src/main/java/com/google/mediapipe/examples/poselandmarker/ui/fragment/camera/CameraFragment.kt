@@ -181,7 +181,6 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
         fragmentCameraBinding.tvWorkoutTarget.text = "Mục tiêu: $targetCount $unitStr"
 
         fragmentCameraBinding.tvCounterValue.text = "0/$targetCount"
-        fragmentCameraBinding.btnFinishWorkout.isEnabled = false
         updateVoiceButtonState()
 
         initializeVoiceGuidance()
@@ -191,7 +190,11 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
         )
 
         fragmentCameraBinding.btnBack.setOnClickListener {
-            findNavController().popBackStack()
+            if (currentProgressCount > 0 && !isCompletingWorkout) {
+                confirmManualCompletion()
+            } else {
+                findNavController().popBackStack()
+            }
         }
 
         fragmentCameraBinding.btnSwitchCamera.setOnClickListener {
@@ -206,10 +209,6 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
 
         fragmentCameraBinding.btnVoiceSettings.setOnClickListener {
             showVoiceSettingsDialog()
-        }
-
-        fragmentCameraBinding.btnFinishWorkout.setOnClickListener {
-            confirmManualCompletion()
         }
 
         fragmentCameraBinding.viewFinder.post {
@@ -403,7 +402,6 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
         if (calibrationStableFrames >= requiredStableFrames) {
             isCalibrated = true
             workoutStartedAtMs = SystemClock.elapsedRealtime()
-            fragmentCameraBinding.btnFinishWorkout.isEnabled = true
             speakGuidance(
                 "Hiệu chỉnh hoàn tất. Bắt đầu $exerciseName.",
                 force = true,
@@ -452,7 +450,6 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
         isCalibrated = false
         calibrationStableFrames = 0
         calibrationStage = CalibrationStage.FIND_BODY
-        _fragmentCameraBinding?.btnFinishWorkout?.isEnabled = false
         speakGuidance(
             "Bắt đầu hiệu chỉnh lại camera.",
             force = true,
@@ -503,7 +500,6 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
             return
         }
         isCompletingWorkout = true
-        fragmentCameraBinding.btnFinishWorkout.isEnabled = false
 
         val session = WorkoutSession(
             id = UUID.randomUUID().toString(),
@@ -566,7 +562,6 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
 
     private fun showWorkoutSaveError(message: String) {
         isCompletingWorkout = false
-        _fragmentCameraBinding?.btnFinishWorkout?.isEnabled = true
         Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
     }
 
@@ -757,7 +752,6 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
 
     private fun showCameraUnavailable(message: String) {
         if (_fragmentCameraBinding == null || !isAdded) return
-        fragmentCameraBinding.btnFinishWorkout.isEnabled = false
         Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show()
     }
 
