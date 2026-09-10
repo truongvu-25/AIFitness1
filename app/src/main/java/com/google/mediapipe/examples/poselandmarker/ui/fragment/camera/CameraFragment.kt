@@ -352,11 +352,24 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
         }
     }
 
+    private fun isFullBodyVisible(landmarks: List<NormalizedLandmark>): Boolean {
+        if (landmarks.size != 33) return false
+        val leftVisible = landmarks[11].visibility().orElse(0f) > 0.6f && landmarks[13].visibility().orElse(0f) > 0.6f && landmarks[15].visibility().orElse(0f) > 0.6f
+        val rightVisible = landmarks[12].visibility().orElse(0f) > 0.6f && landmarks[14].visibility().orElse(0f) > 0.6f && landmarks[16].visibility().orElse(0f) > 0.6f
+        if (!leftVisible && !rightVisible) return false
+        if (landmarks[0].visibility().orElse(0f) < 0.5f) return false
+        val pairs = listOf(23 to 24, 25 to 26, 27 to 28)
+        for ((left, right) in pairs) {
+            if (landmarks[left].visibility().orElse(0f) < 0.5f && landmarks[right].visibility().orElse(0f) < 0.5f) return false
+        }
+        return true
+    }
+
     private fun handleCalibration(landmarks: List<NormalizedLandmark>): Boolean {
         if (isCalibrated) return true
 
         val analyzer = exerciseAnalyzer ?: return false
-        if (!analyzer.isFullBodyVisible(landmarks)) {
+        if (!isFullBodyVisible(landmarks)) {
             calibrationStableFrames = 0
             updateCalibration(
                 CalibrationStage.FIND_BODY,
