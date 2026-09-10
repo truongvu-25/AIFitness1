@@ -6,7 +6,7 @@ import org.junit.Test
 class ProgressionAdvisorTest {
 
     @Test
-    fun tooEasyWithCompletedTargetAndGoodForm_increasesByTenPercent() {
+    fun tooEasyWithCompletedTargetAndGoodForm_increasesByTwentyPercent() {
         val result = ProgressionAdvisor.recommendTarget(
             currentTarget = 48,
             actualCount = 48,
@@ -14,7 +14,7 @@ class ProgressionAdvisorTest {
             difficulty = ProgressionAdvisor.TOO_EASY
         )
 
-        assertEquals(53, result)
+        assertEquals(58, result)
     }
 
     @Test
@@ -42,7 +42,7 @@ class ProgressionAdvisorTest {
     }
 
     @Test
-    fun tooHard_reducesByTenPercent() {
+    fun tooHard_reducesByTwentyPercent() {
         val result = ProgressionAdvisor.recommendTarget(
             currentTarget = 30,
             actualCount = 18,
@@ -50,7 +50,7 @@ class ProgressionAdvisorTest {
             difficulty = ProgressionAdvisor.TOO_HARD
         )
 
-        assertEquals(27, result)
+        assertEquals(24, result)
     }
 
     @Test
@@ -62,7 +62,7 @@ class ProgressionAdvisorTest {
             difficulty = ProgressionAdvisor.JUST_RIGHT
         )
 
-        assertEquals(18, result)
+        assertEquals(17, result)
     }
 
     @Test

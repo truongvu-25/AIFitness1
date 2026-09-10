@@ -277,13 +277,13 @@ class WorkoutSummaryFragment : Fragment() {
             formScore == 0 && recommendedTarget == targetCount ->
                 "Giữ mục tiêu $targetCount $unit vì AI chưa thu đủ dữ liệu form. Hãy đặt toàn thân trong khung hình ở buổi tiếp theo."
             formScore in 1..54 && recommendedTarget < targetCount ->
-                "AI đề xuất giảm từ $targetCount xuống $recommendedTarget $unit vì điểm form còn thấp. Ưu tiên kỹ thuật an toàn trước khi tăng khối lượng."
+                "Giảm ${ProgressionAdvisor.LOW_FORM_ADJUSTMENT_PERCENT}%: từ $targetCount xuống $recommendedTarget $unit vì điểm form còn thấp. Ưu tiên kỹ thuật an toàn trước."
             difficulty == ProgressionAdvisor.TOO_EASY && recommendedTarget > targetCount ->
-                "Tăng nhẹ từ $targetCount lên $recommendedTarget $unit. Mức tăng 10% giúp tạo thử thách mới mà không quá đột ngột."
+                "Tăng ${ProgressionAdvisor.TOO_EASY_ADJUSTMENT_PERCENT}%: từ $targetCount lên $recommendedTarget $unit để buổi sau đủ thử thách hơn."
             difficulty == ProgressionAdvisor.TOO_EASY && formScore in 1..69 ->
                 "Giữ mục tiêu $targetCount $unit và ưu tiên cải thiện kỹ thuật trước khi tăng khối lượng."
             difficulty == ProgressionAdvisor.TOO_HARD && recommendedTarget < targetCount ->
-                "Giảm nhẹ từ $targetCount xuống $recommendedTarget $unit để bạn hoàn thành bài với kỹ thuật ổn định hơn."
+                "Giảm ${ProgressionAdvisor.TOO_HARD_ADJUSTMENT_PERCENT}%: từ $targetCount xuống $recommendedTarget $unit để tập đủ bài và giữ form tốt hơn."
             else ->
                 "Mục tiêu $targetCount $unit đang phù hợp. Tiếp tục duy trì trong buổi kế tiếp."
         }

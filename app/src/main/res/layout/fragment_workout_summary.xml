@@ -300,7 +300,7 @@
                     android:insetTop="0dp"
                     android:insetBottom="0dp"
                     android:minWidth="0dp"
-                    android:text="Quá nhẹ"
+                    android:text="Quá nhẹ +20%"
                     android:textSize="10sp" />
 
                 <com.google.android.material.button.MaterialButton
@@ -314,7 +314,7 @@
                     android:insetTop="0dp"
                     android:insetBottom="0dp"
                     android:minWidth="0dp"
-                    android:text="Vừa sức"
+                    android:text="Vừa sức 0%"
                     android:textSize="10sp" />
 
                 <com.google.android.material.button.MaterialButton
@@ -327,7 +327,7 @@
                     android:insetTop="0dp"
                     android:insetBottom="0dp"
                     android:minWidth="0dp"
-                    android:text="Quá nặng"
+                    android:text="Quá nặng −20%"
                     android:textSize="10sp" />
             </LinearLayout>
 

@@ -55,8 +55,8 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
 
     companion object {
         private const val TAG = "PoseLandmarker"
-        private const val VOICE_MIN_INTERVAL_MS = 4_000L
-        private const val VOICE_REPEAT_INTERVAL_MS = 10_000L
+        private const val VOICE_MIN_INTERVAL_MS = 6_000L
+        private const val VOICE_REPEAT_INTERVAL_MS = 15_000L
         private const val FORM_SAMPLE_INTERVAL_MS = 500L
         private const val CALIBRATION_STABLE_FRAMES = 16
     }
@@ -283,7 +283,7 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
         if (isComplete) {
             if (!hasAnnouncedCompletion) {
                 hasAnnouncedCompletion = true
-                speakGuidance("Hoàn thành bài tập.", force = true)
+                speakGuidance("Hoàn thành.", force = true)
             }
             return
         }
@@ -291,9 +291,9 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
         if (progress > lastSpokenProgress) {
             lastSpokenProgress = progress
             val shouldAnnounceProgress = if (isTimed) {
-                progress > 0 && progress % 10 == 0
+                progress > 0 && progress % 15 == 0
             } else {
-                progress in 1..3 || progress % 5 == 0
+                progress == 1 || progress % 5 == 0
             }
             if (shouldAnnounceProgress) {
                 val progressText = if (isTimed) "$progress giây" else progress.toString()
@@ -303,7 +303,35 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
             return
         }
 
-        speakGuidance(feedback)
+        speakGuidance(conciseVoiceCue(feedback))
+    }
+
+    private fun conciseVoiceCue(feedback: String): String {
+        val normalized = feedback.trim().lowercase(Locale.forLanguageTag("vi-VN"))
+        return when {
+            normalized.contains("toàn thân") -> "Lùi lại."
+            normalized.contains("quay ngang") -> "Quay ngang."
+            normalized.contains("hướng về phía camera") -> "Nhìn camera."
+            normalized.contains("đẩy hông") -> "Nâng hông."
+            normalized.contains("hạ gối") -> "Hạ gối."
+            normalized.contains("hạ thấp mông") -> "Hạ mông."
+            normalized.contains("hạ thấp người") -> "Hạ thấp hơn."
+            normalized.contains("nằm xuống") -> "Hạ người."
+            normalized.contains("gập người") -> "Gập cao hơn."
+            normalized.contains("đầu gối co") -> "Co gối."
+            normalized.contains("thẳng cái chân") -> "Duỗi chân."
+            normalized.contains("đẩy lên") || normalized.contains("đẩy người lên") -> "Đẩy lên."
+            normalized.contains("đứng dậy") -> "Đứng lên."
+            normalized.contains("khép tay và chân") -> "Khép lại."
+            normalized.contains("giơ tay") -> "Mở tay và chân."
+            normalized.contains("giữ thẳng thân") -> "Giữ thẳng người."
+            normalized.contains("đang giữ chuẩn") ||
+                normalized.contains("đã xong") ||
+                normalized.contains("tiếp tục") ||
+                normalized.contains("tốt") ||
+                normalized.contains("tuyệt vời") -> ""
+            else -> feedback
+        }
     }
 
     private fun speakGuidance(
