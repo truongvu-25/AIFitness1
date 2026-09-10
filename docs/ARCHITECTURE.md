@@ -1,181 +1,123 @@
-# System Architecture & Technical Specifications
+# Tri Force architecture
 
-This document details the architectural design, software patterns, data flow, and technical component specifications of Fitness For You.
+[Repository overview](../README.md) · [Setup](SETUP.md) · [Implementation](TECHNICAL_OVERVIEW.md)
 
-## Architectural Overview
+## Application structure
 
-Fitness For You is engineered using Modern Android Development practices. It adopts a Single Activity Architecture paired with Jetpack Navigation Component, a decoupled Computer Vision engine (MediaPipe Tasks Vision + CameraX), and Android Foreground Services for continuous background operations.
+Tri Force is a single-module Android app. `MainActivity` hosts a Jetpack Navigation graph and shows the shared header/bottom navigation on Home, Calendar, Library, and Profile. Screens use XML layouts and View Binding. Much of the UI and Firestore access lives directly in fragments; `MainViewModel` holds shared pose inference settings.
 
 ```mermaid
-graph TD
-    subgraph UI_Layer [Single Activity & Navigation Layer]
-        MA[MainActivity]
-        NHF[NavHostFragment]
-        MA --> NHF
-        NHF --> LF[LoginFragment]
-        NHF --> RF[RegisterFragment]
-        NHF --> UIF[UserInfoFragment]
-        NHF --> WCF[WorkoutCalendarFragment]
-        NHF --> CF[CameraFragment]
-        NHF --> PF[ProfileFragment]
-        NHF --> UBF[UpdateBmiFragment]
-    end
-
-    subgraph AI_Pipeline [AI & Pose Detection Engine]
-        CF --> CX[CameraX ImageAnalysis]
-        CX --> PLH[PoseLandmarkerHelper]
-        PLH --> MP[MediaPipe Pose Landmarker Engine]
-        MP --> OV[OverlayView - Skeleton Rendering]
-        MP --> BEA[BaseExerciseAnalyzer Factory]
-        BEA --> PA[PushupAnalyzer]
-        BEA --> SA[SquatAnalyzer]
-        BEA --> JA[JumpingJackAnalyzer]
-        BEA --> SUA[SitupAnalyzer]
-        BEA --> PLA[PlankAnalyzer]
-        BEA --> SPA[SidePlankAnalyzer]
-        BEA --> SSA[SplitSquatAnalyzer]
-    end
-
-    subgraph Services_Layer [Background Services & System Alarms]
-        SCS[StepCounterService - Hardware Pedometer]
-        RTS[RestTimerService - 5-min Rest Timer]
-        NH[NotificationHelper & AlarmManager]
-        BR[BootReceiver - Reboot Recovery]
-    end
-
-    subgraph Data_Layer [Data & Storage Layer]
-        FA[Firebase Auth]
-        CFS[(Cloud Firestore)]
-        SP[SharedPreferences]
-    end
-
-    LF <--> FA
-    UIF --> CFS
-    WCF <--> CFS
-    CF --> CFS
-    PF <--> CFS
-    PF <--> SP
-    SCS --> SP
+flowchart TD
+    App[FitnessApplication] --> Init[Firebase initialization and notification channel]
+    App --> Scheduler[WorkoutSyncScheduler]
+    Activity[MainActivity] --> Screens[Navigation and fragments]
+    Screens --> Auth[Firebase Authentication]
+    Screens --> Cloud[(Cloud Firestore)]
+    Screens --> Catalog[Local ExerciseCatalog]
+    Screens --> Camera[CameraFragment]
+    Camera --> CameraX[CameraX ImageAnalysis]
+    CameraX --> Helper[PoseLandmarkerHelper]
+    Helper --> Analyzer[BaseExerciseAnalyzer and seven analyzers]
+    Helper --> Overlay[OverlayView]
+    Analyzer --> Summary[Workout summary]
+    Camera --> Room[(Room session database)]
+    Room --> Worker[WorkoutSyncWorker]
+    Scheduler --> Worker
+    Worker --> Cloud
+    Worker --> Health[Health Connect]
+    Screens --> Prefs[SharedPreferences]
 ```
 
-## UI & Presentation Layer
+## Component map
 
-The user interface uses a single hosting `MainActivity` containing a `NavHostFragment`. Top-level navigation bar (`BottomNavigationView`) visibility is managed dynamically via `navController.addOnDestinationChangedListener`.
+Source paths below are relative to `app/src/main/java/com/google/mediapipe/examples/poselandmarker/`.
 
-### Fragment Breakdown
+| Component | Responsibility |
+| --- | --- |
+| `FitnessApplication.kt` | Locale attachment, Firebase initialization, notification channel, sync scheduling |
+| `MainActivity.kt` | Navigation host, shared app chrome, activity/notification permission requests |
+| `ui/fragment/onboarding/` | Welcome/language selection, email registration/login, camera permission flow |
+| `ui/fragment/profile/UserInfoFragment.kt` | Guided profile questionnaire, profile edits, initial 30-day plan |
+| `ui/fragment/profile/chat/` | Question definitions, answer state, chat rows, height picker |
+| `ui/fragment/profile/UpdateBmiFragment.kt` | Height/weight and BMI update |
+| `ui/fragment/profile/ProfileFragment.kt` | Profile, steps, reminder preferences, Health Connect, logout |
+| `ui/fragment/home/HomeFragment.kt` | Home dashboard, saved/preset/custom plans, plan activation |
+| `ui/fragment/home/WorkoutCalendarFragment.kt` | Calendar states, daily exercises, plan management, tutorials |
+| `ui/fragment/home/ProgressFragment.kt` | Session history, weekly goal/chart, streaks, achievements |
+| `ui/fragment/library/` | Search/filter exercises and construct a custom weekly plan |
+| `ui/fragment/camera/CameraFragment.kt` | Camera lifecycle, calibration, voice guidance, session capture |
+| `ui/fragment/camera/WorkoutSummaryFragment.kt` | Result display, difficulty feedback, target adjustment |
+| `ui/fragment/camera/GalleryFragment.kt` | MediaPipe image/video analysis from selected media |
+| `analysis/` | Pose helper, overlay, exercise state machines |
+| `model/` | Catalog, Firestore/UI models, progression rules |
+| `data/local/` | Room database, session entity, DAO |
+| `data/WorkoutSyncWorker.kt` | Pending-session upload and optional Health Connect writes |
+| `health/HealthConnectManager.kt` | Permission checks, steps aggregation, exercise records |
+| `service/`, `notification/`, `receiver/` | Step tracking, rest countdown, reminders, boot recovery |
+| `utils/LocaleHelper.kt` | Persisted language and localized contexts |
 
-| Fragment | Class File | XML Layout | Primary Responsibility |
-| :--- | :--- | :--- | :--- |
-| **Login** | `LoginFragment.kt` | `fragment_login.xml` | User sign-in, auto-login persistence check, and 7-day BMI expiry routing. |
-| **Register** | `RegisterFragment.kt` | `fragment_register.xml` | New account registration via Firebase Auth. |
-| **User Info** | `UserInfoFragment.kt` | `fragment_user_info.xml` | Health metrics survey (height, weight, age), BMI calculation, and 30-day plan generation. |
-| **Workout Calendar** | `WorkoutCalendarFragment.kt` | `fragment_workout_calendar.xml` | Interactive 30-day calendar with 6 color-coded states, tutorial popup, and workout selection. |
-| **Camera AI** | `CameraFragment.kt` | `fragment_camera.xml` | Real-time CameraX preview, pose detection overlay, rep counting, and exercise completion. |
-| **Profile** | `ProfileFragment.kt` | `fragment_profile.xml` | Step counter & calorie view, profile editing, and 6 AI health advice scenarios based on BMI. |
-| **Update BMI** | `UpdateBmiFragment.kt` | `fragment_update_bmi.xml` | Mandatory screen enforcing height/weight updates every 7 days. |
+## Data storage
 
-## AI Pose Detection & Motion Analysis Engine
+### Firebase
 
-The computer vision engine separates image acquisition, landmark extraction, visual overlay, and exercise analysis into clean, modular layers.
+Firebase Authentication handles email/password credentials. Firestore stores application data under the authenticated user's UID:
 
 ```text
-CameraX ImageAnalysis Stream (~30 FPS)
-  └─► CameraFragment.detectPose(imageProxy)
-        └─► PoseLandmarkerHelper.detectLiveStream()
-              └─► MediaPipe Pose Landmarker Engine (33 3D landmarks)
-                    ├─► OverlayView.setResults() -> Draw Skeleton Lines & Joints
-                    └─► BaseExerciseAnalyzer.analyze(landmarks) -> Joint Angle Calculation & Rep Counter
+users/{uid}
+  profile fields, active plan metadata, weekly goal
+  workouts/day_{1..30}
+    dayIndex, exercises[], isRestDay / restDay
+  custom_plans/{planId}
+    saved weekly plan
+  workout_sessions/{sessionId}
+    exercise, target, actual count, duration, form feedback, difficulty, timestamps
+  exercise_history/{exerciseId}
+    last result, last difficulty, last completion time, session count
 ```
 
-### Motion Analysis & Joint Angle Trigonometry
+The seven exercise definitions and preset plans come from `ExerciseCatalog`. Startup does not seed a global `exercises` collection. Some data-model comments still refer to the earlier cloud catalog.
 
-The `BaseExerciseAnalyzer` calculates 2D/3D joint angles using 2D/3D Euclidean coordinates and 2-argument arctangent trigonometry (`Math.atan2`):
+Firestore access rules must enforce UID ownership. A rule example is included in [setup](SETUP.md#firebase); no Firebase project or deployed rules are bundled with this repository.
 
-$$\theta = \left| \text{atan2}(y_C - y_B, x_C - x_B) - \text{atan2}(y_A - y_B, x_A - x_B) \right| \times \frac{180}{\pi}$$
+### Room and synchronization
 
-#### Exercise Analyzer State Machines
+`TriForceDatabase` uses `tri_force_offline.db`, schema version 1. `PendingWorkoutSessionEntity` stores the owning UID, session metrics, JSON-encoded feedback, difficulty, separate Firestore/Health Connect sync flags, and the last cloud sync error.
 
-| Exercise | Key Landmarks | Analysis Metric | State Machine Logic |
-| :--- | :--- | :--- | :--- |
-| **Push-up** | Shoulder, Elbow, Wrist | Elbow Angle | `DOWN` when angle $\le 90^\circ$; `UP` (increment rep) when angle $\ge 160^\circ$. |
-| **Squat** | Hip, Knee, Ankle | Knee Angle | `DOWN` when angle $\le 95^\circ$; `UP` (increment rep) when angle $\ge 160^\circ$. |
-| **Jumping Jack** | Wrist, Hip, Ankle | Arm & Leg Separation | `OPEN` when hands above head and feet wide; `CLOSED` (increment rep) when hands down and feet together. |
-| **Sit-up** | Shoulder, Hip, Knee | Hip Angle | `DOWN` when angle $\ge 140^\circ$; `UP` (increment rep) when angle $\le 65^\circ$. |
-| **Plank** | Shoulder, Hip, Ankle | Spine/Hip Straightness | Valid hold time increments per second ($1000\text{ ms}$) when hip angle is between $160^\circ - 180^\circ$. |
-| **Side Plank** | Shoulder, Hip, Ankle | Lateral Hip Elevation | Valid hold time increments per second when lateral hip alignment is straight. |
-| **Split Squat** | Hip, Front Knee, Ankle | Front Knee Angle | `DOWN` when front knee $\le 95^\circ$; `UP` (increment rep) when front knee $\ge 160^\circ$. |
+1. Camera completion writes a session to Room.
+2. The app requests unique WorkManager work with a connected-network constraint.
+3. The worker selects pending sessions for the currently authenticated UID.
+4. A Firestore transaction writes the session, marks matching daily exercises complete, and updates per-exercise history.
+5. With Health Connect availability and permissions, the worker writes an exercise session using a stable client record ID.
+6. Sync flags are updated independently. Failures use exponential backoff, with a retry cap in the worker.
 
-## Background Services & System Architecture
+Sync is also requested during application initialization and after difficulty feedback changes. The worker's `KEEP` policy, network constraint, retry cap, and current-account filtering are relevant when debugging delayed uploads. Local persistence does not make every screen or account operation available offline.
 
-Continuous background operations are implemented using Android Foreground Services to ensure they are not terminated by the OS when the app goes into the background.
+### Preferences and device data
 
-```text
-                        ┌───────────────────────────────┐
-                        │        Android System         │
-                        └───────────────┬───────────────┘
-                                        │
-                 ┌──────────────────────┴──────────────────────┐
-                 │                                             │
-                 ▼                                             ▼
-     ┌──────────────────────┐                      ┌──────────────────────┐
-     │  StepCounterService  │                      │   RestTimerService   │
-     │  (Foreground Data)   │                      │  (Foreground Timer)  │
-     └───────────┬──────────┘                      └───────────┬──────────┘
-                 │                                             │
-                 ▼                                             ▼
-     Hardware Step Sensor                           5-Minute CountDownTimer
-     (Sensor.TYPE_STEP_COUNTER)                     (Ongoing Notification)
-                 │                                             │
-                 ▼                                             ▼
-     Save SharedPreferences                         Send Rest Expired Notification
-     & Broadcast to Profile UI                      (Priority High Alarm)
-```
+SharedPreferences hold language, reminder time/enabled state, step counter state, voice mode, and some plan/goal caches. Profile step display can incorporate Health Connect data. The step service estimates calories as `steps * 0.04`.
 
-### Service Specifications
+The camera pipeline processes frames in memory on-device and stores workout metrics. It has no camera-frame upload path to Firebase. Android TextToSpeech behavior depends on the installed speech engine and voice data.
 
-1. **`StepCounterService.kt`**
-   - **Type**: `foregroundServiceType="dataSync"`
-   - **Sensor**: `Sensor.TYPE_STEP_COUNTER`
-   - **Calorie Formula**: $\text{Calories} = \text{Steps} \times 0.04\text{ kcal}$
-   - **Persistence**: Saved to `SharedPreferences`; broadcasts updates to `ProfileFragment`.
+Health Connect access is limited to reading steps and writing exercise sessions. It is optional, checked at runtime, and separately permissioned. The sync worker currently requires both declared Health Connect permissions before writing a session.
 
-2. **`RestTimerService.kt`**
-   - **Type**: `foregroundServiceType="dataSync"`
-   - **Timer**: 5-minute countdown ($300,000\text{ ms}$)
-   - **Behavior**: Displays ongoing live notification (`mm:ss`). Upon completion, triggers a high-priority alert notification prompting the user to start the next exercise. Auto-stops if all today's exercises are finished.
+## Permissions and background work
 
-3. **`NotificationHelper.kt` & `WorkoutReminderReceiver.kt`**
-   - **Mechanism**: `AlarmManager.setAndAllowWhileIdle()`
-   - **Schedule**: Daily at 8:00 AM.
-   - **Behavior**: Checks if today has pending exercises (`status == 0`) before delivering the notification.
+| Manifest capability | Used for |
+| --- | --- |
+| Camera and required camera hardware | Live pose inference |
+| Internet | Authentication, Firestore, dependencies on remote services |
+| Activity recognition | Hardware step sensor |
+| Post notifications | Workout reminders and service notifications |
+| Foreground service + health type | StepCounterService |
+| Foreground service + dataSync type | RestTimerService |
+| Receive boot completed | Restore reminder scheduling |
+| Health read steps / write exercise | Optional Health Connect integration |
 
-4. **`BootReceiver.kt`**
-   - **Trigger**: `Intent.ACTION_BOOT_COMPLETED`
-   - **Behavior**: Reschedules the 8:00 AM `AlarmManager` reminder automatically after device restarts.
+Reminders default to 08:00, can be changed in Profile, and use `setAndAllowWhileIdle`. The manifest does not request an exact-alarm permission. The rest timer lasts five minutes. Android scheduling and device power management can affect delivery.
 
-## Database & Data Layer Architecture
+## Branding and localization
 
-The database layer utilizes Cloud Firestore structured as a hierarchical Document-Collection model.
+The app label resolves to **Tri Force** in both language resource sets. `AndroidManifest.xml` uses `res/drawable/app_logo.png` for the app icon and round icon; both READMEs reference that same file. Existing welcome and in-app brand assets remain in `res/drawable/`.
 
-```text
-cloud_firestore/
-├── exercises/ (Collection)
-│   ├── pushup (Document)
-│   ├── squat (Document)
-│   └── ... (7 master exercise metadata documents)
-└── users/ (Collection)
-    └── {uid} (Document - UserProfile)
-        └── workouts/ (Sub-collection)
-            ├── day_1 (Document - WorkoutDay)
-            ├── day_2 (Document - WorkoutDay)
-            └── ... (day_1 to day_30 documents)
-```
+The default locale is Vietnamese, with English resource overrides. Several camera, summary, and voice strings are still hardcoded Vietnamese. The Kotlin namespace and application ID preserve the original MediaPipe sample package.
 
-### Data Seeding & Initialization
-
-On application startup (`FitnessApplication.kt`), master exercise metadata is written to the `exercises` collection via a Firestore Write Batch if missing, ensuring complete self-healing capabilities when deployed to a new Firebase environment.
-
-## Security & Android 14 Compliance
-
-- **API 34 (Android 14) Compliance**: Foreground services declare `foregroundServiceType="dataSync"` in `AndroidManifest.xml` alongside `<uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />`.
-- **Sensitive Data Exclusion**: Local configuration files (`google-services.json`, `local.properties`, keystores) are excluded from source control via `.gitignore`.

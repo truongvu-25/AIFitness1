@@ -1,84 +1,50 @@
-# Contributing to Fitness For You
+# Contributing to Tri Force
 
-Thank you for your interest in contributing to Fitness For You. We welcome contributions, bug fixes, documentation improvements, and feature proposals.
+Start with the [README](README.md), [setup guide](docs/SETUP.md), and [architecture](docs/ARCHITECTURE.md). Use your own Firebase development project for runtime checks; the dummy config supports compilation and JVM tests.
 
-This guide outlines our development workflow, coding standards, and repository practices.
+## Workflow
 
-## Table of Contents
+1. Create a focused branch from the repository's current development branch.
+2. Make a change with a concrete user-visible outcome or a clearly described maintenance purpose.
+3. Run the checks relevant to the change. For Kotlin, resources, or build changes:
 
-- [Getting Started](#getting-started)
-- [Development Workflow](#development-workflow)
-- [How to Add a New Exercise](#how-to-add-a-new-exercise)
-- [Code Style & Standards](#code-style--standards)
-- [Security & Sensitive Data Rules](#security--sensitive-data-rules)
-- [Submitting Pull Requests](#submitting-pull-requests)
-
-## Getting Started
-
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/truongvu-25/AIFitness1.git
-   cd AIFitness1
-   ```
-
-2. Configure Firebase by placing your own `google-services.json` in the `app/` directory:
-   ```text
-   app/google-services.json
-   ```
-
-3. Build the debug APK:
    ```powershell
-   .\gradlew.bat assembleDebug
+   .\gradlew.bat :app:assembleDebug :app:testDebugUnitTest :app:lintDebug
    ```
 
-4. Open the project in Android Studio, sync Gradle, and run the `app` module on a physical Android device or emulator with camera support.
+   On macOS/Linux use `bash ./gradlew` with the same tasks.
 
-## Development Workflow
+4. Run affected device flows and record the device/API level and outcome.
+5. Open a pull request describing the problem, resulting behavior, and verification. Update docs when setup or behavior changes.
 
-1. Create a feature branch:
-   ```bash
-   git checkout -b feature/your-feature-name
-   ```
-2. Make focused, incremental commits with clear commit messages in English.
-3. Verify that the app builds cleanly before opening a Pull Request.
+Documentation-only edits should verify links, branding, and claims against source. Do not include generated APKs or personal configuration in a pull request.
 
-## How to Add a New Exercise
+## Code conventions
 
-To add a new exercise to the app:
+- Follow Kotlin conventions and the existing package organization.
+- Use View Binding and clear fragment bindings in `onDestroyView`.
+- Guard asynchronous UI callbacks against detached fragments/destroyed views.
+- Put new UI strings in the Vietnamese default resources and English overrides.
+- Keep canonical exercise IDs stable: plans, sessions, aliases, and analyzers share them.
+- Keep Firestore serialization compatibility in mind, including existing boolean aliases.
+- Preserve copyright/license headers from upstream files.
+- Keep the current Tri Force name and app logo consistent across documentation and UI.
 
-1. Place an offline MP4 tutorial video in `app/src/main/assets/videos/your_exercise.mp4`.
-2. Add an `ExerciseDetails` entry to `initializeExerciseDatabase()` in `FitnessApplication.kt`:
-   ```kotlin
-   ExerciseDetails(
-       id = "lunge",
-       name = "Chân Trước Chân Sau (Lunge)",
-       description = "Bước chân trước gập gối 90 độ, giữ lưng thẳng.",
-       videoUrl = "asset:///videos/lunge.mp4",
-       isTimed = false,
-       unit = "lần"
-   )
-   ```
-3. Extend `BaseExerciseAnalyzer` in `ExerciseAnalyzer.kt` to calculate joint angles and rep states.
-4. Register the new analyzer in `BaseExerciseAnalyzer.create()`.
+## Adding an exercise
 
-## Code Style & Standards
+1. Add a definition in `model/ExerciseCatalog.kt`: stable ID, localized resource references, video URI, timed/repetition behavior, category, and target.
+2. Add Vietnamese and English strings and a tutorial asset whose redistribution rights are documented.
+3. Implement a `BaseExerciseAnalyzer` subclass in `analysis/ExerciseAnalyzer.kt` and register it in the factory.
+4. Connect feedback strings to localization and check camera calibration instructions for the new exercise.
+5. Update plan generation/presets where appropriate and remove any UI assumptions about seven exercises.
+6. Update catalog tests and add meaningful behavioral checks for new logic. Verify the analyzer on a device with valid/invalid starting poses and poor visibility.
+7. Update the supported-exercise tables and [asset notices](THIRD_PARTY_NOTICES.md).
 
-- Follow standard Kotlin coding conventions.
-- Use View Binding (`FragmentXxxBinding`) instead of `findViewById`. Nullify binding in `onDestroyView()` (`_binding = null`).
-- Keep shared Firestore data classes explicit in `Models.kt`.
-- Keep screen-specific UI logic inside its corresponding Fragment.
-- Avoid non-null assertions (`!!`) where possible; use null-guards (`if (_binding == null || !isAdded) return`).
+The old startup Firestore-seeding path is no longer used.
 
-## Security & Sensitive Data Rules
+## Repository hygiene
 
-- Do not commit `app/google-services.json`.
-- Do not commit `local.properties` or `.idea/` workspace files.
-- Do not commit release signing keys (`.jks`, `.keystore`) or credentials.
-- Do not hardcode API keys or personal data in source files.
+Keep Firebase configs, service-account keys, signing keys/passwords, local SDK paths, environment files, user data, IDE state, and generated work logs out of commits. Use the included example config for public build checks.
 
-## Submitting Pull Requests
+Use [SECURITY.md](SECURITY.md) for vulnerability reporting. Describe bugs using synthetic data and redact personal information from logs or screenshots.
 
-- Verify the debug build succeeds (`.\gradlew.bat assembleDebug`).
-- Ensure no sensitive local configuration files or keys are tracked by Git.
-- Update documentation (`README.md`, `docs/`) when app flows or requirements change.
-- Ensure end-to-end flows run without errors.

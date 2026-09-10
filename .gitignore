@@ -2,6 +2,8 @@
 *.iml
 .idea/
 .gradle/
+.kotlin/
+.artifacts/
 
 # Local machine config
 /local.properties
@@ -11,7 +13,10 @@ firebase.properties
 .env.*
 
 # Firebase local config
-app/google-services.json
+google-services.json
+google-services-*.json
+*service-account*.json
+*firebase-adminsdk*.json
 
 # Build output
 /build/
@@ -27,8 +32,12 @@ app/build/
 *.keystore
 *.p12
 *.pem
+*.pfx
+key.properties
+keystore.properties
 
 # OS / temporary files
 .DS_Store
 Thumbs.db
 *.wav
+*.log

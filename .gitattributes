@@ -1,0 +1,13 @@
+* text=auto
+
+# Keep the Gradle wrapper runnable on Unix checkouts.
+gradlew text eol=lf
+*.bat text eol=crlf
+*.yml text eol=lf
+*.yaml text eol=lf
+
+# Preserve existing binary app assets.
+*.png binary
+*.mp4 binary
+*.task binary
+*.jar binary
