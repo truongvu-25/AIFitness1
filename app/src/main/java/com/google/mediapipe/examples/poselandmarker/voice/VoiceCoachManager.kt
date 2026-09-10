@@ -175,9 +175,11 @@ object VoiceCoachManager {
         }
         preferredVoice?.let { engine.voice = it }
 
-        // Use the engine's real voice instead of pitch-shifting it. Pitch shifting
-        // made Vietnamese speech metallic and could confuse the perceived gender.
-        engine.setPitch(1.0f)
+        when (voiceMode) {
+            VOICE_MALE -> engine.setPitch(0.85f)
+            VOICE_FEMALE -> engine.setPitch(1.15f)
+            else -> engine.setPitch(1.0f)
+        }
         engine.setSpeechRate(NORMAL_SPEECH_RATE)
     }
 
@@ -190,15 +192,18 @@ object VoiceCoachManager {
         return when (mode) {
             VOICE_FEMALE -> when {
                 "female" in tokens -> 100
-                "vif" in tokens -> 90
-                "woman" in tokens -> 80
+                "woman" in tokens -> 90
+                "vie" in tokens -> 85
+                "vic" in tokens -> 80
+                "via" in tokens -> 75
                 else -> 0
             }
             VOICE_MALE -> when {
-                // Exact token matching prevents "male" from matching "female".
                 "male" in tokens -> 100
-                "vim" in tokens -> 90
-                "man" in tokens -> 80
+                "man" in tokens -> 90
+                "vif" in tokens -> 85
+                "vid" in tokens -> 80
+                "vib" in tokens -> 75
                 else -> 0
             }
             else -> 0
