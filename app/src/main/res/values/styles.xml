@@ -193,104 +193,16 @@
 
 
 
-    <style
-        name="TriForceButtonText"
-        parent="Widget.MaterialComponents.Button.TextButton">
-
-        <item name="android:textColor">
-            @color/mp_color_primary
-        </item>
-
-        <item name="android:textStyle">
-            bold
-        </item>
-
-        <item name="android:textAllCaps">
-            false
-        </item>
-
-        <item name="rippleColor">
-            @color/tri_force_blue_light
-        </item>
-
-    </style>
 
 
-    <style name="TriForceTextDisplay">
-
-        <item name="android:textColor">
-            @color/tri_force_text_primary
-        </item>
-
-        <item name="android:textSize">
-            28sp
-        </item>
-
-        <item name="android:textStyle">
-            bold
-        </item>
-
-    </style>
 
 
-    <style name="TriForceTextTitle">
-
-        <item name="android:textColor">
-            @color/tri_force_text_primary
-        </item>
-
-        <item name="android:textSize">
-            22sp
-        </item>
-
-        <item name="android:textStyle">
-            bold
-        </item>
-
-    </style>
 
 
-    <style name="TriForceTextHeading">
-
-        <item name="android:textColor">
-            @color/tri_force_text_primary
-        </item>
-
-        <item name="android:textSize">
-            18sp
-        </item>
-
-        <item name="android:textStyle">
-            bold
-        </item>
-
-    </style>
 
 
-    <style name="TriForceTextBody">
-
-        <item name="android:textColor">
-            @color/tri_force_text_secondary
-        </item>
-
-        <item name="android:textSize">
-            15sp
-        </item>
-
-    </style>
 
 
-    <style name="TriForceTextCaption">
-
-        <item name="android:textColor">
-            @color/tri_force_text_tertiary
-        </item>
-
-        <item name="android:textSize">
-            13sp
-        </item>
-
-    </style>
 
 
     <style

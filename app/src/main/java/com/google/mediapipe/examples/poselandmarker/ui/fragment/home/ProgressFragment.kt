@@ -88,8 +88,11 @@ class ProgressFragment : Fragment() {
             if (cachedSessions.isNotEmpty() && _binding != null) {
                 renderProgress(cachedSessions)
             }
+            loadRemoteProgress(uid)
         }
+    }
 
+    private fun loadRemoteProgress(uid: String) {
         db.collection("users")
             .document(uid)
             .collection("workout_sessions")
@@ -113,7 +116,7 @@ class ProgressFragment : Fragment() {
                     val dao = TriForceDatabase.getInstance(requireContext()).workoutSessionDao()
                     sessions.forEach { remote ->
                         if (dao.getById(remote.id) == null) {
-                            dao.upsert(remote.toLocalEntity(uid, firestoreSynced = true))
+                            dao.insertIfAbsent(remote.toLocalEntity(uid, firestoreSynced = true))
                         }
                     }
                 }

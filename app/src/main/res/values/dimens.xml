@@ -9,8 +9,6 @@
 
     <!-- LEGACY / EXISTING -->
 
-    <dimen name="stroke_small">4dp</dimen>
-    <dimen name="round_button_medium">64dp</dimen>
 
 
     <!-- =========================================================
@@ -32,9 +30,7 @@
 
     <dimen name="screen_horizontal_padding">20dp</dimen>
 
-    <dimen name="section_spacing">24dp</dimen>
 
-    <dimen name="item_spacing">12dp</dimen>
 
 
     <!-- =========================================================
@@ -49,9 +45,7 @@
 
     <dimen name="header_wordmark_height">28dp</dimen>
 
-    <dimen name="header_action_size">36dp</dimen>
 
-    <dimen name="header_content_spacing">12dp</dimen>
 
 
     <!-- Header 58dp + khoảng thở -->
@@ -74,17 +68,13 @@
 
     <dimen name="bottom_nav_height">60dp</dimen>
 
-    <dimen name="bottom_nav_horizontal_margin">0dp</dimen>
 
-    <dimen name="bottom_nav_bottom_margin">0dp</dimen>
 
-    <dimen name="bottom_nav_corner_radius">0dp</dimen>
 
     <dimen name="bottom_nav_icon_size">21dp</dimen>
 
     <dimen name="bottom_nav_top_divider">1dp</dimen>
 
-    <dimen name="bottom_nav_label_size">10sp</dimen>
 
 
     <!-- =========================================================
@@ -99,7 +89,6 @@
 
     <dimen name="card_padding_large">20dp</dimen>
 
-    <dimen name="card_elevation">0dp</dimen>
 
 
     <!-- =========================================================
@@ -112,20 +101,16 @@
 
     <dimen name="button_corner_radius">12dp</dimen>
 
-    <dimen name="button_horizontal_padding">18dp</dimen>
 
 
     <!-- =========================================================
          ICONS
          ========================================================= -->
 
-    <dimen name="icon_size_small">16dp</dimen>
 
     <dimen name="icon_size">20dp</dimen>
 
-    <dimen name="icon_size_medium">24dp</dimen>
 
-    <dimen name="icon_size_large">32dp</dimen>
 
 
     <!-- =========================================================

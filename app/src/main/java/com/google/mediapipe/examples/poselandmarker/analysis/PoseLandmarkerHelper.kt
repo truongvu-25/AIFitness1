@@ -31,6 +31,7 @@ import com.google.mediapipe.tasks.core.Delegate
 import com.google.mediapipe.tasks.vision.core.RunningMode
 import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarker
 import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarkerResult
+import java.util.concurrent.atomic.AtomicReference
 
 class PoseLandmarkerHelper(
     var minPoseDetectionConfidence: Float = DEFAULT_POSE_DETECTION_CONFIDENCE,
@@ -48,6 +49,7 @@ class PoseLandmarkerHelper(
     // If the Pose Landmarker will not change, a lazy val would be preferable.
     private var poseLandmarker: PoseLandmarker? = null
     private var bitmapBuffer: Bitmap? = null
+    private val pendingImage = AtomicReference<MPImage?>(null)
 
     init {
         setupPoseLandmarker()
@@ -56,6 +58,7 @@ class PoseLandmarkerHelper(
     fun clearPoseLandmarker() {
         poseLandmarker?.close()
         poseLandmarker = null
+        pendingImage.getAndSet(null)?.close()
         bitmapBuffer?.recycle()
         bitmapBuffer = null
     }
@@ -163,62 +166,75 @@ class PoseLandmarkerHelper(
                         " while not using RunningMode.LIVE_STREAM"
             )
         }
-        val frameTime = SystemClock.uptimeMillis()
-        val imageWidth = imageProxy.width
-        val imageHeight = imageProxy.height
-        val rotationDegrees = imageProxy.imageInfo.rotationDegrees
+        try {
+            // Keep only one immutable input alive until native inference has finished.
+            if (pendingImage.get() != null || poseLandmarker == null) return
+            val frameTime = SystemClock.uptimeMillis()
+            val imageWidth = imageProxy.width
+            val imageHeight = imageProxy.height
+            val rotationDegrees = imageProxy.imageInfo.rotationDegrees
 
-        // Reuse the RGBA bitmap between frames to avoid continuous large allocations and GC.
-        val frameBuffer = bitmapBuffer
-            ?.takeIf { !it.isRecycled && it.width == imageWidth && it.height == imageHeight }
-            ?: Bitmap.createBitmap(imageWidth, imageHeight, Bitmap.Config.ARGB_8888).also {
-                bitmapBuffer = it
-            }
+            // Reuse the RGBA bitmap between frames to avoid continuous large allocations and GC.
+            val frameBuffer = bitmapBuffer
+                ?.takeIf { !it.isRecycled && it.width == imageWidth && it.height == imageHeight }
+                ?: Bitmap.createBitmap(imageWidth, imageHeight, Bitmap.Config.ARGB_8888).also {
+                    bitmapBuffer = it
+                }
 
-        imageProxy.use { proxy ->
-            val pixelBuffer = proxy.planes[0].buffer
+            val pixelBuffer = imageProxy.planes[0].buffer
             pixelBuffer.rewind()
             frameBuffer.copyPixelsFromBuffer(pixelBuffer)
-        }
 
-        val matrix = Matrix().apply {
-            // Rotate the frame received from the camera to be in the same direction as it'll be shown
-            postRotate(rotationDegrees.toFloat())
+            val matrix = Matrix().apply {
+                // Rotate the frame received from the camera to be in the same direction as it'll be shown
+                postRotate(rotationDegrees.toFloat())
 
-            // flip image if user use front camera
-            if (isFrontCamera) {
-                postScale(
-                    -1f,
-                    1f,
-                    imageWidth.toFloat(),
-                    imageHeight.toFloat()
-                )
+                // flip image if user use front camera
+                if (isFrontCamera) {
+                    postScale(
+                        -1f,
+                        1f,
+                        imageWidth.toFloat(),
+                        imageHeight.toFloat()
+                    )
+                }
             }
-        }
-        val transformedBitmap = Bitmap.createBitmap(
-            frameBuffer, 0, 0, frameBuffer.width, frameBuffer.height,
-            matrix, true
-        )
-        // createBitmap may return its source when the transform is effectively identity.
-        // The async landmarker must own an immutable frame while frameBuffer is reused.
-        val rotatedBitmap = if (transformedBitmap === frameBuffer) {
-            frameBuffer.copy(Bitmap.Config.ARGB_8888, false)
-        } else {
-            transformedBitmap
-        }
+            val transformedBitmap = Bitmap.createBitmap(
+                frameBuffer, 0, 0, frameBuffer.width, frameBuffer.height,
+                matrix, true
+            )
+            // createBitmap may return its source when the transform is effectively identity.
+            // The async landmarker must own an immutable frame while frameBuffer is reused.
+            val rotatedBitmap = if (transformedBitmap === frameBuffer) {
+                frameBuffer.copy(Bitmap.Config.ARGB_8888, false)
+            } else {
+                transformedBitmap
+            }
 
-        // Convert the input Bitmap object to an MPImage object to run inference
-        val mpImage = BitmapImageBuilder(rotatedBitmap).build()
+            // Convert the input Bitmap object to an MPImage object to run inference
+            val mpImage = BitmapImageBuilder(rotatedBitmap).build()
 
-        detectAsync(mpImage, frameTime)
+            detectAsync(mpImage, frameTime)
+        } finally {
+            imageProxy.close()
+        }
     }
 
     // Run pose landmark using MediaPipe Pose Landmarker API
     @VisibleForTesting
     fun detectAsync(mpImage: MPImage, frameTime: Long) {
-        poseLandmarker?.detectAsync(mpImage, frameTime)
-        // As we're using running mode LIVE_STREAM, the landmark result will
-        // be returned in returnLivestreamResult function
+        // Takes ownership: early close can recycle a bitmap while native code still reads it.
+        val landmarker = poseLandmarker
+        if (landmarker == null || !pendingImage.compareAndSet(null, mpImage)) {
+            mpImage.close()
+            return
+        }
+        try {
+            landmarker.detectAsync(mpImage, frameTime)
+        } catch (error: RuntimeException) {
+            pendingImage.getAndSet(null)?.close()
+            throw error
+        }
     }
 
     // Accepts the URI for a video file loaded from the user's gallery and attempts to run
@@ -236,80 +252,47 @@ class PoseLandmarkerHelper(
             )
         }
 
-        // Inference time is the difference between the system time at the start and finish of the
-        // process
+        require(inferenceIntervalMs > 0) { "Frame interval must be positive" }
         val startTime = SystemClock.uptimeMillis()
-
-        var didErrorOccurred = false
-
-        // Load frames from the video and run the pose landmarker.
         val retriever = MediaMetadataRetriever()
-        retriever.setDataSource(context, videoUri)
-        val videoLengthMs =
-            retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
-                ?.toLong()
-
-        // Note: We need to read width/height from frame instead of getting the width/height
-        // of the video directly because MediaRetriever returns frames that are smaller than the
-        // actual dimension of the video file.
-        val firstFrame = retriever.getFrameAtTime(0)
-        val width = firstFrame?.width
-        val height = firstFrame?.height
-
-        // If the video is invalid, returns a null detection result
-        if ((videoLengthMs == null) || (width == null) || (height == null)) return null
-
-        // Next, we'll get one frame every frameInterval ms, then run detection on these frames.
-        val resultList = mutableListOf<PoseLandmarkerResult>()
-        val numberOfFrameToRead = videoLengthMs.div(inferenceIntervalMs)
-
-        for (i in 0..numberOfFrameToRead) {
-            val timestampMs = i * inferenceIntervalMs // ms
-
-            retriever
-                .getFrameAtTime(
-                    timestampMs * 1000, // convert from ms to micro-s
-                    MediaMetadataRetriever.OPTION_CLOSEST
-                )
-                ?.let { frame ->
-                    // Convert the video frame to ARGB_8888 which is required by the MediaPipe
-                    val argb8888Frame =
-                        if (frame.config == Bitmap.Config.ARGB_8888) frame
-                        else frame.copy(Bitmap.Config.ARGB_8888, false)
-
-                    // Convert the input Bitmap object to an MPImage object to run inference
-                    val mpImage = BitmapImageBuilder(argb8888Frame).build()
-
-                    // Run pose landmarker using MediaPipe Pose Landmarker API
-                    poseLandmarker?.detectForVideo(mpImage, timestampMs)
-                        ?.let { detectionResult ->
-                            resultList.add(detectionResult)
-                        } ?: {
-                        didErrorOccurred = true
-                        poseLandmarkerHelperListener?.onError(
-                            "ResultBundle could not be returned" +
-                                    " in detectVideoFile"
-                        )
+        try {
+            retriever.setDataSource(context, videoUri)
+            val duration = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
+                ?.toLongOrNull()?.takeIf { it > 0 } ?: return null
+            val results = mutableListOf<PoseLandmarkerResult>()
+            var width = 0
+            var height = 0
+            var timestampMs = 0L
+            while (timestampMs < duration) {
+                if (Thread.currentThread().isInterrupted) return null
+                val frame = retriever.getFrameAtTime(
+                    timestampMs * 1000, MediaMetadataRetriever.OPTION_CLOSEST
+                ) ?: return null
+                val bitmap = if (frame.config == Bitmap.Config.ARGB_8888) frame
+                    else frame.copy(Bitmap.Config.ARGB_8888, false)
+                width = bitmap.width
+                height = bitmap.height
+                try {
+                    val image = BitmapImageBuilder(bitmap).build()
+                    try {
+                        val result = poseLandmarker?.detectForVideo(image, timestampMs) ?: return null
+                        results.add(result)
+                    } finally {
+                        image.close()
                     }
+                } finally {
+                    if (bitmap !== frame) bitmap.recycle()
+                    frame.recycle()
                 }
-                ?: run {
-                    didErrorOccurred = true
-                    poseLandmarkerHelperListener?.onError(
-                        "Frame at specified time could not be" +
-                                " retrieved when detecting in video."
-                    )
-                }
-        }
-
-        retriever.release()
-
-        val inferenceTimePerFrameMs =
-            (SystemClock.uptimeMillis() - startTime).div(numberOfFrameToRead)
-
-        return if (didErrorOccurred) {
-            null
-        } else {
-            ResultBundle(resultList, inferenceTimePerFrameMs, height, width)
+                timestampMs += inferenceIntervalMs
+            }
+            if (results.isEmpty()) return null
+            return ResultBundle(results, (SystemClock.uptimeMillis() - startTime) / results.size, height, width)
+        } catch (error: RuntimeException) {
+            Log.e(TAG, "Unable to analyze video", error)
+            return null
+        } finally {
+            retriever.release()
         }
     }
 
@@ -329,25 +312,29 @@ class PoseLandmarkerHelper(
         val startTime = SystemClock.uptimeMillis()
 
         // Convert the input Bitmap object to an MPImage object to run inference
-        val mpImage = BitmapImageBuilder(image).build()
+        val mpImage = BitmapImageBuilder(image.copy(Bitmap.Config.ARGB_8888, false)).build()
 
         // Run pose landmarker using MediaPipe Pose Landmarker API
-        poseLandmarker?.detect(mpImage)?.also { landmarkResult ->
-            val inferenceTimeMs = SystemClock.uptimeMillis() - startTime
-            return ResultBundle(
-                listOf(landmarkResult),
-                inferenceTimeMs,
-                image.height,
-                image.width
-            )
-        }
+        try {
+            poseLandmarker?.detect(mpImage)?.also { landmarkResult ->
+                val inferenceTimeMs = SystemClock.uptimeMillis() - startTime
+                return ResultBundle(
+                    listOf(landmarkResult),
+                    inferenceTimeMs,
+                    image.height,
+                    image.width
+                )
+            }
 
-        // If poseLandmarker?.detect() returns null, this is likely an error. Returning null
-        // to indicate this.
-        poseLandmarkerHelperListener?.onError(
-            "Pose Landmarker failed to detect."
-        )
-        return null
+            // If poseLandmarker?.detect() returns null, this is likely an error. Returning null
+            // to indicate this.
+            poseLandmarkerHelperListener?.onError(
+                "Pose Landmarker failed to detect."
+            )
+            return null
+        } finally {
+            mpImage.close()
+        }
     }
 
     // Return the landmark result to this PoseLandmarkerHelper's caller
@@ -356,28 +343,27 @@ class PoseLandmarkerHelper(
         input: MPImage
     ) {
         try {
-            val finishTimeMs = SystemClock.uptimeMillis()
-            val inferenceTime = finishTimeMs - result.timestampMs()
-
+            val inferenceTime = SystemClock.uptimeMillis() - result.timestampMs()
             poseLandmarkerHelperListener?.onResults(
-                ResultBundle(
-                    listOf(result),
-                    inferenceTime,
-                    input.height,
-                    input.width
-                )
+                ResultBundle(listOf(result), inferenceTime, input.height, input.width)
             )
         } finally {
-            input.close()
+            val submitted = pendingImage.getAndSet(null)
+            if (submitted !== input) input.close()
+            submitted?.close()
         }
     }
 
     // Return errors thrown during detection to this PoseLandmarkerHelper's
     // caller
     private fun returnLivestreamError(error: RuntimeException) {
-        poseLandmarkerHelperListener?.onError(
-            error.message ?: "An unknown error has occurred"
-        )
+        try {
+            poseLandmarkerHelperListener?.onError(
+                error.message ?: "An unknown error has occurred"
+            )
+        } finally {
+            pendingImage.getAndSet(null)?.close()
+        }
     }
 
     companion object {

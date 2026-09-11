@@ -1,5 +1,7 @@
 package com.google.mediapipe.examples.poselandmarker.ui.fragment.profile
 
+import com.google.mediapipe.examples.poselandmarker.utils.addOnViewSuccessListener
+import com.google.mediapipe.examples.poselandmarker.utils.addOnViewFailureListener
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -51,8 +53,11 @@ class UpdateBmiFragment : Fragment() {
         if (uid.isEmpty()) return
         setLoading(true)
 
+        val callbackOwner = viewLifecycleOwner
         db.collection("users").document(uid).get()
-            .addOnSuccessListener { document ->
+            .addOnViewSuccessListener(callbackOwner) { document ->
+                if (!isAdded || _binding == null ||
+                    findNavController().currentDestination?.id != R.id.update_bmi_fragment) return@addOnViewSuccessListener
                 setLoading(false)
                 if (document.exists()) {
                     val profile = document.toObject(UserProfile::class.java)
@@ -62,7 +67,9 @@ class UpdateBmiFragment : Fragment() {
                     }
                 }
             }
-            .addOnFailureListener { e ->
+            .addOnViewFailureListener(callbackOwner) { e ->
+                if (!isAdded || _binding == null ||
+                    findNavController().currentDestination?.id != R.id.update_bmi_fragment) return@addOnViewFailureListener
                 setLoading(false)
                 Toast.makeText(context, "Lỗi tải dữ liệu: ${e.message}", Toast.LENGTH_SHORT).show()
             }
@@ -73,12 +80,12 @@ class UpdateBmiFragment : Fragment() {
         val weightStr = binding.etUpdateWeight.text.toString().trim()
 
         val height = heightStr.toDoubleOrNull()
-        if (height == null || height <= 0) {
+        if (height == null || !height.isFinite() || height <= 0) {
             binding.etUpdateHeight.error = "Vui lòng nhập chiều cao hợp lệ"
             return
         }
         val weight = weightStr.toDoubleOrNull()
-        if (weight == null || weight <= 0) {
+        if (weight == null || !weight.isFinite() || weight <= 0) {
             binding.etUpdateWeight.error = "Vui lòng nhập cân nặng hợp lệ"
             return
         }
@@ -97,8 +104,11 @@ class UpdateBmiFragment : Fragment() {
             else -> "THUA CAN"
         }
 
+        val callbackOwner = viewLifecycleOwner
         db.collection("users").document(uid).get()
-            .addOnSuccessListener { document ->
+            .addOnViewSuccessListener(callbackOwner) { document ->
+                if (!isAdded || _binding == null ||
+                    findNavController().currentDestination?.id != R.id.update_bmi_fragment) return@addOnViewSuccessListener
                 if (document.exists()) {
                     val currentProfile = document.toObject(UserProfile::class.java)
                     if (currentProfile != null) {
@@ -110,15 +120,25 @@ class UpdateBmiFragment : Fragment() {
                             lastBmiUpdatedTime = System.currentTimeMillis()
                         )
 
-                        db.collection("users").document(uid).set(updatedProfile)
-                            .addOnSuccessListener {
+                        db.collection("users").document(uid).update(mapOf(
+                            "height" to updatedProfile.height,
+                            "weight" to updatedProfile.weight,
+                            "bmi" to updatedProfile.bmi,
+                            "bmiType" to updatedProfile.bmiType,
+                            "lastBmiUpdatedTime" to updatedProfile.lastBmiUpdatedTime
+                        ))
+                            .addOnViewSuccessListener(callbackOwner) {
+                                if (!isAdded || _binding == null ||
+                                    findNavController().currentDestination?.id != R.id.update_bmi_fragment) return@addOnViewSuccessListener
                                 setLoading(false)
                                 Toast.makeText(context, "Cập nhật chỉ số cơ thể thành công!", Toast.LENGTH_SHORT).show()
                                 
                                 // Reset / go to calendar
-                                findNavController().navigate(R.id.action_login_to_workout_calendar)
+                                findNavController().navigate(R.id.action_update_bmi_to_workout_calendar)
                             }
-                            .addOnFailureListener { e ->
+                            .addOnViewFailureListener(callbackOwner) { e ->
+                                if (!isAdded || _binding == null ||
+                                    findNavController().currentDestination?.id != R.id.update_bmi_fragment) return@addOnViewFailureListener
                                 setLoading(false)
                                 Toast.makeText(context, "Lỗi lưu cập nhật: ${e.message}", Toast.LENGTH_LONG).show()
                             }
@@ -129,13 +149,16 @@ class UpdateBmiFragment : Fragment() {
                     setLoading(false)
                 }
             }
-            .addOnFailureListener { e ->
+            .addOnViewFailureListener(callbackOwner) { e ->
+                if (!isAdded || _binding == null ||
+                    findNavController().currentDestination?.id != R.id.update_bmi_fragment) return@addOnViewFailureListener
                 setLoading(false)
                 Toast.makeText(context, "Lỗi kết nối database: ${e.message}", Toast.LENGTH_SHORT).show()
             }
     }
 
     private fun setLoading(isLoading: Boolean) {
+        if (_binding == null) return
         if (isLoading) {
             binding.btnUpdateBmi.visibility = View.GONE
             binding.updateBmiProgress.visibility = View.VISIBLE

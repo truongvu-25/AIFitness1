@@ -1,5 +1,6 @@
 package com.google.mediapipe.examples.poselandmarker.ui.fragment.onboarding
 
+import com.google.mediapipe.examples.poselandmarker.utils.deliverWhenResumed
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -75,32 +76,40 @@ class WelcomeFragment : Fragment() {
 
     private fun checkUserProfileAndNavigate(uid: String) {
         setLoading(true)
+        val callbackOwner = viewLifecycleOwner
         val db = FirebaseFirestore.getInstance()
         db.collection("users").document(uid).get()
             .addOnSuccessListener { document ->
-                if (!isAdded) return@addOnSuccessListener
-                setLoading(false)
-                if (document.exists()) {
-                    val profile = document.toObject(UserProfile::class.java)
-                    if (profile != null && profile.fullName.isNotEmpty() && profile.height > 0) {
-                        val lastBmiUpdated = profile.lastBmiUpdatedTime
-                        val diffMs = System.currentTimeMillis() - lastBmiUpdated
-                        val sevenDaysMs = 7L * 24 * 60 * 60 * 1000
-                        if (lastBmiUpdated > 0 && diffMs >= sevenDaysMs) {
-                            findNavController().navigate(R.id.action_welcome_to_update_bmi)
+                callbackOwner.deliverWhenResumed {
+                    if (!isAdded || _binding == null ||
+                        findNavController().currentDestination?.id != R.id.welcome_fragment) return@deliverWhenResumed
+                    setLoading(false)
+                    if (document.exists()) {
+                        val profile = document.toObject(UserProfile::class.java)
+                        if (profile != null && profile.fullName.isNotEmpty() && profile.height > 0) {
+                            val lastBmiUpdated = profile.lastBmiUpdatedTime
+                            val diffMs = System.currentTimeMillis() - lastBmiUpdated
+                            val sevenDaysMs = 7L * 24 * 60 * 60 * 1000
+                            if (lastBmiUpdated > 0 && diffMs >= sevenDaysMs) {
+                                findNavController().navigate(R.id.action_welcome_to_update_bmi)
+                            } else {
+                                findNavController().navigate(R.id.action_welcome_to_workout_calendar)
+                            }
                         } else {
-                            findNavController().navigate(R.id.action_welcome_to_workout_calendar)
+                            findNavController().navigate(R.id.action_welcome_to_user_info)
                         }
                     } else {
                         findNavController().navigate(R.id.action_welcome_to_user_info)
                     }
-                } else {
-                    findNavController().navigate(R.id.action_welcome_to_user_info)
                 }
             }
             .addOnFailureListener {
-                if (isAdded) {
-                    setLoading(false)
+                callbackOwner.deliverWhenResumed {
+                    if (!isAdded || _binding == null ||
+                        findNavController().currentDestination?.id != R.id.welcome_fragment) return@deliverWhenResumed
+                    if (isAdded) {
+                        setLoading(false)
+                    }
                 }
             }
     }

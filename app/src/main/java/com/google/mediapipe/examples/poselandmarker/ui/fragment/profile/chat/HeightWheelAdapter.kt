@@ -47,8 +47,11 @@ class HeightWheelAdapter(
     /** Gọi mỗi khi cuộn dừng lại, để cập nhật số nào đang là "trung tâm". */
     fun setCenterValue(newCenterValue: Int, recyclerView: RecyclerView) {
         if (newCenterValue == centerValue) return
+        val previousIndex = values.indexOf(centerValue)
+        val newIndex = values.indexOf(newCenterValue)
         centerValue = newCenterValue
-        notifyDataSetChanged()
+        if (previousIndex >= 0) notifyItemChanged(previousIndex)
+        if (newIndex >= 0) notifyItemChanged(newIndex)
     }
 
     fun indexOf(value: Int): Int = values.indexOf(value)

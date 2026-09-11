@@ -119,4 +119,6 @@
         <item>Pose Landmarker Lite (Nhẹ)</item>
         <item>Pose Landmarker Heavy (Chính xác cao)</item>
     </string-array>
+    <string name="action_back">Quay lại</string>
+    <string name="action_switch_camera">Đổi camera</string>
 </resources>

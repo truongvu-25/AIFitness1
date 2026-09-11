@@ -153,6 +153,7 @@ class WorkoutCalendarFragment : Fragment() {
         HashMap<Int, WorkoutDay>()
 
     private var localCompletedExercises: Set<String> = emptySet()
+    private var localSessions: List<com.google.mediapipe.examples.poselandmarker.data.local.PendingWorkoutSessionEntity> = emptyList()
 
 
     // =============================================================
@@ -231,14 +232,13 @@ class WorkoutCalendarFragment : Fragment() {
         setupRecyclerViews()
 
         viewLifecycleOwner.lifecycleScope.launch {
-            localCompletedExercises = if (uid.isBlank()) {
-                emptySet()
+            localSessions = if (uid.isBlank()) {
+                emptyList()
             } else {
                 TriForceDatabase.getInstance(requireContext())
                     .workoutSessionDao()
                     .getRecent(uid, 500)
-                    .map { "${it.dayIndex}|${it.exerciseId}" }
-                    .toSet()
+
             }
             if (_binding != null) loadMasterExercisesAndInit()
         }
@@ -312,74 +312,19 @@ class WorkoutCalendarFragment : Fragment() {
     // =============================================================
 
     private fun loadMasterExercisesAndInit() {
-
-        if (!isAdded || _binding == null) {
-            return
+        if (!isAdded || _binding == null) return
+        exercisesCache.putAll(getDefaultMasterExercises())
+        // Built-in tutorials are immediately available; catalogue refresh must not block the plan.
+        loadUserProfileAndPlan()
+        db.collection("exercises").get().addOnSuccessListener { result ->
+            if (!isAdded || _binding == null) return@addOnSuccessListener
+            for (document in result) {
+                val details = document.toObject(ExerciseDetails::class.java)
+                if (details.id.isNotBlank()) exercisesCache[details.id] = details
+            }
+            if (workoutDaysMap.isNotEmpty()) onDaySelected(selectedDayIndex)
         }
-
-
-        binding.calendarProgress.visibility =
-            View.VISIBLE
-
-
-        db.collection("exercises")
-            .get()
-
-            .addOnSuccessListener { result ->
-
-                if (!isAdded || _binding == null) {
-                    return@addOnSuccessListener
-                }
-
-
-                exercisesCache.clear()
-
-
-                for (document in result) {
-
-                    val details =
-                        document.toObject(
-                            ExerciseDetails::class.java
-                        )
-
-
-                    exercisesCache[details.id] =
-                        details
-                }
-
-
-                loadUserProfileAndPlan()
-            }
-
-            .addOnFailureListener { e ->
-
-                if (!isAdded || _binding == null) {
-                    return@addOnFailureListener
-                }
-
-
-                binding.calendarProgress.visibility =
-                    View.GONE
-
-
-                context?.let {
-
-                    Toast.makeText(
-                        it,
-                        "Lỗi tải kho bài tập: ${e.message}",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }
-
-
-                loadUserProfileAndPlan()
-            }
     }
-
-
-    // =============================================================
-    // PROFILE + ACTIVE PLAN
-    // =============================================================
 
     private fun loadUserProfileAndPlan() {
 
@@ -462,6 +407,8 @@ class WorkoutCalendarFragment : Fragment() {
 
                         createdTime =
                             profile.createdTime
+                        localCompletedExercises = localSessions.filter { it.completedAt >= createdTime }
+                            .map { "${it.dayIndex}|${it.exerciseId}" }.toSet()
 
 
                         // =================================================
@@ -1177,57 +1124,18 @@ class WorkoutCalendarFragment : Fragment() {
                         }
 
 
-                        batch.commit()
-
-                            .addOnSuccessListener {
-
-                                if (
-                                    !isAdded ||
-                                    _binding == null
-                                ) {
-                                    return@addOnSuccessListener
-                                }
-
-
-                                val updatedProfile =
-                                    profile.copy(
-                                        createdTime =
-                                            System.currentTimeMillis()
-                                    )
-
-
-                                db.collection("users")
-                                    .document(uid)
-                                    .set(updatedProfile)
-
-                                    .addOnSuccessListener {
-
-                                        if (
-                                            !isAdded ||
-                                            _binding == null
-                                        ) {
-                                            return@addOnSuccessListener
-                                        }
-
-
-                                        binding.calendarProgress.visibility =
-                                            View.GONE
-
-
-                                        context?.let {
-
-                                            Toast.makeText(
-                                                it,
-                                                "Đã tạo lộ trình 30 ngày tập luyện mới!",
-                                                Toast.LENGTH_SHORT
-                                            ).show()
-                                        }
-
-
-                                        loadUserProfileAndPlan()
-                                    }
-                            }
-
+                        batch.update(db.collection("users").document(uid), mapOf(
+                            "createdTime" to System.currentTimeMillis(),
+                            "customPlanName" to com.google.firebase.firestore.FieldValue.delete(),
+                            "activeCustomPlanJson" to com.google.firebase.firestore.FieldValue.delete()
+                        ))
+                        batch.commit().addOnSuccessListener {
+                            if (!isAdded || _binding == null) return@addOnSuccessListener
+                            localCompletedExercises = emptySet()
+                            binding.calendarProgress.visibility = View.GONE
+                            Toast.makeText(context, "Đã tạo lộ trình 30 ngày tập luyện mới!", Toast.LENGTH_SHORT).show()
+                            loadUserProfileAndPlan()
+                        }
                             .addOnFailureListener { e ->
 
                                 if (

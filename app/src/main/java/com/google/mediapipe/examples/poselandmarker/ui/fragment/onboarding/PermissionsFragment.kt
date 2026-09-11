@@ -38,16 +38,17 @@ class PermissionsFragment : Fragment() {
             if (isGranted) {
                 Toast.makeText(
                     context,
-                    "Permission request granted",
+                    "Đã cấp quyền camera",
                     Toast.LENGTH_LONG
                 ).show()
                 navigateToCamera()
             } else {
                 Toast.makeText(
                     context,
-                    "Permission request denied",
+                    "Cần quyền camera để nhận diện bài tập.",
                     Toast.LENGTH_LONG
                 ).show()
+                Navigation.findNavController(requireActivity(), R.id.fragment_container).popBackStack()
             }
         }
 
@@ -74,7 +75,7 @@ class PermissionsFragment : Fragment() {
                 requireActivity(),
                 R.id.fragment_container
             ).navigate(
-                R.id.action_permissions_to_camera
+                R.id.action_permissions_to_camera, arguments
             )
         }
     }

@@ -1,6 +1,5 @@
 package com.google.mediapipe.examples.poselandmarker.service
 
-import android.R
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -77,10 +76,12 @@ class RestTimerService : Service() {
             }
         } catch (e: Exception) {
             e.printStackTrace()
+            stopSelf()
+            return START_NOT_STICKY
         }
 
         startRestCountDown()
-        return START_STICKY
+        return START_NOT_STICKY
     }
 
     private fun startRestCountDown() {
@@ -97,7 +98,7 @@ class RestTimerService : Service() {
             }
 
             override fun onFinish() {
-                showRestExpiredNotification()
+                runCatching { showRestExpiredNotification() }
                 stopSelf()
             }
         }.start()
@@ -120,7 +121,7 @@ class RestTimerService : Service() {
         )
 
         return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_dialog_info)
+            .setSmallIcon(android.R.drawable.ic_dialog_info)
             .setContentTitle("Thời gian nghỉ giữa các bài tập ($timeStr)")
             .setContentText("Hãy thả lỏng cơ bắp. Bấm vào đây để sẵn sàng cho bài tập tiếp theo!")
             .setPriority(NotificationCompat.PRIORITY_LOW)
@@ -150,7 +151,7 @@ class RestTimerService : Service() {
         )
 
         val expiredNotification = NotificationCompat.Builder(this, CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_dialog_alert)
+            .setSmallIcon(android.R.drawable.ic_dialog_alert)
             .setContentTitle("Đã hết 5 phút nghỉ ngơi! 🔔")
             .setContentText("Thời gian nghỉ đã hết. Hãy quay lại tập luyện bài tiếp theo trong Ngày $dayIndex ngay nhé!")
             .setPriority(NotificationCompat.PRIORITY_HIGH)

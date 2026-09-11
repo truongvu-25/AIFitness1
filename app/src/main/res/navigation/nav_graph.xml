@@ -150,7 +150,7 @@
             app:destination="@id/update_bmi_fragment"
             app:enterAnim="@anim/slide_in_right"
             app:exitAnim="@anim/slide_out_left"
-            app:popUpTo="@id/workout_calendar_fragment"
+            app:popUpTo="@id/nav_graph"
             app:popUpToInclusive="true" />
     </fragment>
 
@@ -184,14 +184,14 @@
             app:destination="@id/login_fragment"
             app:enterAnim="@anim/slide_in_left"
             app:exitAnim="@anim/slide_out_right"
-            app:popUpTo="@id/workout_calendar_fragment"
+            app:popUpTo="@id/nav_graph"
             app:popUpToInclusive="true" />
         <action
             android:id="@+id/action_profile_to_welcome"
             app:destination="@id/welcome_fragment"
             app:enterAnim="@anim/slide_in_left"
             app:exitAnim="@anim/slide_out_right"
-            app:popUpTo="@id/workout_calendar_fragment"
+            app:popUpTo="@id/nav_graph"
             app:popUpToInclusive="true" />
         <action
             android:id="@+id/action_profile_to_user_info"
@@ -262,6 +262,12 @@
     <fragment
         android:id="@+id/update_bmi_fragment"
         android:name="com.google.mediapipe.examples.poselandmarker.ui.fragment.profile.UpdateBmiFragment"
-        android:label="UpdateBmiFragment" />
+        android:label="UpdateBmiFragment">
+        <action
+            android:id="@+id/action_update_bmi_to_workout_calendar"
+            app:destination="@id/workout_calendar_fragment"
+            app:popUpTo="@id/update_bmi_fragment"
+            app:popUpToInclusive="true" />
+    </fragment>
 
 </navigation>

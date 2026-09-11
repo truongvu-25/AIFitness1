@@ -2,6 +2,11 @@
 *.iml
 .idea/
 .gradle/
+.kotlin/
+.artifacts/
+node_modules/
+*-debug.log
+.firebase/
 
 # Local machine config
 /local.properties

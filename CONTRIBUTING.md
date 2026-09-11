@@ -1,84 +1,26 @@
-# Contributing to Fitness For You
+# Contributing to TRI FORCE
 
-Thank you for your interest in contributing to Fitness For You. We welcome contributions, bug fixes, documentation improvements, and feature proposals.
+Follow [README](README.md) setup. Branch from the default branch, currently `Nam2`, and keep changes focused on one problem.
 
-This guide outlines our development workflow, coding standards, and repository practices.
+## Workflow
 
-## Table of Contents
+1. Reproduce and record device/API and data conditions.
+2. Preserve navigation, exercise IDs and stored data unless a migration is explicitly part of the change.
+3. Run `testDebugUnitTest lintDebug assembleDebug`; run `connectedDebugAndroidTest` for persistence, navigation or camera changes.
+4. Describe the resulting behavior and validation in the PR. Remove personal data from screenshots/logs.
 
-- [Getting Started](#getting-started)
-- [Development Workflow](#development-workflow)
-- [How to Add a New Exercise](#how-to-add-a-new-exercise)
-- [Code Style & Standards](#code-style--standards)
-- [Security & Sensitive Data Rules](#security--sensitive-data-rules)
-- [Submitting Pull Requests](#submitting-pull-requests)
+## Conventions
 
-## Getting Started
+- Follow `.editorconfig` and Kotlin conventions.
+- Clear binding, handlers, media and adapters when their view is destroyed.
+- Keep decoding/inference off the main thread.
+- Persist completed sessions locally and synchronize through `WorkoutSyncWorker`.
+- Use field updates or atomic batches/transactions; do not overwrite unrelated profile fields.
+- Add meaningful regression tests for defects.
+- Reuse shared UI resources and supply supported translations where practical.
 
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/truongvu-25/AIFitness1.git
-   cd AIFitness1
-   ```
+## Adding exercises
 
-2. Configure Firebase by placing your own `google-services.json` in the `app/` directory:
-   ```text
-   app/google-services.json
-   ```
+Add a stable exercise ID, library/catalogue metadata and licensed tutorial asset. Add/register an analyzer in `analysis/ExerciseAnalyzer.kt` for automatic counting. Validate camera orientations, visibility loss, rep/hold transitions and completion. A library entry alone does not implement pose counting.
 
-3. Build the debug APK:
-   ```powershell
-   .\gradlew.bat assembleDebug
-   ```
-
-4. Open the project in Android Studio, sync Gradle, and run the `app` module on a physical Android device or emulator with camera support.
-
-## Development Workflow
-
-1. Create a feature branch:
-   ```bash
-   git checkout -b feature/your-feature-name
-   ```
-2. Make focused, incremental commits with clear commit messages in English.
-3. Verify that the app builds cleanly before opening a Pull Request.
-
-## How to Add a New Exercise
-
-To add a new exercise to the app:
-
-1. Place an offline MP4 tutorial video in `app/src/main/assets/videos/your_exercise.mp4`.
-2. Add an `ExerciseDetails` entry to `initializeExerciseDatabase()` in `FitnessApplication.kt`:
-   ```kotlin
-   ExerciseDetails(
-       id = "lunge",
-       name = "Chân Trước Chân Sau (Lunge)",
-       description = "Bước chân trước gập gối 90 độ, giữ lưng thẳng.",
-       videoUrl = "asset:///videos/lunge.mp4",
-       isTimed = false,
-       unit = "lần"
-   )
-   ```
-3. Extend `BaseExerciseAnalyzer` in `ExerciseAnalyzer.kt` to calculate joint angles and rep states.
-4. Register the new analyzer in `BaseExerciseAnalyzer.create()`.
-
-## Code Style & Standards
-
-- Follow standard Kotlin coding conventions.
-- Use View Binding (`FragmentXxxBinding`) instead of `findViewById`. Nullify binding in `onDestroyView()` (`_binding = null`).
-- Keep shared Firestore data classes explicit in `Models.kt`.
-- Keep screen-specific UI logic inside its corresponding Fragment.
-- Avoid non-null assertions (`!!`) where possible; use null-guards (`if (_binding == null || !isAdded) return`).
-
-## Security & Sensitive Data Rules
-
-- Do not commit `app/google-services.json`.
-- Do not commit `local.properties` or `.idea/` workspace files.
-- Do not commit release signing keys (`.jks`, `.keystore`) or credentials.
-- Do not hardcode API keys or personal data in source files.
-
-## Submitting Pull Requests
-
-- Verify the debug build succeeds (`.\gradlew.bat assembleDebug`).
-- Ensure no sensitive local configuration files or keys are tracked by Git.
-- Update documentation (`README.md`, `docs/`) when app flows or requirements change.
-- Ensure end-to-end flows run without errors.
+Never commit real Firebase configuration, signing keys, credentials, local SDK paths, APKs or personal health data. See [SECURITY.md](SECURITY.md).

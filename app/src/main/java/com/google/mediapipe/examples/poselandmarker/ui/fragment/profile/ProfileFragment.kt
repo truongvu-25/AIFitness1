@@ -11,6 +11,8 @@ import android.net.Uri
 import android.content.pm.PackageManager
 import android.content.res.ColorStateList
 import android.os.Build
+import com.google.mediapipe.examples.poselandmarker.utils.addOnViewSuccessListener
+import com.google.mediapipe.examples.poselandmarker.utils.addOnViewFailureListener
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -152,7 +154,7 @@ class ProfileFragment : Fragment() {
     private fun setupHealthConnect() {
         binding.rowHealthConnect.setOnClickListener {
             when (HealthConnectManager.sdkStatus(requireContext())) {
-                HealthConnectClient.SDK_AVAILABLE -> lifecycleScope.launch {
+                HealthConnectClient.SDK_AVAILABLE -> viewLifecycleOwner.lifecycleScope.launch {
                     if (HealthConnectManager.hasPermissions(requireContext())) {
                         refreshHealthConnectStatus()
                     } else {
@@ -306,11 +308,7 @@ class ProfileFragment : Fragment() {
     private fun renderStepData() {
         if (_binding == null) return
         val displayedSteps = maxOf(localSteps.toLong(), healthConnectSteps ?: 0L)
-        val displayedCalories = if (displayedSteps > localSteps && localSteps > 0) {
-            localCalories * displayedSteps / localSteps
-        } else {
-            localCalories.toDouble()
-        }
+        val displayedCalories = displayedSteps * 0.04
         binding.tvProfileSteps.text = "$displayedSteps bước"
         binding.tvProfileCalories.text = String.format(Locale.US, "%.1f kcal", displayedCalories)
     }
@@ -320,8 +318,11 @@ class ProfileFragment : Fragment() {
         val email = auth.currentUser?.email ?: ""
         binding.tvProfileEmail.text = email
 
+        val callbackOwner = viewLifecycleOwner
         db.collection("users").document(uid).get()
-            .addOnSuccessListener { document ->
+            .addOnViewSuccessListener(callbackOwner) { document ->
+                if (!isAdded || _binding == null ||
+                    findNavController().currentDestination?.id != R.id.profile_fragment) return@addOnViewSuccessListener
                 if (document.exists()) {
                     val profile = document.toObject(UserProfile::class.java)
                     if (profile != null) {
@@ -330,7 +331,9 @@ class ProfileFragment : Fragment() {
                     }
                 }
             }
-            .addOnFailureListener { e ->
+            .addOnViewFailureListener(callbackOwner) { e ->
+                if (!isAdded || _binding == null ||
+                    findNavController().currentDestination?.id != R.id.profile_fragment) return@addOnViewFailureListener
                 Toast.makeText(context, "Lỗi tải hồ sơ: ${e.message}", Toast.LENGTH_SHORT).show()
             }
     }

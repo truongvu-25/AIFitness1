@@ -1,5 +1,6 @@
 package com.google.mediapipe.examples.poselandmarker.ui.fragment.onboarding
 
+import com.google.mediapipe.examples.poselandmarker.utils.deliverWhenResumed
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -105,60 +106,73 @@ class LoginFragment : Fragment() {
 
         setLoading(true)
 
+        val callbackOwner = viewLifecycleOwner
         auth.signInWithEmailAndPassword(email, password)
-            .addOnCompleteListener(requireActivity()) { task ->
-                if (task.isSuccessful) {
-                    val user = auth.currentUser
-                    if (user != null) {
-                        WorkoutSyncScheduler.enqueue(requireContext())
-                        checkUserProfileAndNavigate(user.uid)
+            .addOnCompleteListener { task ->
+                callbackOwner.deliverWhenResumed {
+                    if (!isAdded || _binding == null ||
+                        findNavController().currentDestination?.id != R.id.login_fragment) return@deliverWhenResumed
+                    if (task.isSuccessful) {
+                        val user = auth.currentUser
+                        if (user != null) {
+                            WorkoutSyncScheduler.enqueue(requireContext())
+                            checkUserProfileAndNavigate(user.uid)
+                        } else {
+                            setLoading(false)
+                            Toast.makeText(context, "Đã xảy ra lỗi hệ thống.", Toast.LENGTH_SHORT).show()
+                        }
                     } else {
                         setLoading(false)
-                        Toast.makeText(context, "Đã xảy ra lỗi hệ thống.", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(
+                            context,
+                            "Đăng nhập thất bại: ${task.exception?.localizedMessage}",
+                            Toast.LENGTH_LONG
+                        ).show()
                     }
-                } else {
-                    setLoading(false)
-                    Toast.makeText(
-                        context,
-                        "Đăng nhập thất bại: ${task.exception?.localizedMessage}",
-                        Toast.LENGTH_LONG
-                    ).show()
                 }
             }
     }
 
     private fun checkUserProfileAndNavigate(uid: String) {
         setLoading(true)
+        val callbackOwner = viewLifecycleOwner
         val db = FirebaseFirestore.getInstance()
         db.collection("users").document(uid).get()
             .addOnSuccessListener { document ->
-                setLoading(false)
-                if (document.exists()) {
-                    val profile = document.toObject(UserProfile::class.java)
-                    if (profile != null && profile.fullName.isNotEmpty() && profile.height > 0) {
-                        // Check if weekly update is needed (7 days)
-                        val lastBmiUpdated = profile.lastBmiUpdatedTime
-                        val diffMs = System.currentTimeMillis() - lastBmiUpdated
-                        val sevenDaysMs = 7L * 24 * 60 * 60 * 1000
-                        if (lastBmiUpdated > 0 && diffMs >= sevenDaysMs) {
-                            findNavController().navigate(R.id.action_login_to_update_bmi)
+                callbackOwner.deliverWhenResumed {
+                    if (!isAdded || _binding == null ||
+                        findNavController().currentDestination?.id != R.id.login_fragment) return@deliverWhenResumed
+                    setLoading(false)
+                    if (document.exists()) {
+                        val profile = document.toObject(UserProfile::class.java)
+                        if (profile != null && profile.fullName.isNotEmpty() && profile.height > 0) {
+                            // Check if weekly update is needed (7 days)
+                            val lastBmiUpdated = profile.lastBmiUpdatedTime
+                            val diffMs = System.currentTimeMillis() - lastBmiUpdated
+                            val sevenDaysMs = 7L * 24 * 60 * 60 * 1000
+                            if (lastBmiUpdated > 0 && diffMs >= sevenDaysMs) {
+                                findNavController().navigate(R.id.action_login_to_update_bmi)
+                            } else {
+                                findNavController().navigate(R.id.action_login_to_workout_calendar)
+                            }
                         } else {
-                            findNavController().navigate(R.id.action_login_to_workout_calendar)
+                            // Profile exists but is incomplete, collect user stats
+                            findNavController().navigate(R.id.action_login_to_user_info)
                         }
                     } else {
-                        // Profile exists but is incomplete, collect user stats
+                        // New user database entry is missing, route to info input
                         findNavController().navigate(R.id.action_login_to_user_info)
                     }
-                } else {
-                    // New user database entry is missing, route to info input
-                    findNavController().navigate(R.id.action_login_to_user_info)
                 }
             }
             .addOnFailureListener { e ->
-                setLoading(false)
-                // In case of firestore query failure but auth is successful, default to info collection
-                Toast.makeText(context, "Lỗi tải thông tin: ${e.message}", Toast.LENGTH_SHORT).show()
-                findNavController().navigate(R.id.action_login_to_user_info)
+                callbackOwner.deliverWhenResumed {
+                    if (!isAdded || _binding == null ||
+                        findNavController().currentDestination?.id != R.id.login_fragment) return@deliverWhenResumed
+                    setLoading(false)
+                    // Keep the form available for retry; a failed read does not imply a missing profile.
+                    Toast.makeText(context, "Lỗi tải thông tin: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
             }
     }
 

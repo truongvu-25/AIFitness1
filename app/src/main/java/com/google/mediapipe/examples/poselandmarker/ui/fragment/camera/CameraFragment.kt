@@ -47,6 +47,9 @@ import java.util.Locale
 import java.util.UUID
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.NonCancellable
+import androidx.activity.OnBackPressedCallback
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -126,7 +129,7 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
     override fun onResume() {
         super.onResume()
         if (!PermissionsFragment.hasPermissions(requireContext())) {
-            findNavController().navigate(R.id.action_camera_to_permissions)
+            findNavController().navigate(R.id.action_camera_to_permissions, arguments)
             return
         }
         backgroundExecutor.execute {
@@ -152,9 +155,19 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
     }
 
     override fun onDestroyView() {
+        imageAnalyzer?.clearAnalyzer()
+        cameraProvider?.unbindAll()
+        imageAnalyzer = null
+        preview = null
+        camera = null
+        if (this::backgroundExecutor.isInitialized && !backgroundExecutor.isShutdown) {
+            backgroundExecutor.execute {
+                if (this::poseLandmarkerHelper.isInitialized) poseLandmarkerHelper.clearPoseLandmarker()
+            }
+            backgroundExecutor.shutdown()
+        }
         _fragmentCameraBinding = null
         super.onDestroyView()
-        backgroundExecutor.shutdown()
     }
 
     override fun onCreateView(
@@ -174,6 +187,15 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
         RestTimerService.stopService(requireContext())
 
         backgroundExecutor = Executors.newSingleThreadExecutor()
+        currentProgressCount = 0
+        isCompletingWorkout = false
+        isCalibrated = false
+        calibrationStableFrames = 0
+        scoredFormSamples = 0
+        correctFormSamples = 0
+        formIssueCounts.clear()
+        hasAnnouncedCompletion = false
+        lastSpokenProgress = 0
         workoutStartedAtMs = SystemClock.elapsedRealtime()
 
         cameraFacing = CameraSelector.LENS_FACING_FRONT
@@ -189,7 +211,11 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
             exerciseId, exerciseName, targetCount, isTimed, unitStr
         )
 
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() { fragmentCameraBinding.btnBack.performClick() }
+        })
         fragmentCameraBinding.btnBack.setOnClickListener {
+            if (isCompletingWorkout) return@setOnClickListener
             if (currentProgressCount > 0 && !isCompletingWorkout) {
                 confirmManualCompletion()
             } else {
@@ -215,14 +241,16 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
             setUpCamera()
         }
 
+        val appContext = requireContext().applicationContext
         backgroundExecutor.execute {
             poseLandmarkerHelper = PoseLandmarkerHelper(
-                context = requireContext(),
+                context = appContext,
                 runningMode = RunningMode.LIVE_STREAM,
                 minPoseDetectionConfidence = viewModel.currentMinPoseDetectionConfidence,
                 minPoseTrackingConfidence = viewModel.currentMinPoseTrackingConfidence,
                 minPosePresenceConfidence = viewModel.currentMinPosePresenceConfidence,
                 currentDelegate = viewModel.currentDelegate,
+                currentModel = viewModel.currentModel,
                 poseLandmarkerHelperListener = this
             )
         }
@@ -545,18 +573,19 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
             completedAt = System.currentTimeMillis()
         )
 
+        val appContext = requireContext().applicationContext
         viewLifecycleOwner.lifecycleScope.launch {
             try {
-                val dao = TriForceDatabase.getInstance(requireContext()).workoutSessionDao()
-                val previous = withContext(Dispatchers.IO) {
+                val dao = TriForceDatabase.getInstance(appContext).workoutSessionDao()
+                val previous = withContext(Dispatchers.IO + NonCancellable) {
                     val old = dao.getRecent(uid, 100)
                         .firstOrNull { it.exerciseId == exerciseId }
                     dao.upsert(session.toLocalEntity(uid))
+                    WorkoutSyncScheduler.enqueue(appContext)
                     old
                 }
                 if (!isAdded || isStateSaved || _fragmentCameraBinding == null) return@launch
 
-                WorkoutSyncScheduler.enqueue(requireContext())
                 if (hasRemainingPending) {
                     RestTimerService.startRestTimer(requireContext(), dayIndex)
                 } else {
@@ -582,6 +611,8 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
                         putBoolean("syncPending", true)
                     }
                 )
+            } catch (cancelled: CancellationException) {
+                throw cancelled
             } catch (error: Exception) {
                 showWorkoutSaveError("Không thể lưu kết quả trên thiết bị: ${error.localizedMessage}")
             }
@@ -602,43 +633,43 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
             String.format(Locale.US, "%.2f", viewModel.currentMinPosePresenceConfidence)
 
         fragmentCameraBinding.bottomSheetLayout.detectionThresholdMinus.setOnClickListener {
-            if (poseLandmarkerHelper.minPoseDetectionConfidence >= 0.2) {
-                poseLandmarkerHelper.minPoseDetectionConfidence -= 0.1f
+            if (viewModel.currentMinPoseDetectionConfidence >= 0.2) {
+                viewModel.setMinPoseDetectionConfidence(viewModel.currentMinPoseDetectionConfidence - 0.1f)
                 updateControlsUi()
             }
         }
 
         fragmentCameraBinding.bottomSheetLayout.detectionThresholdPlus.setOnClickListener {
-            if (poseLandmarkerHelper.minPoseDetectionConfidence <= 0.8) {
-                poseLandmarkerHelper.minPoseDetectionConfidence += 0.1f
+            if (viewModel.currentMinPoseDetectionConfidence <= 0.8) {
+                viewModel.setMinPoseDetectionConfidence(viewModel.currentMinPoseDetectionConfidence + 0.1f)
                 updateControlsUi()
             }
         }
 
         fragmentCameraBinding.bottomSheetLayout.trackingThresholdMinus.setOnClickListener {
-            if (poseLandmarkerHelper.minPoseTrackingConfidence >= 0.2) {
-                poseLandmarkerHelper.minPoseTrackingConfidence -= 0.1f
+            if (viewModel.currentMinPoseTrackingConfidence >= 0.2) {
+                viewModel.setMinPoseTrackingConfidence(viewModel.currentMinPoseTrackingConfidence - 0.1f)
                 updateControlsUi()
             }
         }
 
         fragmentCameraBinding.bottomSheetLayout.trackingThresholdPlus.setOnClickListener {
-            if (poseLandmarkerHelper.minPoseTrackingConfidence <= 0.8) {
-                poseLandmarkerHelper.minPoseTrackingConfidence += 0.1f
+            if (viewModel.currentMinPoseTrackingConfidence <= 0.8) {
+                viewModel.setMinPoseTrackingConfidence(viewModel.currentMinPoseTrackingConfidence + 0.1f)
                 updateControlsUi()
             }
         }
 
         fragmentCameraBinding.bottomSheetLayout.presenceThresholdMinus.setOnClickListener {
-            if (poseLandmarkerHelper.minPosePresenceConfidence >= 0.2) {
-                poseLandmarkerHelper.minPosePresenceConfidence -= 0.1f
+            if (viewModel.currentMinPosePresenceConfidence >= 0.2) {
+                viewModel.setMinPosePresenceConfidence(viewModel.currentMinPosePresenceConfidence - 0.1f)
                 updateControlsUi()
             }
         }
 
         fragmentCameraBinding.bottomSheetLayout.presenceThresholdPlus.setOnClickListener {
-            if (poseLandmarkerHelper.minPosePresenceConfidence <= 0.8) {
-                poseLandmarkerHelper.minPosePresenceConfidence += 0.1f
+            if (viewModel.currentMinPosePresenceConfidence <= 0.8) {
+                viewModel.setMinPosePresenceConfidence(viewModel.currentMinPosePresenceConfidence + 0.1f)
                 updateControlsUi()
             }
         }
@@ -649,7 +680,7 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
         fragmentCameraBinding.bottomSheetLayout.spinnerDelegate.onItemSelectedListener =
             object : AdapterView.OnItemSelectedListener {
                 override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
-                    poseLandmarkerHelper.currentDelegate = p2
+                    viewModel.setDelegate(p2)
                     updateControlsUi()
                 }
                 override fun onNothingSelected(p0: AdapterView<*>?) {}
@@ -661,7 +692,7 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
         fragmentCameraBinding.bottomSheetLayout.spinnerModel.onItemSelectedListener =
             object : AdapterView.OnItemSelectedListener {
                 override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
-                    poseLandmarkerHelper.currentModel = p2
+                    viewModel.setModel(p2)
                     updateControlsUi()
                 }
                 override fun onNothingSelected(p0: AdapterView<*>?) {}
@@ -671,14 +702,19 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
     private fun updateControlsUi() {
         if (this::poseLandmarkerHelper.isInitialized) {
             fragmentCameraBinding.bottomSheetLayout.detectionThresholdValue.text =
-                String.format(Locale.US, "%.2f", poseLandmarkerHelper.minPoseDetectionConfidence)
+                String.format(Locale.US, "%.2f", viewModel.currentMinPoseDetectionConfidence)
             fragmentCameraBinding.bottomSheetLayout.trackingThresholdValue.text =
-                String.format(Locale.US, "%.2f", poseLandmarkerHelper.minPoseTrackingConfidence)
+                String.format(Locale.US, "%.2f", viewModel.currentMinPoseTrackingConfidence)
             fragmentCameraBinding.bottomSheetLayout.presenceThresholdValue.text =
-                String.format(Locale.US, "%.2f", poseLandmarkerHelper.minPosePresenceConfidence)
+                String.format(Locale.US, "%.2f", viewModel.currentMinPosePresenceConfidence)
 
             backgroundExecutor.execute {
                 poseLandmarkerHelper.clearPoseLandmarker()
+                poseLandmarkerHelper.minPoseDetectionConfidence = viewModel.currentMinPoseDetectionConfidence
+                poseLandmarkerHelper.minPoseTrackingConfidence = viewModel.currentMinPoseTrackingConfidence
+                poseLandmarkerHelper.minPosePresenceConfidence = viewModel.currentMinPosePresenceConfidence
+                poseLandmarkerHelper.currentDelegate = viewModel.currentDelegate
+                poseLandmarkerHelper.currentModel = viewModel.currentModel
                 poseLandmarkerHelper.setupPoseLandmarker()
             }
             fragmentCameraBinding.overlay.clear()
@@ -770,7 +806,7 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
 
         try {
             cameraProvider.unbindAll()
-            camera = cameraProvider.bindToLifecycle(this, cameraSelector, preview, imageAnalyzer)
+            camera = cameraProvider.bindToLifecycle(viewLifecycleOwner, cameraSelector, preview, imageAnalyzer)
             preview?.setSurfaceProvider(fragmentCameraBinding.viewFinder.surfaceProvider)
         } catch (exc: Exception) {
             Log.e(TAG, "Camera use case binding failed", exc)
@@ -784,11 +820,17 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
     }
 
     private fun detectPose(imageProxy: ImageProxy) {
-        if (this::poseLandmarkerHelper.isInitialized) {
+        if (!this::poseLandmarkerHelper.isInitialized || poseLandmarkerHelper.isClose()) {
+            imageProxy.close()
+            return
+        }
+        try {
             poseLandmarkerHelper.detectLiveStream(
-                imageProxy = imageProxy,
-                isFrontCamera = cameraFacing == CameraSelector.LENS_FACING_FRONT
+                imageProxy, cameraFacing == CameraSelector.LENS_FACING_FRONT
             )
+        } catch (error: RuntimeException) {
+            // The helper always releases the frame, including conversion failures.
+            Log.e(TAG, "Unable to analyze camera frame", error)
         }
     }
 
@@ -799,11 +841,11 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
 
     override fun onResults(resultBundle: PoseLandmarkerHelper.ResultBundle) {
         activity?.runOnUiThread {
-            if (_fragmentCameraBinding != null) {
+            if (_fragmentCameraBinding != null && isResumed && resultBundle.results.isNotEmpty()) {
                 val now = SystemClock.uptimeMillis()
                 if (now - lastInferenceUiUpdateMs >= 500L) {
                     fragmentCameraBinding.bottomSheetLayout.inferenceTimeVal.text =
-                        String.format("%d ms", resultBundle.inferenceTime)
+                        String.format(Locale.US, "%d ms", resultBundle.inferenceTime)
                     lastInferenceUiUpdateMs = now
                 }
 
@@ -865,6 +907,7 @@ class CameraFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
 
     override fun onError(error: String, errorCode: Int) {
         activity?.runOnUiThread {
+            if (!isAdded || _fragmentCameraBinding == null) return@runOnUiThread
             Toast.makeText(requireContext(), error, Toast.LENGTH_SHORT).show()
             if (errorCode == PoseLandmarkerHelper.GPU_ERROR) {
                 fragmentCameraBinding.bottomSheetLayout.spinnerDelegate.setSelection(

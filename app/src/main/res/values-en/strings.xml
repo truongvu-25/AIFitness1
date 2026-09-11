@@ -119,4 +119,6 @@
         <item>Pose Landmarker Lite (Fast)</item>
         <item>Pose Landmarker Heavy (High Accuracy)</item>
     </string-array>
+    <string name="action_back">Back</string>
+    <string name="action_switch_camera">Switch camera</string>
 </resources>

@@ -31,16 +31,12 @@
     <color name="tri_force_blue_light">#DBEAFE</color>
     <color name="tri_force_blue_soft">#EFF6FF</color>
 
-    <color name="tri_force_steel">#9AA7B8</color>
 
 
     <!-- DARK / HERO -->
 
-    <color name="tri_force_surface_dark">#0A2038</color>
     <color name="tri_force_surface_dark_alt">#12304F</color>
 
-    <color name="tri_force_hero_blue">#145EEB</color>
-    <color name="tri_force_hero_blue_dark">#0A347F</color>
 
 
     <!-- =========================================================
@@ -48,7 +44,6 @@
          ========================================================= -->
 
     <color name="tri_force_splash_bg">#04101F</color>
-    <color name="ic_launcher_background">#04101F</color>
 
 
     <!-- =========================================================
@@ -59,12 +54,10 @@
 
     <color name="tri_force_white">#FFFFFF</color>
 
-    <color name="tri_force_dark_surface">#FFFFFF</color>
     <color name="tri_force_dark_card">#FFFFFF</color>
 
     <color name="tri_force_surface_soft">#E9EFF6</color>
     <color name="tri_force_surface_muted">#DDE6EF</color>
-    <color name="tri_force_gray_panel">#F8FAFC</color>
 
 
     <!-- =========================================================
@@ -99,11 +92,8 @@
          ICON
          ========================================================= -->
 
-    <color name="tri_force_icon_active">#2563EB</color>
     <color name="tri_force_icon_default">#708095</color>
-    <color name="tri_force_icon_muted">#98A2B3</color>
 
-    <color name="tri_force_icon_on_dark">#DCE5F0</color>
 
 
     <!-- =========================================================
@@ -120,7 +110,6 @@
     <color name="nav_background">#041525</color>
 
     <!-- Reserved for future active indicator -->
-    <color name="nav_active_background">#162D4B</color>
 
 
     <!-- =========================================================
@@ -128,10 +117,8 @@
          ========================================================= -->
 
     <color name="card_background">#FFFFFF</color>
-    <color name="card_border">#D7E0EA</color>
     <color name="card_background_soft">#FFFFFF</color>
 
-    <color name="card_background_dark">#0B1D33</color>
 
 
     <!-- =========================================================
@@ -149,10 +136,7 @@
          ========================================================= -->
 
     <color name="progress_track">#E2EAF3</color>
-    <color name="progress_fill">#2563EB</color>
 
-    <color name="progress_track_dark">#29405D</color>
-    <color name="progress_fill_dark">#2D7CFF</color>
 
 
     <!-- =========================================================
@@ -187,7 +171,6 @@
          ========================================================= -->
 
     <color name="tri_force_info">#2563EB</color>
-    <color name="tri_force_info_bg">#DBEAFE</color>
 
 
     <!-- =========================================================
@@ -204,26 +187,15 @@
          LEGACY ICON COLORS
          ========================================================= -->
 
-    <color name="icActive">#FFFFFFFF</color>
-    <color name="icFocused">#DDFFFFFF</color>
-    <color name="icPressed">#AAFFFFFF</color>
 
 
     <!-- =========================================================
          TRANSPARENT / OVERLAYS
          ========================================================= -->
 
-    <color name="transparent">#00000000</color>
 
-    <color name="black_05">#0D000000</color>
-    <color name="black_08">#14000000</color>
-    <color name="black_12">#1F000000</color>
-    <color name="black_16">#29000000</color>
-    <color name="black_24">#3D000000</color>
 
-    <color name="white_08">#14FFFFFF</color>
     <color name="white_12">#1FFFFFFF</color>
     <color name="white_16">#29FFFFFF</color>
-    <color name="white_24">#3DFFFFFF</color>
 
 </resources>

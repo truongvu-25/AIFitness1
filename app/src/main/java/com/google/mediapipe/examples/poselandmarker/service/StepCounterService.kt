@@ -1,6 +1,11 @@
 package com.google.mediapipe.examples.poselandmarker.service
 
-import android.R
+import android.Manifest
+import android.content.pm.PackageManager
+import android.provider.Settings
+import android.os.SystemClock
+import androidx.core.content.ContextCompat
+import com.google.mediapipe.examples.poselandmarker.model.DailyStepCounter
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -33,10 +38,9 @@ class StepCounterService : Service(), SensorEventListener {
 
         private const val PREFS_NAME = "step_counter_prefs"
         private const val PREF_KEY_STEPS_PREFIX = "steps_"
-        private const val PREF_KEY_INITIAL_STEPS_PREFIX = "initial_steps_"
 
         fun getTodayKey(): String {
-            val sdf = SimpleDateFormat("yyyyMMdd", Locale.getDefault())
+            val sdf = SimpleDateFormat("yyyyMMdd", Locale.US)
             return sdf.format(Date())
         }
 
@@ -51,6 +55,10 @@ class StepCounterService : Service(), SensorEventListener {
 
         fun startService(context: Context) {
             try {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q &&
+                    ContextCompat.checkSelfPermission(context, Manifest.permission.ACTIVITY_RECOGNITION) != PackageManager.PERMISSION_GRANTED) return
+                val manager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
+                if (manager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER) == null) return
                 val intent = Intent(context, StepCounterService::class.java)
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                     context.startForegroundService(intent)
@@ -68,7 +76,8 @@ class StepCounterService : Service(), SensorEventListener {
     private var stepSensor: Sensor? = null
 
     private var currentStepsCount: Int = 0
-    private var initialSensorSteps: Int = -1
+    private lateinit var dailyCounter: DailyStepCounter
+    private var lastNotificationAt = 0L
 
     inner class StepBinder : Binder() {
         fun getService(): StepCounterService = this@StepCounterService
@@ -84,25 +93,36 @@ class StepCounterService : Service(), SensorEventListener {
 
         val prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
         currentStepsCount = prefs.getInt(PREF_KEY_STEPS_PREFIX + getTodayKey(), 0)
+        val bootCount = Settings.Global.getInt(contentResolver, Settings.Global.BOOT_COUNT, -1)
+        val sameBoot = prefs.getInt("boot_count", -2) == bootCount
+        val previousRaw = if (sameBoot) prefs.getInt("last_raw_" + getTodayKey(), -1) else -1
+        dailyCounter = DailyStepCounter(getTodayKey(), currentStepsCount, previousRaw)
+        prefs.edit().putInt("boot_count", bootCount).apply()
 
         sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
         stepSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
 
-        if (stepSensor != null) {
-            sensorManager.registerListener(this, stepSensor, SensorManager.SENSOR_DELAY_UI)
-        }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val notification = buildNotification(currentStepsCount, currentStepsCount * 0.04f)
         try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                startForeground(NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_HEALTH)
+            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 startForeground(NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC)
             } else {
                 startForeground(NOTIFICATION_ID, notification)
             }
+            if (stepSensor == null ||
+                !sensorManager.registerListener(this, stepSensor, SensorManager.SENSOR_DELAY_NORMAL)) {
+                stopSelf()
+                return START_NOT_STICKY
+            }
         } catch (e: Exception) {
             e.printStackTrace()
+            stopSelf()
+            return START_NOT_STICKY
         }
         return START_STICKY
     }
@@ -114,18 +134,11 @@ class StepCounterService : Service(), SensorEventListener {
             val prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
             val todayKey = getTodayKey()
 
-            if (initialSensorSteps < 0) {
-                initialSensorSteps = prefs.getInt(PREF_KEY_INITIAL_STEPS_PREFIX + todayKey, -1)
-                if (initialSensorSteps < 0) {
-                    initialSensorSteps = rawSensorSteps
-                    prefs.edit().putInt(PREF_KEY_INITIAL_STEPS_PREFIX + todayKey, initialSensorSteps).apply()
-                }
-            }
-
-            val stepsToday = (rawSensorSteps - initialSensorSteps).coerceAtLeast(0)
-            currentStepsCount = stepsToday
-
-            prefs.edit().putInt(PREF_KEY_STEPS_PREFIX + todayKey, currentStepsCount).apply()
+            currentStepsCount = dailyCounter.record(todayKey, rawSensorSteps)
+            prefs.edit()
+                .putInt(PREF_KEY_STEPS_PREFIX + todayKey, currentStepsCount)
+                .putInt("last_raw_" + todayKey, rawSensorSteps)
+                .apply()
 
             val calories = currentStepsCount * 0.04f
             updateNotification(currentStepsCount, calories)
@@ -135,17 +148,6 @@ class StepCounterService : Service(), SensorEventListener {
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
         // Not needed for step counter
-    }
-
-    fun addSimulatedSteps(amount: Int = 50) {
-        currentStepsCount += amount
-        val todayKey = getTodayKey()
-        val prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
-        prefs.edit().putInt(PREF_KEY_STEPS_PREFIX + todayKey, currentStepsCount).apply()
-
-        val calories = currentStepsCount * 0.04f
-        updateNotification(currentStepsCount, calories)
-        broadcastStepsUpdate(currentStepsCount, calories)
     }
 
     private fun broadcastStepsUpdate(steps: Int, calories: Float) {
@@ -169,8 +171,8 @@ class StepCounterService : Service(), SensorEventListener {
         val caloStr = String.format(Locale.US, "%.1f", calories)
 
         return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_dialog_info)
-            .setContentTitle("Fitness For You - Đang đếm bước ngầm")
+            .setSmallIcon(android.R.drawable.ic_dialog_info)
+            .setContentTitle("TRI FORCE - Đang đếm bước")
             .setContentText("Đã đi: $steps bước (~$caloStr kcal tiêu thụ)")
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .setOngoing(true)
@@ -179,6 +181,9 @@ class StepCounterService : Service(), SensorEventListener {
     }
 
     private fun updateNotification(steps: Int, calories: Float) {
+        val now = SystemClock.elapsedRealtime()
+        if (now - lastNotificationAt < 5_000L) return
+        lastNotificationAt = now
         try {
             val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.notify(NOTIFICATION_ID, buildNotification(steps, calories))

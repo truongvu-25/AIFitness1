@@ -1,195 +1,138 @@
-# Fitness For You
+<p align="center"><img src="app/src/main/res/drawable-nodpi/tri_force_logo.png" width="128" alt="TRI FORCE logo"></p>
 
-Fitness For You is a native Android fitness application designed to provide a personalized 30-day workout experience. Powered by Google MediaPipe Pose Landmarker and CameraX, the app performs real-time body movement tracking on-device, automatically counts exercise repetitions, measures posture hold times, and provides instant visual feedback.
+# TRI FORCE
 
-![Fitness For You Banner](app/src/main/res/drawable/fitness_for_you_banner.png)
+**An Android fitness companion with on-device pose tracking, personalized plans and offline workout recording.**
 
-## Table of Contents
+[![Android checks](https://github.com/truongvu-25/AIFitness1/actions/workflows/android.yml/badge.svg)](https://github.com/truongvu-25/AIFitness1/actions/workflows/android.yml)
+[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
+![Android](https://img.shields.io/badge/Android-8.0%2B-green.svg)
+![Kotlin](https://img.shields.io/badge/Kotlin-2.0.21-purple.svg)
 
-- [Features](#features)
-- [Architecture](#architecture)
-- [Tech Stack](#tech-stack)
-- [Project Structure](#project-structure)
-- [App Flow](#app-flow)
-- [Getting Started](#getting-started)
-- [Firebase Configuration](#firebase-configuration)
-- [Cloud Firestore Data Model](#cloud-firestore-data-model)
-- [Android Permissions](#android-permissions)
-- [Documentation](#documentation)
-- [License](#license)
+TRI FORCE helps users follow a 30-day routine, watch bundled demonstrations, count exercise repetitions or holds through the camera, and review progress. MediaPipe processes camera frames locally. Firebase provides authentication and cloud persistence; Room and WorkManager preserve workout results when connectivity is unavailable.
+
+The repository name and Android application ID retain their original names for compatibility. The product name is **TRI FORCE**, previously Fitness For You.
 
 ## Features
 
-- **Authentication & Profile Setup**: Email and password authentication via Firebase Auth with automatic session persistence.
-- **BMI Calculation & Categorization**: Calculates Body Mass Index (BMI) from height and weight, categorizing users into Underweight (`GAY`), Balanced (`CAN DOI`), or Overweight (`THUA CAN`).
-- **Dynamic 30-Day Workout Generator**: Generates a tailored 30-day workout plan with weekly difficulty scaling and body-specific rest day intervals.
-- **Real-Time AI Pose Detection**: Tracks 33 3D body joints on-device at ~30 FPS using CameraX and Google MediaPipe Pose Landmarker.
-- **Repetition & Hold-Time Counting**: Automatically counts repetitions for Push-ups, Squats, Sit-ups, Jumping Jacks, and Split Squats, and tracks hold times for Plank and Side Plank.
-- **Offline Tutorial Videos**: Embedded MP4 demonstration videos bundled directly within application assets.
-- **5-Minute Rest Timer**: Foreground Service countdown between exercises with high-priority notifications.
-- **Pedometer & Calorie Tracking**: Hardware step-sensor integration via Foreground Service calculating daily step count and estimated calorie burn.
-- **Daily Reminders & Reboot Recovery**: Scheduled 8:00 AM daily workout alarm using AlarmManager and BootReceiver for device restart recovery.
-- **7-Day BMI Update Prompt**: Enforces body metric updates every 7 days to keep workout plans aligned with user progress.
+- Email/password authentication, conversational profile setup and weekly metric updates.
+- Personalized 30-day schedules, exercise library and custom weekly plan templates.
+- Pose analysis for push-ups, squats, sit-ups, jumping jacks, split squats, plank and side plank.
+- Camera calibration, skeleton overlay and optional device text-to-speech coaching.
+- Workout summaries, form feedback, difficulty ratings and suggested future targets.
+- Local workout recording with retryable, idempotent cloud synchronization.
+- Progress dashboard, hardware step counter, five-minute rest timer and configurable reminders.
+- Optional Health Connect step reads and workout writes.
+- Vietnamese and English resources; some runtime coaching and screen text remains Vietnamese.
 
-## Architecture
+Pose accuracy and inference speed depend on hardware, model, lighting, framing and movement. Custom library entries do not automatically gain a pose analyzer.
 
-The application uses a Single Activity Architecture built with Jetpack Navigation, modular exercise analyzers, and Android Foreground Services.
+## Screenshots
+
+<p align="center">
+  <img src="docs/images/home.png" width="280" alt="Home screen with workout plan and quick actions">
+  <img src="docs/images/library.png" width="280" alt="Exercise library with search, categories and video demonstrations">
+</p>
+
+Screens captured on an Android emulator with empty account data.
+
+## App flow
 
 ```mermaid
-flowchart TD
-    subgraph UI Layer
-        MA[MainActivity] --> NHF[NavHostFragment]
-        NHF --> LF[LoginFragment]
-        NHF --> RF[RegisterFragment]
-        NHF --> UIF[UserInfoFragment]
-        NHF --> WCF[WorkoutCalendarFragment]
-        NHF --> CF[CameraFragment]
-        NHF --> PF[ProfileFragment]
-        NHF --> UBF[UpdateBmiFragment]
-    end
-
-    subgraph AI Engine
-        CF --> CX[CameraX ImageAnalysis]
-        CX --> PLH[PoseLandmarkerHelper]
-        PLH --> MP[MediaPipe Pose Landmarker Engine]
-        MP --> OV[OverlayView]
-        MP --> EA[ExerciseAnalyzer]
-    end
-
-    subgraph Background Services
-        SCS[StepCounterService]
-        RTS[RestTimerService]
-        AM[AlarmManager]
-        BR[BootReceiver]
-    end
-
-    subgraph Cloud Backend
-        FA[Firebase Auth]
-        FS[(Cloud Firestore)]
-    end
-
-    LF <--> FA
-    UIF --> FS
-    WCF <--> FS
-    CF --> FS
-    PF <--> FS
+flowchart LR
+    Welcome --> Auth[Sign in / Register]
+    Auth --> Profile[Profile setup or weekly update]
+    Profile --> Calendar[Workout calendar]
+    Calendar --> Camera[Permission / Calibration / Exercise]
+    Camera --> Summary[Summary and feedback]
+    Summary --> Calendar
+    Home <--> Calendar
+    Home <--> Library[Library and custom plans]
+    Home <--> Account[Profile and settings]
+    Home --> Progress[Progress dashboard]
+    Summary --> Room[(Local sessions)]
+    Room --> Worker[WorkManager]
+    Worker --> Firestore[(Firestore)]
+    Worker --> Health[Health Connect]
 ```
 
-## Tech Stack
+## Build and run
 
-| Category | Technology | Purpose |
-| :--- | :--- | :--- |
-| **Language** | Kotlin | Core application language |
-| **Architecture** | Android Native SDK, Jetpack Navigation | Single Activity pattern & fragment navigation |
-| **UI & Layouts** | XML, View Binding, Material Components | User interface design |
-| **Computer Vision** | MediaPipe Tasks Vision | 33 3D body landmark detection |
-| **Camera** | CameraX | Real-time camera feed analysis |
-| **Backend & Auth** | Firebase Authentication & Cloud Firestore | User accounts & cloud synchronization |
-| **Background Processing** | Android Foreground Services | Step counting & rest timer services |
-| **System Scheduling** | AlarmManager, BroadcastReceiver | Daily reminder notifications & reboot recovery |
+| Component | Requirement |
+| --- | --- |
+| Device | Android 8.0 / API 26+, camera |
+| SDK | Compile SDK 36, target SDK 34 |
+| Java | JDK 17 recommended; local audit also used JDK 21 |
+| Gradle | 8.14.3, supplied by the wrapper |
+| Android Gradle Plugin | 8.11.0 |
+| Kotlin | 2.0.21 |
 
-## Project Structure
+Use Android Studio compatible with AGP 8.11 and install the required SDK. Validate camera/sensors on a physical device before distribution.
+
+```bash
+git clone https://github.com/truongvu-25/AIFitness1.git
+cd AIFitness1
+```
+
+1. Create a Firebase project and register package `com.google.mediapipe.examples.poselandmarker`.
+2. Enable Email/Password Authentication and create Cloud Firestore.
+3. Download configuration to `app/google-services.json` (ignored by Git).
+4. Configure the Android SDK through Android Studio or local `local.properties`; set `JAVA_HOME` to your JDK.
+5. Build/install:
+
+```powershell
+# Windows
+.\gradlew.bat assembleDebug installDebug
+```
+
+```bash
+# macOS / Linux
+chmod +x gradlew
+./gradlew assembleDebug installDebug
+```
+
+APK output: `app/build/outputs/apk/debug/app-debug.apk`. Models and tutorial videos are bundled. Gradle downloads missing models from Google's model storage; the initial dependency download needs internet access.
+
+For build-only checks, copy `app/google-services.example.json` to `app/google-services.json`. The example contains fake identifiers: authentication and cloud features cannot work with it. CI uses this configuration and needs no production secrets.
+
+## Verification
+
+```powershell
+.\gradlew.bat testDebugUnitTest lintDebug assembleDebug assembleRelease
+# With a connected emulator/device:
+.\gradlew.bat connectedDebugAndroidTest
+```
+
+Release output is an **unsigned** APK. Configure signing outside version control before distribution. CI runs build, JVM tests and lint; device tests run separately. See [testing](docs/TESTING.md) and the [audit record](docs/FINAL_AUDIT.md) for verified scope and remaining checks.
+
+## Structure
 
 ```text
-AIFitness1/
-├── app/
-│   ├── src/main/java/com/google/mediapipe/examples/poselandmarker/
-│   │   ├── fragment/                  # App screens
-│   │   ├── BaseExerciseAnalyzer.kt    # Base class for analyzers
-│   │   ├── ExerciseAnalyzer.kt        # Exercise angle analysis & state machine
-│   │   ├── FitnessApplication.kt      # Application initialization & seed data
-│   │   ├── Models.kt                  # Data models for Firestore & UI
-│   │   ├── NotificationHelper.kt      # AlarmManager notification helper
-│   │   ├── OverlayView.kt             # Skeleton rendering view
-│   │   ├── PoseLandmarkerHelper.kt    # MediaPipe helper wrapper
-│   │   ├── RestTimerService.kt        # 5-minute rest timer service
-│   │   ├── StepCounterService.kt      # Pedometer foreground service
-│   │   ├── WorkoutReminderReceiver.kt # Reminder notification receiver
-│   │   └── BootReceiver.kt            # Boot recovery receiver
-│   ├── src/main/assets/
-│   │   ├── pose_landmarker_*.task     # MediaPipe TFLite pose models
-│   │   └── videos/                    # Bundled MP4 tutorial videos
-│   └── src/main/res/                  # XML layouts, navigation, resources
-├── docs/
-│   ├── ARCHITECTURE.md                # System architecture documentation
-│   └── TECHNICAL_OVERVIEW.md          # Implementation details overview
-├── CONTRIBUTING.md                    # Developer contribution guidelines
-├── SECURITY.md                        # Security policy
-├── LICENSE                            # Apache License 2.0
-└── README.md                          # Project repository homepage
+app/src/main/java/com/google/mediapipe/examples/poselandmarker/
+  analysis/       Pose engine, overlay and exercise analyzers
+  data/           Room storage and background synchronization
+  health/         Health Connect integration
+  model/          Profiles, workouts and progression logic
+  notification/   Reminder scheduling
+  receiver/       Alarm and reboot handling
+  service/        Step counter and rest timer
+  ui/fragment/    Onboarding, home, library, camera and profile
+  voice/          Device speech coaching
+app/src/main/assets/     Pose models and tutorial videos
+app/src/main/res/        Layouts, navigation, styles and translations
+app/src/test/            JVM regression tests
+app/src/androidTest/     Room, navigation and MediaPipe device tests
+docs/                    Architecture, setup and validation
+.github/                 CI and contributor templates
 ```
-
-## App Flow
-
-1. **Application Initialization**: `FitnessApplication` initializes Firebase and seeds master exercise data.
-2. **Authentication**: Users authenticate through `LoginFragment` or `RegisterFragment`.
-3. **Profile Setup**: `UserInfoFragment` collects metrics, calculates BMI, and generates a 30-day plan.
-4. **Workout Calendar**: Users select days and view exercises in `WorkoutCalendarFragment`.
-5. **AI Motion Analysis**: `CameraFragment` processes frames via CameraX and MediaPipe, updating rep counts and Firestore data.
-6. **Rest & Tracking**: `RestTimerService` handles rest periods, while `StepCounterService` tracks steps and estimated calories.
-
-## Getting Started
-
-### Prerequisites
-
-- Android Studio (Hedgehog or newer)
-- JDK 17
-- Android Device (API level 24 or higher) with camera support
-- Firebase project with Authentication and Cloud Firestore enabled
-
-### Installation
-
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/truongvu-25/AIFitness1.git
-   cd AIFitness1
-   ```
-
-2. Add your Firebase configuration file (`google-services.json`) to `app/google-services.json`.
-
-3. Build the debug APK:
-   ```powershell
-   .\gradlew.bat assembleDebug
-   ```
-
-## Firebase Configuration
-
-The repository does not include `google-services.json`. Place your downloaded configuration file in the following location:
-
-```text
-app/google-services.json
-```
-
-Required Firebase services:
-- Email/Password Authentication
-- Cloud Firestore
-
-## Cloud Firestore Data Model
-
-```text
-exercises/{exerciseId}                 # Master exercise metadata
-users/{uid}                            # User profile and health records
-users/{uid}/workouts/day_{1..30}       # Daily workout plan documents
-```
-
-## Android Permissions
-
-- `CAMERA`: Camera access for real-time pose detection.
-- `INTERNET`: Network access for Firebase sync.
-- `ACTIVITY_RECOGNITION`: Access to hardware step counter sensor.
-- `FOREGROUND_SERVICE`: Running background pedometer and rest timer.
-- `FOREGROUND_SERVICE_DATA_SYNC`: Foreground service compliance for Android 14 (API 34).
-- `POST_NOTIFICATIONS`: Notification permissions on Android 13+.
-- `RECEIVE_BOOT_COMPLETED`: Rescheduling reminders on reboot.
-- `SCHEDULE_EXACT_ALARM`: Precise alarm scheduling.
 
 ## Documentation
 
-- [System Architecture](docs/ARCHITECTURE.md)
-- [Technical Overview](docs/TECHNICAL_OVERVIEW.md)
-- [Contributing Guidelines](CONTRIBUTING.md)
-- [Security Policy](SECURITY.md)
+- [Architecture](docs/ARCHITECTURE.md) and [implementation overview](docs/TECHNICAL_OVERVIEW.md)
+- [Firebase setup](docs/FIREBASE.md)
+- [Testing](docs/TESTING.md) and [final audit](docs/FINAL_AUDIT.md)
+- [Contributing](CONTRIBUTING.md), [security](SECURITY.md) and [changelog](CHANGELOG.md)
 
-## License
+## Attribution and license
 
-This project is licensed under the Apache License 2.0. See [LICENSE](LICENSE) for details.
+Source code is distributed under [Apache License 2.0](LICENSE). The project builds on Google's [MediaPipe Android pose-landmarker example](https://github.com/google-ai-edge/mediapipe-samples/tree/main/examples/pose_landmarker/android); original copyright notices are retained. Third-party dependencies and models retain their respective licenses. Confirm distribution rights for bundled demonstration videos and branding before an app-store release.

@@ -16,12 +16,13 @@
 package com.google.mediapipe.examples.poselandmarker.ui.fragment.camera
 
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.ImageDecoder
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.os.SystemClock
-import android.provider.MediaStore
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -37,8 +38,7 @@ import com.google.mediapipe.examples.poselandmarker.databinding.FragmentGalleryB
 import com.google.mediapipe.tasks.vision.core.RunningMode
 import java.util.*
 import java.util.concurrent.Executors
-import java.util.concurrent.ScheduledExecutorService
-import java.util.concurrent.TimeUnit
+import java.util.concurrent.ExecutorService
 
 class GalleryFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
 
@@ -51,15 +51,18 @@ class GalleryFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
     private var _fragmentGalleryBinding: FragmentGalleryBinding? = null
     private val fragmentGalleryBinding
         get() = _fragmentGalleryBinding!!
-    private lateinit var poseLandmarkerHelper: PoseLandmarkerHelper
     private val viewModel: MainViewModel by activityViewModels()
 
     /** Blocking ML operations are performed using this executor */
-    private lateinit var backgroundExecutor: ScheduledExecutorService
+    private lateinit var backgroundExecutor: ExecutorService
+    private val playbackHandler = Handler(Looper.getMainLooper())
+    private val resultHandler = Handler(Looper.getMainLooper())
+    private var generation = 0
 
     private val getContent =
         registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri: Uri? ->
             // Handle the returned Uri
+            if (_fragmentGalleryBinding == null) return@registerForActivityResult
             uri?.let { mediaUri ->
                 when (val mediaType = loadMediaType(mediaUri)) {
                     MediaType.IMAGE -> runDetectionOnImage(mediaUri)
@@ -93,16 +96,28 @@ class GalleryFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
             getContent.launch(arrayOf("image/*", "video/*"))
         }
 
+        backgroundExecutor = Executors.newSingleThreadExecutor()
         initBottomSheetControls()
     }
 
     override fun onPause() {
+        playbackHandler.removeCallbacksAndMessages(null)
         fragmentGalleryBinding.overlay.clear()
         if (fragmentGalleryBinding.videoView.isPlaying) {
             fragmentGalleryBinding.videoView.stopPlayback()
         }
         fragmentGalleryBinding.videoView.visibility = View.GONE
         super.onPause()
+    }
+
+    override fun onDestroyView() {
+        generation++
+        playbackHandler.removeCallbacksAndMessages(null)
+        _fragmentGalleryBinding?.videoView?.stopPlayback()
+        _fragmentGalleryBinding?.imageResult?.setImageDrawable(null)
+        backgroundExecutor.shutdownNow()
+        _fragmentGalleryBinding = null
+        super.onDestroyView()
     }
 
     private fun initBottomSheetControls() {
@@ -213,7 +228,7 @@ class GalleryFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
                     p2: Int,
                     p3: Long
                 ) {
-                    poseLandmarkerHelper.currentModel = p2
+                    viewModel.setModel(p2)
                     updateControlsUi()
                 }
 
@@ -225,6 +240,7 @@ class GalleryFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
 
     // Update the values displayed in the bottom sheet. Reset detector.
     private fun updateControlsUi() {
+        playbackHandler.removeCallbacksAndMessages(null)
         if (fragmentGalleryBinding.videoView.isPlaying) {
             fragmentGalleryBinding.videoView.stopPlayback()
         }
@@ -248,138 +264,131 @@ class GalleryFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
         fragmentGalleryBinding.tvPlaceholder.visibility = View.VISIBLE
     }
 
-    // Load and display the image.
-    private fun runDetectionOnImage(uri: Uri) {
+    private fun runDetectionOnImage(uri: Uri) = runDetection(uri, MediaType.IMAGE)
+
+    private fun runDetectionOnVideo(uri: Uri) = runDetection(uri, MediaType.VIDEO)
+
+    private fun runDetection(uri: Uri, type: MediaType) {
+        val currentBinding = _fragmentGalleryBinding ?: return
+        val appContext = requireContext().applicationContext
+        val requestGeneration = ++generation
+        playbackHandler.removeCallbacksAndMessages(null)
+        currentBinding.videoView.stopPlayback()
+        currentBinding.overlay.clear()
         setUiEnabled(false)
-        backgroundExecutor = Executors.newSingleThreadScheduledExecutor()
-        updateDisplayView(MediaType.IMAGE)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            val source = ImageDecoder.createSource(
-                requireActivity().contentResolver,
-                uri
-            )
-            ImageDecoder.decodeBitmap(source)
-        } else {
-            MediaStore.Images.Media.getBitmap(
-                requireActivity().contentResolver,
-                uri
-            )
-        }
-            .copy(Bitmap.Config.ARGB_8888, true)
-            ?.let { bitmap ->
-                fragmentGalleryBinding.imageResult.setImageBitmap(bitmap)
-
-                // Run pose landmarker on the input image
-                backgroundExecutor.execute {
-
-                    poseLandmarkerHelper =
-                        PoseLandmarkerHelper(
-                            context = requireContext(),
-                            runningMode = RunningMode.IMAGE,
-                            minPoseDetectionConfidence = viewModel.currentMinPoseDetectionConfidence,
-                            minPoseTrackingConfidence = viewModel.currentMinPoseTrackingConfidence,
-                            minPosePresenceConfidence = viewModel.currentMinPosePresenceConfidence,
-                            currentDelegate = viewModel.currentDelegate
-                        )
-
-                    poseLandmarkerHelper.detectImage(bitmap)?.let { result ->
-                        activity?.runOnUiThread {
-                            fragmentGalleryBinding.overlay.setResults(
-                                result.results[0],
-                                bitmap.height,
-                                bitmap.width,
-                                RunningMode.IMAGE
-                            )
-
-                            setUiEnabled(true)
-                            fragmentGalleryBinding.bottomSheetLayout.inferenceTimeVal.text =
-                                String.format("%d ms", result.inferenceTime)
-                        }
-                    } ?: run { Log.e(TAG, "Error running pose landmarker.") }
-
-                    poseLandmarkerHelper.clearPoseLandmarker()
-                }
-            }
-    }
-
-    private fun runDetectionOnVideo(uri: Uri) {
-        setUiEnabled(false)
-        updateDisplayView(MediaType.VIDEO)
-
-        with(fragmentGalleryBinding.videoView) {
-            setVideoURI(uri)
-            // mute the audio
-            setOnPreparedListener { it.setVolume(0f, 0f) }
-            requestFocus()
-        }
-
-        backgroundExecutor = Executors.newSingleThreadScheduledExecutor()
+        updateDisplayView(type)
+        currentBinding.progress.visibility = View.VISIBLE
+        val model = viewModel.currentModel
+        val delegate = viewModel.currentDelegate
+        val detection = viewModel.currentMinPoseDetectionConfidence
+        val tracking = viewModel.currentMinPoseTrackingConfidence
+        val presence = viewModel.currentMinPosePresenceConfidence
         backgroundExecutor.execute {
-
-            poseLandmarkerHelper =
-                PoseLandmarkerHelper(
-                    context = requireContext(),
-                    runningMode = RunningMode.VIDEO,
-                    minPoseDetectionConfidence = viewModel.currentMinPoseDetectionConfidence,
-                    minPoseTrackingConfidence = viewModel.currentMinPoseTrackingConfidence,
-                    minPosePresenceConfidence = viewModel.currentMinPosePresenceConfidence,
-                    currentDelegate = viewModel.currentDelegate
+            var helper: PoseLandmarkerHelper? = null
+            try {
+                helper = PoseLandmarkerHelper(
+                    context = appContext,
+                    runningMode = if (type == MediaType.IMAGE) RunningMode.IMAGE else RunningMode.VIDEO,
+                    currentModel = model, currentDelegate = delegate,
+                    minPoseDetectionConfidence = detection,
+                    minPoseTrackingConfidence = tracking,
+                    minPosePresenceConfidence = presence
                 )
-
-            activity?.runOnUiThread {
-                fragmentGalleryBinding.videoView.visibility = View.GONE
-                fragmentGalleryBinding.progress.visibility = View.VISIBLE
-            }
-
-            poseLandmarkerHelper.detectVideoFile(uri, VIDEO_INTERVAL_MS)
-                ?.let { resultBundle ->
-                    activity?.runOnUiThread { displayVideoResult(resultBundle) }
-                }
-                ?: run { Log.e(TAG, "Error running pose landmarker.") }
-
-            poseLandmarkerHelper.clearPoseLandmarker()
-        }
-    }
-
-    // Setup and display the video.
-    private fun displayVideoResult(result: PoseLandmarkerHelper.ResultBundle) {
-
-        fragmentGalleryBinding.videoView.visibility = View.VISIBLE
-        fragmentGalleryBinding.progress.visibility = View.GONE
-
-        fragmentGalleryBinding.videoView.start()
-        val videoStartTimeMs = SystemClock.uptimeMillis()
-
-        backgroundExecutor.scheduleAtFixedRate(
-            {
-                activity?.runOnUiThread {
-                    val videoElapsedTimeMs =
-                        SystemClock.uptimeMillis() - videoStartTimeMs
-                    val resultIndex =
-                        videoElapsedTimeMs.div(VIDEO_INTERVAL_MS).toInt()
-
-                    if (resultIndex >= result.results.size || fragmentGalleryBinding.videoView.visibility == View.GONE) {
-                        // The video playback has finished so we stop drawing bounding boxes
-                        backgroundExecutor.shutdown()
+                if (type == MediaType.IMAGE) {
+                    val decoded = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                        ImageDecoder.decodeBitmap(ImageDecoder.createSource(appContext.contentResolver, uri)) {
+                                decoder, info, _ ->
+                            decoder.allocator = ImageDecoder.ALLOCATOR_SOFTWARE
+                            val longest = maxOf(info.size.width, info.size.height)
+                            if (longest > 2048) decoder.setTargetSampleSize((longest + 2047) / 2048)
+                        }
                     } else {
-                        fragmentGalleryBinding.overlay.setResults(
-                            result.results[resultIndex],
-                            result.inputImageHeight,
-                            result.inputImageWidth,
-                            RunningMode.VIDEO
-                        )
-
+                        val options = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+                        appContext.contentResolver.openInputStream(uri).use {
+                            BitmapFactory.decodeStream(it, null, options)
+                        }
+                        require(options.outWidth > 0 && options.outHeight > 0) { "Invalid image" }
+                        options.inSampleSize = 1
+                        while (maxOf(options.outWidth, options.outHeight) / options.inSampleSize > 2048) {
+                            options.inSampleSize *= 2
+                        }
+                        options.inJustDecodeBounds = false
+                        options.inPreferredConfig = Bitmap.Config.ARGB_8888
+                        appContext.contentResolver.openInputStream(uri).use {
+                            BitmapFactory.decodeStream(it, null, options)
+                        } ?: error("Invalid image")
+                    }
+                    val bitmap = if (decoded.config == Bitmap.Config.ARGB_8888) decoded else {
+                        try { decoded.copy(Bitmap.Config.ARGB_8888, false) }
+                        finally { decoded.recycle() }
+                    }
+                    // Inference owns a separate bitmap; MPImage.close releases its storage.
+                    val result = try {
+                        helper.detectImage(bitmap) ?: error("Không thể phân tích ảnh này.")
+                    } catch (error: Exception) {
+                        bitmap.recycle()
+                        throw error
+                    }
+                    resultHandler.post {
+                        if (_fragmentGalleryBinding !== currentBinding || generation != requestGeneration) {
+                            bitmap.recycle()
+                            return@post
+                        }
+                        currentBinding.imageResult.setImageBitmap(bitmap)
+                        currentBinding.overlay.setResults(result.results.first(), result.inputImageHeight,
+                            result.inputImageWidth, RunningMode.IMAGE)
+                        currentBinding.progress.visibility = View.GONE
+                        currentBinding.bottomSheetLayout.inferenceTimeVal.text =
+                            String.format(Locale.US, "%d ms", result.inferenceTime)
                         setUiEnabled(true)
-
-                        fragmentGalleryBinding.bottomSheetLayout.inferenceTimeVal.text =
-                            String.format("%d ms", result.inferenceTime)
+                    }
+                } else {
+                    val result = helper.detectVideoFile(uri, VIDEO_INTERVAL_MS)
+                        ?: error("Không thể phân tích video này.")
+                    resultHandler.post {
+                        if (_fragmentGalleryBinding !== currentBinding || generation != requestGeneration) return@post
+                        currentBinding.progress.visibility = View.GONE
+                        currentBinding.videoView.setOnPreparedListener { player ->
+                            player.setVolume(0f, 0f)
+                            if (!isResumed) return@setOnPreparedListener
+                            currentBinding.videoView.start()
+                            displayVideoResult(result, requestGeneration)
+                        }
+                        currentBinding.videoView.setOnErrorListener { _, _, _ ->
+                            classifyingError()
+                            true
+                        }
+                        currentBinding.videoView.setVideoURI(uri)
+                        setUiEnabled(true)
                     }
                 }
-            },
-            0,
-            VIDEO_INTERVAL_MS,
-            TimeUnit.MILLISECONDS
-        )
+            } catch (error: Exception) {
+                Log.e(TAG, "Media analysis failed", error)
+                resultHandler.post {
+                    if (_fragmentGalleryBinding !== currentBinding || generation != requestGeneration) return@post
+                    classifyingError()
+                    Toast.makeText(appContext, "Không thể đọc hoặc phân tích tệp. Hãy chọn tệp khác.", Toast.LENGTH_LONG).show()
+                }
+            } finally {
+                helper?.clearPoseLandmarker()
+            }
+        }
+    }
+
+    private fun displayVideoResult(result: PoseLandmarkerHelper.ResultBundle, requestGeneration: Int) {
+        val currentBinding = _fragmentGalleryBinding ?: return
+        val drawFrame = object : Runnable {
+            override fun run() {
+                if (_fragmentGalleryBinding !== currentBinding || generation != requestGeneration || !isResumed) return
+                val index = (currentBinding.videoView.currentPosition / VIDEO_INTERVAL_MS).toInt()
+                result.results.getOrNull(index)?.let {
+                    currentBinding.overlay.setResults(it, result.inputImageHeight, result.inputImageWidth, RunningMode.VIDEO)
+                }
+                if (currentBinding.videoView.isPlaying) playbackHandler.postDelayed(this, VIDEO_INTERVAL_MS)
+            }
+        }
+        currentBinding.bottomSheetLayout.inferenceTimeVal.text = String.format(Locale.US, "%d ms", result.inferenceTime)
+        playbackHandler.post(drawFrame)
     }
 
     private fun updateDisplayView(mediaType: MediaType) {
@@ -416,12 +425,14 @@ class GalleryFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
             enabled
         fragmentGalleryBinding.bottomSheetLayout.presenceThresholdPlus.isEnabled =
             enabled
+        fragmentGalleryBinding.bottomSheetLayout.spinnerModel.isEnabled = enabled
         fragmentGalleryBinding.bottomSheetLayout.spinnerDelegate.isEnabled =
             enabled
     }
 
     private fun classifyingError() {
         activity?.runOnUiThread {
+            if (_fragmentGalleryBinding == null || !isAdded) return@runOnUiThread
             fragmentGalleryBinding.progress.visibility = View.GONE
             setUiEnabled(true)
             updateDisplayView(MediaType.UNKNOWN)
@@ -431,6 +442,7 @@ class GalleryFragment : Fragment(), PoseLandmarkerHelper.LandmarkerListener {
     override fun onError(error: String, errorCode: Int) {
         classifyingError()
         activity?.runOnUiThread {
+            if (_fragmentGalleryBinding == null || !isAdded) return@runOnUiThread
             Toast.makeText(requireContext(), error, Toast.LENGTH_SHORT).show()
             if (errorCode == PoseLandmarkerHelper.GPU_ERROR) {
                 fragmentGalleryBinding.bottomSheetLayout.spinnerDelegate.setSelection(

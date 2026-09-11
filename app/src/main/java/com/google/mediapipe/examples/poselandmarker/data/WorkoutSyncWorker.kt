@@ -11,6 +11,9 @@ import com.google.mediapipe.examples.poselandmarker.data.local.toModel
 import com.google.mediapipe.examples.poselandmarker.health.HealthConnectManager
 import com.google.mediapipe.examples.poselandmarker.model.WorkoutDay
 import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 
 class WorkoutSyncWorker(
     appContext: Context,
@@ -24,24 +27,35 @@ class WorkoutSyncWorker(
         var cloudFailed = false
         var healthFailed = false
 
+        val canWriteHealth = try {
+            HealthConnectManager.hasPermissions(applicationContext)
+        } catch (cancelled: CancellationException) {
+            throw cancelled
+        } catch (error: Exception) {
+            healthFailed = true
+            false
+        }
         pending.forEach { local ->
+            currentCoroutineContext().ensureActive()
+            if (FirebaseAuth.getInstance().currentUser?.uid != uid) return Result.success()
             val session = local.toModel()
             if (!local.firestoreSynced) {
                 runCatching { syncToFirestore(uid, session) }
-                    .onSuccess { dao.markFirestoreSynced(local.id) }
+                    .onSuccess { dao.markFirestoreSynced(local.id, local.difficulty) }
                     .onFailure {
+                        if (it is CancellationException) throw it
                         cloudFailed = true
                         dao.setSyncError(local.id, it.localizedMessage.orEmpty().take(300))
                     }
             }
 
-            val canWriteHealth = runCatching {
-                HealthConnectManager.hasPermissions(applicationContext)
-            }.getOrDefault(false)
             if (!local.healthSynced && canWriteHealth) {
                 runCatching { HealthConnectManager.writeWorkout(applicationContext, session) }
                     .onSuccess { written -> if (written) dao.markHealthSynced(local.id) }
-                    .onFailure { healthFailed = true }
+                    .onFailure {
+                        if (it is CancellationException) throw it
+                        healthFailed = true
+                    }
             }
         }
         return when {
@@ -59,18 +73,20 @@ class WorkoutSyncWorker(
         val historyRef = userRef.collection("exercise_history").document(session.exerciseId)
 
         db.runTransaction { transaction ->
+            val profileSnapshot = transaction.get(userRef)
             val existingSession = transaction.get(sessionRef)
             val daySnapshot = transaction.get(dayRef)
             val historySnapshot = transaction.get(historyRef)
 
-            if (existingSession.exists()) {
+            val isLatest = session.completedAt >= (historySnapshot.getLong("lastCompletedAt") ?: 0L)
+            if (!existingSession.getString("exerciseId").isNullOrBlank()) {
                 if (session.difficulty.isNotBlank()) {
                     transaction.set(
                         sessionRef,
                         mapOf("difficulty" to session.difficulty),
                         SetOptions.merge()
                     )
-                    transaction.set(
+                    if (isLatest) transaction.set(
                         historyRef,
                         mapOf("lastDifficulty" to session.difficulty),
                         SetOptions.merge()
@@ -80,26 +96,26 @@ class WorkoutSyncWorker(
             }
 
             daySnapshot.toObject(WorkoutDay::class.java)?.let { day ->
+                val planStartedAt = profileSnapshot.getLong("createdTime") ?: 0L
                 val updated = day.exercises.map { exercise ->
-                    if (exercise.exerciseId == session.exerciseId) exercise.copy(status = 1)
+                    if (session.completedAt >= planStartedAt && exercise.exerciseId == session.exerciseId) exercise.copy(status = 1)
                     else exercise
                 }
                 transaction.update(dayRef, "exercises", updated)
             }
             transaction.set(sessionRef, session)
-            transaction.set(
-                historyRef,
-                mapOf(
-                    "exerciseId" to session.exerciseId,
-                    "exerciseName" to session.exerciseName,
-                    "lastActualCount" to session.actualCount,
-                    "lastFormScore" to session.formScore,
-                    "lastCompletedAt" to session.completedAt,
-                    "lastDifficulty" to session.difficulty,
-                    "totalSessions" to ((historySnapshot.getLong("totalSessions") ?: 0L) + 1L)
-                ),
-                SetOptions.merge()
+            val historyUpdates = mutableMapOf<String, Any>(
+                "totalSessions" to ((historySnapshot.getLong("totalSessions") ?: 0L) + 1L)
             )
+            if (isLatest) historyUpdates.putAll(mapOf(
+                "exerciseId" to session.exerciseId,
+                "exerciseName" to session.exerciseName,
+                "lastActualCount" to session.actualCount,
+                "lastFormScore" to session.formScore,
+                "lastCompletedAt" to session.completedAt,
+                "lastDifficulty" to session.difficulty
+            ))
+            transaction.set(historyRef, historyUpdates, SetOptions.merge())
             null
         }.await()
     }

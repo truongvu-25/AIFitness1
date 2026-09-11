@@ -1,5 +1,6 @@
 package com.google.mediapipe.examples.poselandmarker.ui.fragment.onboarding
 
+import com.google.mediapipe.examples.poselandmarker.utils.deliverWhenResumed
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -106,20 +107,25 @@ class RegisterFragment : Fragment() {
 
         setLoading(true)
 
+        val callbackOwner = viewLifecycleOwner
         auth.createUserWithEmailAndPassword(email, password)
-            .addOnCompleteListener(requireActivity()) { task ->
-                setLoading(false)
-                if (task.isSuccessful) {
-                    WorkoutSyncScheduler.enqueue(requireContext())
-                    Toast.makeText(context, "Đăng ký tài khoản thành công!", Toast.LENGTH_SHORT).show()
-                    // Redirect to collect profile stats
-                    findNavController().navigate(R.id.action_register_to_user_info)
-                } else {
-                    Toast.makeText(
-                        context,
-                        "Đăng ký thất bại: ${task.exception?.localizedMessage}",
-                        Toast.LENGTH_LONG
-                    ).show()
+            .addOnCompleteListener { task ->
+                callbackOwner.deliverWhenResumed {
+                    if (!isAdded || _binding == null ||
+                        findNavController().currentDestination?.id != R.id.register_fragment) return@deliverWhenResumed
+                    setLoading(false)
+                    if (task.isSuccessful) {
+                        WorkoutSyncScheduler.enqueue(requireContext())
+                        Toast.makeText(context, "Đăng ký tài khoản thành công!", Toast.LENGTH_SHORT).show()
+                        // Redirect to collect profile stats
+                        findNavController().navigate(R.id.action_register_to_user_info)
+                    } else {
+                        Toast.makeText(
+                            context,
+                            "Đăng ký thất bại: ${task.exception?.localizedMessage}",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
                 }
             }
     }

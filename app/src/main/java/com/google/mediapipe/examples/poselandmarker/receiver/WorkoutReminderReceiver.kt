@@ -8,6 +8,9 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
+import java.util.concurrent.atomic.AtomicBoolean
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import com.google.firebase.auth.FirebaseAuth
@@ -30,12 +33,21 @@ class WorkoutReminderReceiver : BroadcastReceiver() {
         NotificationHelper.scheduleDailyReminder(context)
 
         val pendingResult = goAsync()
+        val finished = AtomicBoolean(false)
+        val handler = Handler(Looper.getMainLooper())
+        val timeout = Runnable { if (finished.compareAndSet(false, true)) pendingResult.finish() }
+        fun finish() {
+            handler.removeCallbacks(timeout)
+            if (finished.compareAndSet(false, true)) pendingResult.finish()
+        }
+        handler.postDelayed(timeout, 8_000L)
         val currentUser = FirebaseAuth.getInstance().currentUser
 
         if (currentUser != null) {
             val db = FirebaseFirestore.getInstance()
             db.collection("users").document(currentUser.uid).get()
                 .addOnSuccessListener { document ->
+                    if (finished.get()) return@addOnSuccessListener
                     if (document.exists()) {
                         val profile = document.toObject(UserProfile::class.java)
                         if (profile != null) {
@@ -48,6 +60,7 @@ class WorkoutReminderReceiver : BroadcastReceiver() {
                                 db.collection("users").document(currentUser.uid)
                                     .collection("workouts").document("day_$dayIndex").get()
                                     .addOnSuccessListener { workoutDoc ->
+                                        if (finished.get()) return@addOnSuccessListener
                                         if (workoutDoc.exists()) {
                                             val workoutDay = workoutDoc.toObject(WorkoutDay::class.java)
                                             val pendingCount = workoutDay?.exercises
@@ -56,26 +69,26 @@ class WorkoutReminderReceiver : BroadcastReceiver() {
                                                 showNotification(context, dayIndex, pendingCount)
                                             }
                                         }
-                                        pendingResult.finish()
+                                        finish()
                                     }
                                     .addOnFailureListener {
-                                        pendingResult.finish()
+                                        finish()
                                     }
                             } else {
-                                pendingResult.finish()
+                                finish()
                             }
                         } else {
-                            pendingResult.finish()
+                            finish()
                         }
                     } else {
-                        pendingResult.finish()
+                        finish()
                     }
                 }
                 .addOnFailureListener {
-                    pendingResult.finish()
+                    finish()
                 }
         } else {
-            pendingResult.finish()
+            finish()
         }
     }
 

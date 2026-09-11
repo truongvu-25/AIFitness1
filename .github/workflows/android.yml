@@ -1,0 +1,42 @@
+name: Android checks
+
+on:
+  push:
+    branches: [Nam2, main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: android-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Configure isolated build
+        run: |
+          cp app/google-services.example.json app/google-services.json
+          chmod +x gradlew
+          sdkmanager "platforms;android-36" "build-tools;35.0.0"
+      - name: Build, unit tests and lint
+        run: ./gradlew testDebugUnitTest lintDebug assembleDebug assembleRelease --console=plain
+      - name: Upload reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-reports
+          path: |
+            app/build/reports/
+            app/build/test-results/

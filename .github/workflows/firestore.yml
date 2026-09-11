@@ -1,0 +1,36 @@
+name: Firestore rules
+
+on:
+  push:
+    branches: [Nam2, main]
+    paths: ['firestore.rules', 'firebase.json', 'tests/firestore/**', '.github/workflows/firestore.yml']
+  pull_request:
+    paths: ['firestore.rules', 'firebase.json', 'tests/firestore/**', '.github/workflows/firestore.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  rules:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: tests/firestore/package-lock.json
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/firebase/emulators
+          key: firestore-emulator-1.22.0
+      - run: npm ci --no-audit --no-fund
+        working-directory: tests/firestore
+      - run: npm test
+        working-directory: tests/firestore

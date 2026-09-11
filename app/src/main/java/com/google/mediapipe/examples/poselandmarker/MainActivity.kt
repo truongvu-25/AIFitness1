@@ -19,21 +19,18 @@ package com.google.mediapipe.examples.poselandmarker
 import android.content.Context
 import android.os.Bundle
 import android.view.View
-import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
 import com.google.mediapipe.examples.poselandmarker.databinding.ActivityMainBinding
 import com.google.mediapipe.examples.poselandmarker.notification.NotificationHelper
 import com.google.mediapipe.examples.poselandmarker.utils.LocaleHelper
-import com.google.mediapipe.examples.poselandmarker.viewmodel.MainViewModel
 
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var activityMainBinding: ActivityMainBinding
 
-    private val viewModel: MainViewModel by viewModels()
 
 
     override fun attachBaseContext(newBase: Context) {
@@ -82,7 +79,7 @@ class MainActivity : AppCompatActivity() {
 
         // Ignore re-selecting the current BottomNavigation item.
         activityMainBinding.navigation
-            .setOnNavigationItemReselectedListener {
+            .setOnItemReselectedListener {
                 // Intentionally empty.
             }
 
@@ -171,21 +168,4 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-    @Deprecated("Deprecated in Java")
-    override fun onBackPressed() {
-
-        val navHostFragment =
-            supportFragmentManager.findFragmentById(
-                R.id.fragment_container
-            ) as NavHostFragment
-
-        val navController =
-            navHostFragment.navController
-
-
-        if (!navController.navigateUp()) {
-
-            super.onBackPressed()
-        }
-    }
 }

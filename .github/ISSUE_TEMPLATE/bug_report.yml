@@ -1,0 +1,22 @@
+name: Bug report
+description: Report a reproducible problem in TRI FORCE.
+body:
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps and expected result
+      description: Include the screen, actions, expected behavior and actual behavior.
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Device and build
+      placeholder: Device model, Android version, app commit/version
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Logs or screenshots
+      description: Remove emails, health data, credentials and Firebase identifiers before attaching.

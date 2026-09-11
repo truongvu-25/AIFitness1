@@ -24,6 +24,9 @@ import com.google.mediapipe.examples.poselandmarker.model.ProgressionAdvisor
 import com.google.mediapipe.examples.poselandmarker.model.WorkoutDay
 import java.util.Locale
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.flow.collectLatest
 
 class WorkoutSummaryFragment : Fragment() {
@@ -223,35 +226,24 @@ class WorkoutSummaryFragment : Fragment() {
         renderDifficultySelection(selectedButton)
         renderAdaptiveRecommendation(value)
 
+        val appContext = requireContext().applicationContext
         viewLifecycleOwner.lifecycleScope.launch {
-            TriForceDatabase.getInstance(requireContext())
-                .workoutSessionDao()
-                .updateDifficulty(sessionId, value)
-            WorkoutSyncScheduler.enqueue(requireContext())
-        }
-
-        val uid = auth.currentUser?.uid ?: return
-        val userRef = db.collection("users").document(uid)
-        val batch = db.batch()
-        batch.set(
-            userRef.collection("workout_sessions").document(sessionId),
-            mapOf("difficulty" to value),
-            SetOptions.merge()
-        )
-        batch.set(
-            userRef.collection("exercise_history").document(exerciseId),
-            mapOf("lastDifficulty" to value),
-            SetOptions.merge()
-        )
-        batch.commit().addOnFailureListener {
-            if (isAdded) {
-                Toast.makeText(
-                    context,
-                    "Phản hồi đã lưu trên máy và sẽ tự đồng bộ.",
-                    Toast.LENGTH_SHORT
-                ).show()
+            try {
+                withContext(NonCancellable) {
+                    TriForceDatabase.getInstance(appContext).workoutSessionDao().updateDifficulty(sessionId, value)
+                    WorkoutSyncScheduler.enqueue(appContext)
+                }
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (error: Exception) {
+                selectedDifficulty = ""
+                if (_binding != null) {
+                    renderDifficultySelection(null)
+                    Toast.makeText(context, "Chưa lưu được phản hồi. Vui lòng thử lại.", Toast.LENGTH_SHORT).show()
+                }
             }
         }
+
     }
 
     private fun renderAdaptiveRecommendation(difficulty: String) {

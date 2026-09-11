@@ -1,5 +1,7 @@
 package com.google.mediapipe.examples.poselandmarker.ui.fragment.profile
 
+import com.google.mediapipe.examples.poselandmarker.utils.addOnViewSuccessListener
+import com.google.mediapipe.examples.poselandmarker.utils.addOnViewFailureListener
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -98,13 +100,16 @@ class UserInfoFragment : Fragment() {
         }
 
         updateProgress()
+        binding.btnChatContinue.isEnabled = false
+        binding.btnChatContinue.alpha = 0.4f
 
         // Hiện "đang gõ..." trước, giả lập độ trễ tự nhiên
         chatAdapter.addItem(ChatItem.TypingIndicator)
         binding.rvChat.scrollToPosition(chatAdapter.itemCount - 1)
 
+        val questionBinding = binding
         binding.rvChat.postDelayed({
-            if (_binding == null) return@postDelayed
+            if (_binding !== questionBinding) return@postDelayed
             chatAdapter.removeLastIfTyping()
             addBotMessage(question)
             renderInputFor(question)
@@ -306,7 +311,10 @@ class UserInfoFragment : Fragment() {
             controller.allQuestions().getOrNull(editIndex)
         } else {
             controller.currentQuestion()
-        } ?: return
+        } ?: run {
+            finishAndSave()
+            return
+        }
 
         val rawValue: String
         val displayValue: String
@@ -330,7 +338,7 @@ class UserInfoFragment : Fragment() {
             question.answerType == AnswerType.NUMBER_INPUT -> {
                 val text = binding.etDynamicInput.text.toString().trim()
                 val number = text.toDoubleOrNull()
-                if (number == null || number <= 0) {
+                if (number == null || !number.isFinite() || number <= 0) {
                     binding.tilDynamicInput.error = "Vui lòng nhập số hợp lệ"
                     return
                 }
@@ -399,8 +407,11 @@ class UserInfoFragment : Fragment() {
     private fun loadExistingProfileThenPreload() {
         val uid = auth.currentUser?.uid ?: return
         setLoading(true)
+        val callbackOwner = viewLifecycleOwner
         db.collection("users").document(uid).get()
-            .addOnSuccessListener { document ->
+            .addOnViewSuccessListener(callbackOwner) { document ->
+                if (!isAdded || _binding == null ||
+                    findNavController().currentDestination?.id != R.id.user_info_fragment) return@addOnViewSuccessListener
                 setLoading(false)
                 if (document.exists()) {
                     val profile = document.toObject(UserProfile::class.java)
@@ -422,7 +433,9 @@ class UserInfoFragment : Fragment() {
                     }
                 }
             }
-            .addOnFailureListener { e ->
+            .addOnViewFailureListener(callbackOwner) { e ->
+                if (!isAdded || _binding == null ||
+                    findNavController().currentDestination?.id != R.id.user_info_fragment) return@addOnViewFailureListener
                 setLoading(false)
                 Toast.makeText(context, "Lỗi tải thông tin: ${e.message}", Toast.LENGTH_SHORT).show()
             }
@@ -457,7 +470,7 @@ class UserInfoFragment : Fragment() {
         val height = answers["height"]?.toDoubleOrNull()
         val weight = answers["weight"]?.toDoubleOrNull()
 
-        if (fullName.isEmpty() || age == null || height == null || weight == null) {
+        if (fullName.isEmpty() || age == null || age <= 0 || height == null || !height.isFinite() || height <= 0 || weight == null || !weight.isFinite() || weight <= 0) {
             Toast.makeText(context, "Thông tin chưa đầy đủ, vui lòng kiểm tra lại", Toast.LENGTH_SHORT).show()
             return
         }
@@ -512,15 +525,7 @@ class UserInfoFragment : Fragment() {
             squatsRange = answers["squats"].orEmpty()
         )
 
-        db.collection("users").document(uid).set(profile)
-            .addOnSuccessListener {
-                generateWorkoutPlan(uid, profile)
-            }
-            .addOnFailureListener { e ->
-                setLoading(false)
-                binding.panelInput.visibility = View.VISIBLE
-                Toast.makeText(context, "Lỗi lưu thông tin: ${e.message}", Toast.LENGTH_LONG).show()
-            }
+        generateWorkoutPlan(uid, profile)
     }
 
     private fun updateExistingProfile(
@@ -553,13 +558,18 @@ class UserInfoFragment : Fragment() {
             updates["lastBmiUpdatedTime"] = System.currentTimeMillis()
         }
 
+        val callbackOwner = viewLifecycleOwner
         db.collection("users").document(uid).update(updates)
-            .addOnSuccessListener {
+            .addOnViewSuccessListener(callbackOwner) {
+                if (!isAdded || _binding == null ||
+                    findNavController().currentDestination?.id != R.id.user_info_fragment) return@addOnViewSuccessListener
                 setLoading(false)
                 Toast.makeText(context, "Cập nhật hồ sơ thành công!", Toast.LENGTH_SHORT).show()
                 findNavController().popBackStack()
             }
-            .addOnFailureListener { e ->
+            .addOnViewFailureListener(callbackOwner) { e ->
+                if (!isAdded || _binding == null ||
+                    findNavController().currentDestination?.id != R.id.user_info_fragment) return@addOnViewFailureListener
                 setLoading(false)
                 binding.panelInput.visibility = View.VISIBLE
                 Toast.makeText(context, "Lỗi cập nhật hồ sơ: ${e.message}", Toast.LENGTH_LONG).show()
@@ -576,6 +586,7 @@ class UserInfoFragment : Fragment() {
 
     private fun generateWorkoutPlan(uid: String, profile: UserProfile) {
         val batch = db.batch()
+        batch.set(db.collection("users").document(uid), profile)
 
         for (day in 1..30) {
             val isRestDay = isRestDayForBmi(profile.bmiType, day)
@@ -586,15 +597,21 @@ class UserInfoFragment : Fragment() {
             batch.set(dayDocRef, workoutDay)
         }
 
+        val callbackOwner = viewLifecycleOwner
         batch.commit()
-            .addOnSuccessListener {
+            .addOnViewSuccessListener(callbackOwner) {
+                if (!isAdded || _binding == null ||
+                    findNavController().currentDestination?.id != R.id.user_info_fragment) return@addOnViewSuccessListener
                 setLoading(false)
                 Toast.makeText(context, "Đã tạo lộ trình tập luyện 30 ngày!", Toast.LENGTH_SHORT).show()
                 NotificationHelper.scheduleDailyReminder(requireContext())
                 findNavController().navigate(R.id.action_user_info_to_workout_calendar)
             }
-            .addOnFailureListener { e ->
+            .addOnViewFailureListener(callbackOwner) { e ->
+                if (!isAdded || _binding == null ||
+                    findNavController().currentDestination?.id != R.id.user_info_fragment) return@addOnViewFailureListener
                 setLoading(false)
+                binding.panelInput.visibility = View.VISIBLE
                 Toast.makeText(context, "Lỗi tạo lộ trình: ${e.message}", Toast.LENGTH_LONG).show()
             }
     }
@@ -704,11 +721,19 @@ class UserInfoFragment : Fragment() {
     }
 
     private fun setLoading(isLoading: Boolean) {
+        if (_binding == null) return
         binding.infoProgress.visibility = if (isLoading) View.VISIBLE else View.GONE
         binding.btnChatContinue.visibility = if (isLoading) View.GONE else View.VISIBLE
     }
 
     override fun onDestroyView() {
+        _binding?.let { oldBinding ->
+            dynamicInputWatcher?.let(oldBinding.etDynamicInput::removeTextChangedListener)
+            oldBinding.rvChat.adapter = null
+        }
+        dynamicInputWatcher = null
+        selectedSingleButton = null
+        heightWheelAdapter = null
         super.onDestroyView()
         _wheelBinding = null
         _binding = null

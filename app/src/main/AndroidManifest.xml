@@ -155,7 +155,7 @@
             android:enabled="true"
             android:exported="false"
 
-            android:foregroundServiceType="dataSync"
+            android:foregroundServiceType="health|dataSync"
 
             tools:ignore="ForegroundServicePermission" />
 
